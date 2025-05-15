@@ -19,6 +19,10 @@ body {
   text-align: center;
   color: #fff;
   padding: 20px;
+  background-image: url('../assets/background/novaskin-wallpaper-goldenapple.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .container {
@@ -26,7 +30,7 @@ body {
   padding: 40px;
   border-radius: 8px;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }
 

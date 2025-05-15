@@ -1,15 +1,28 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useLanguage } from '../contexts/useLanguage';
+import { useNavigate } from 'react-router-dom';
+import useLanguage from '../hooks/useLanguage';
+import useMainLayout from '../hooks/useMainLayout'; // Importa l'hook useMainLayout
 
 const LoginPage: React.FC = () => {
-  const { language, translations } = useLanguage();
-  const t = translations[language];
-  const [command, setCommand] = useState('');
-  const [consoleOutput, setConsoleOutput] = useState('');
+  const { t } = useLanguage();
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const { handleLogin } = useMainLayout(); // Usa l'hook per accedere a handleLogin
 
-  const executeCommand = async () => {
-    setConsoleOutput(`Eseguito comando: ${command}\nOutput: Server avviato con successo!`);
+  const handleLoginClick = () => {
+    // Qui dovresti implementare la logica di autenticazione
+    // (ad esempio, una chiamata a un'API).
+    // Per ora, simuleremo un login riuscito con qualsiasi password.
+    if (password) {
+      // Login riuscito
+      if (handleLogin) {
+        handleLogin(); // Chiama la funzione di login dall'hook
+      }
+      navigate('/console');
+    } else {
+      // Login fallito
+      alert(t.passwordIncorrect); // Usa la traduzione per il messaggio di errore
+    }
   };
 
   return (
@@ -17,25 +30,14 @@ const LoginPage: React.FC = () => {
       <h1>{t.loginTitle}</h1>
       <div>
         <label htmlFor="password">{t.passwordLabel}</label>
-        <input type="password" id="password" />
-      </div>
-      <div>
-        <label htmlFor="command">{t.commandLabel}</label>
         <input
-          type="text"
-          id="command"
-          value={command}
-          onChange={(e) => setCommand(e.target.value)}
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
-        <button onClick={executeCommand}>Esegui</button>
       </div>
-      <div>
-        <h2>{t.consoleTitle}</h2>
-        <textarea value={consoleOutput} readOnly rows={10} cols={50} />
-      </div>
-      <Link to="/" className="btn">
-        {t.backToHome}
-      </Link>
+      <button onClick={handleLoginClick}>Login</button>
     </div>
   );
 };
