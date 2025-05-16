@@ -1,45 +1,54 @@
-import React, { useState } from 'react';
+import { useState, useContext } from 'react';
+import type { FormEvent, JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AuthContext from '../contexts/AuthContext';
 import useLanguage from '../hooks/useLanguage';
-import useMainLayout from '../hooks/useMainLayout'; // Importa l'hook useMainLayout
 
-const LoginPage: React.FC = () => {
-  const { t } = useLanguage();
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-  const { handleLogin } = useMainLayout(); // Usa l'hook per accedere a handleLogin
+export default function Login(): JSX.Element {
+    const { t } = useLanguage();
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const { login } = useContext(AuthContext);
+    const navigate = useNavigate();
 
-  const handleLoginClick = () => {
-    // Qui dovresti implementare la logica di autenticazione
-    // (ad esempio, una chiamata a un'API).
-    // Per ora, simuleremo un login riuscito con qualsiasi password.
-    if (password) {
-      // Login riuscito
-      if (handleLogin) {
-        handleLogin(); // Chiama la funzione di login dall'hook
-      }
-      navigate('/console');
-    } else {
-      // Login fallito
-      alert(t.passwordIncorrect); // Usa la traduzione per il messaggio di errore
-    }
-  };
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        try {
+          await login(username, password);
+          navigate('/');
+        } catch (err) {
+          setError((err as Error).message);
+        }
+    };
 
   return (
     <div className="container">
       <h1>{t.loginTitle}</h1>
-      <div>
-        <label htmlFor="password">{t.passwordLabel}</label>
-        <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <button onClick={handleLoginClick}>Login</button>
+      <form onSubmit={handleSubmit}>
+          <div>
+              <label>Utente:</label>
+              <input
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                required
+              />
+          </div>
+          <div>
+              <label>Password:</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+          </div>
+          <button type="submit">Login</button>
+          <br />
+          <br />
+          {error && <div style={{ color: 'red' }}>{error}</div>}
+      </form>
     </div>
   );
-};
-
-export default LoginPage;
+}

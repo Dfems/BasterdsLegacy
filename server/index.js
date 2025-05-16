@@ -19,6 +19,7 @@ function loadUsers() {
 
 // Endpoint di login
 app.post('/api/login', async (req, res) => {
+  console.log('💥 Login attempt payload:', req.body);
   const { username, password } = req.body;
   const users = loadUsers();
   const user = users.find(u => u.username === username);
