@@ -10,7 +10,7 @@ const HomePage: React.FC = () => {
     <div className="container">
       <h1 id="server-title">{t.title}</h1>
       <div id="welcome-message">
-        <p>{t.welcomePart1}</p>
+        <p>{t.welcomePart}</p>
       </div>
       <br></br>
       <p id="instructions-text" className="instructions">{t.instructions}</p>

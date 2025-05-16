@@ -5,7 +5,7 @@ import type { Translations } from '../types/translationTypes';
 const translations: Translations = {
   it: {
     title: 'Basterd\'s Legacy!',
-    welcomePart1: 'Preparatevi a un\'esperienza unica e imprevedibile: un immenso multiverso con qualche mod selezionata per rendere le cose ancora più... interessanti 😉. Aspettatevi una sana dose di esplosioni 💥 e sofferenza...',
+    welcomePart: 'Preparatevi a un\'esperienza unica e imprevedibile: un immenso multiverso con qualche mod selezionata per rendere le cose ancora più... interessanti 😉',
     instructions: 'Segui le istruzioni per connetterti al nostro server:',
     configBtn: 'Scarica Configurazione',
     launcherBtn: 'Scarica Launcher',
@@ -29,7 +29,7 @@ const translations: Translations = {
   },
   en: {
     title: 'Basterd\'s Legacy!',
-    welcomePart1: 'Get ready for a unique and unpredictable experience: a huge multiverse with some selected mods to make things even more... interesting 😉. Expect a healthy dose of explosions 💥 and suffering...',
+    welcomePart: 'Get ready for a unique and unpredictable experience: a huge multiverse with some selected mods to make things even more... interesting 😉',
     instructions: 'Follow the instructions to connect to our server:',
     configBtn: 'Download Configuration',
     launcherBtn: 'Download Launcher',
@@ -53,7 +53,7 @@ const translations: Translations = {
   },
   es: {
     title: 'Basterd\'s Legacy',
-    welcomePart1: 'Prepárense para una experiencia única e impredecible: un inmenso multiverso con algunos mods seleccionados para hacer las cosas aún más... interesantes 😉. Esperen una buena dosis de explosiones 💥 y sufrimiento...',
+    welcomePart: 'Prepárense para una experiencia única e impredecible: un inmenso multiverso con algunos mods seleccionados para hacer las cosas aún más... interesantes 😉',
     instructions: 'Sigue las instrucciones para conectarte a nuestro servidor:',
     configBtn: 'Descargar configuración',
     launcherBtn: 'Descargar launcher',

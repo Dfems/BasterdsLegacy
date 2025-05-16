@@ -1,26 +1,39 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import ConsolePage from './pages/ConsolePage';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import type { JSX } from 'react';
+import AuthProvider from './contexts/AuthProvider';
 import LanguageProvider from './contexts/LanguageProvider';
-import MainLayout from './layout/MainLayout';
-import './styles/App.css';
+import ProtectedRoute from './components/ProtectedRoute';
+import MainLayout from './layouts/MainLayout';
+import HomePage from './pages/HomePage';
+import Login from './pages/LoginPage';
+import AppRoutes from './routes/AppRoutes';
 
-const App: React.FC = () => {
+export default function App(): JSX.Element {
   return (
-    <LanguageProvider>
-      <Router>
-        <MainLayout>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/console" element={<ConsolePage />} />
-            </Routes>
-        </MainLayout>
-      </Router>
-    </LanguageProvider>
-  );
-};
+    <AuthProvider>
+      <LanguageProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* PUBBLICHE */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
 
-export default App;
+            {/* PROTETTE sotto /app/* */}
+            <Route
+              path="/app/*"
+              element={
+                <ProtectedRoute>
+                  {/* qui avvolgi la navbar + switch lingua */}
+                  <MainLayout />
+                </ProtectedRoute>
+              }
+            >
+              {/* monta qui dentro tutte le tue AppRoutes */}
+              {AppRoutes()}
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </LanguageProvider>
+    </AuthProvider>
+  );
+}
