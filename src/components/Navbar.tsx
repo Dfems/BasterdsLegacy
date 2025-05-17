@@ -1,73 +1,63 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import type { JSX } from 'react';
 import useLanguage from '../hooks/useLanguage';
 
 interface NavbarProps {
   isLoggedIn: boolean;
   onLogout: () => void;
+  loginTitle?: string; // opzionale, se vuoi personalizzare il testo del link login
 }
 
-const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
+export default function Navbar({
+  isLoggedIn,
+  onLogout
+}: NavbarProps): JSX.Element {
+
   const { t } = useLanguage();
-  const navigate = useNavigate();
-
-  const handleDisconnect = () => {
-    onLogout();
-    navigate('/');
-  };
-
   return (
-    <nav style={{
-      display: 'flex',
-      justifyContent: 'center',
-      gap: '20px',
-      backgroundColor: '#222',
-      padding: '10px',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      zIndex: 1000,
-    }}>
-      <NavLink
-        to="/"
-        style={({ isActive }) => ({
-          color: isActive ? '#FFD700' : '#0F0',
-          textDecoration: 'none',
-          fontFamily: 'Press Start 2P',
-          fontSize: '0.8rem',
-        })}
-      >
-        Home
-      </NavLink>
-      {isLoggedIn ? (
-        <NavLink
-          to="/" // Reindirizza alla Home (o a dove vuoi)
-          onClick={handleDisconnect}
-          style={({ isActive }) => ({
-            color: isActive ? '#FFD700' : '#f44336', // Stile rosso per "Disconnect"
-            textDecoration: 'none',
-            fontFamily: 'Press Start 2P',
-            fontSize: '0.8rem',
-          })}
-        >
-          Disconnect
-        </NavLink>
-      ) : (
-        <NavLink
-          to="/login"
-          style={({ isActive }) => ({
-            color: isActive ? '#FFD700' : '#0F0',
-            textDecoration: 'none',
-            fontFamily: 'Press Start 2P',
-            fontSize: '0.8rem',
-          })}
-        >
-          {t.loginTitle}
-        </NavLink>
-      )}
+    <nav className='navbar'>
+      <div>
+        <Link to="/" style={{ color: '#61dafb', textDecoration: 'none', fontWeight: 'bold' }}>
+          {t.appName}
+        </Link>
+      </div>
+      <ul style={{ listStyle: 'none', display: 'flex', gap: '1rem', margin: 0, padding: 0 }}>
+        <li>
+          <Link to="/" style={{ color: '#fff', textDecoration: 'none' }}>
+            Home
+          </Link>
+        </li>
+        {isLoggedIn ? (
+          <>
+            <li>
+              <Link to="/app/console" style={{ color: '#fff', textDecoration: 'none' }}>
+                Console
+              </Link>
+            </li>
+            <li>
+              <button
+                onClick={onLogout}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #61dafb',
+                  borderRadius: '4px',
+                  color: '#61dafb',
+                  padding: '0.25rem 0.5rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Disconnect
+              </button>
+            </li>
+          </>
+        ) : (
+          <li>
+            <Link to="/login" style={{ color: '#fff', textDecoration: 'none' }}>
+              {t.loginTitle}
+            </Link>
+          </li>
+        )}
+      </ul>
     </nav>
   );
-};
-
-export default Navbar;
+}

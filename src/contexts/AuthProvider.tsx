@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
+// src/contexts/AuthProvider.tsx
+import { useState, useEffect, useCallback } from 'react';
 import type { JSX, ReactNode } from 'react';
-import AuthContext from '../contexts/AuthContext';
-import type { AuthContextType } from '../contexts/AuthContext';
+import { jwtDecode } from 'jwt-decode';
+import AuthContext, { type AuthContextType } from './AuthContext';
 
 interface Props {
   children: ReactNode;
+}
+
+interface DecodedToken {
+  exp: number;
 }
 
 export default function AuthProvider({ children }: Props): JSX.Element {
@@ -12,6 +17,7 @@ export default function AuthProvider({ children }: Props): JSX.Element {
     () => localStorage.getItem('token')
   );
 
+  // Persiste il token in localStorage
   useEffect(() => {
     if (token !== null) {
       localStorage.setItem('token', token);
@@ -20,21 +26,47 @@ export default function AuthProvider({ children }: Props): JSX.Element {
     }
   }, [token]);
 
+  // Auto-logout alla scadenza del token
+  const logout = useCallback(() => {
+    setToken(null);
+  }, []);
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+    let timeoutId: number;
+    try {
+      const { exp } = jwtDecode<DecodedToken>(token);
+      const msLeft = exp * 1000 - Date.now();
+      if (msLeft <= 0) {
+        logout();
+      } else {
+        timeoutId = window.setTimeout(logout, msLeft);
+      }
+    } catch {
+      // In caso di token malformato
+      logout();
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [token, logout]);
+
+  // Funzione di login: salva il nuovo token
   const login: AuthContextType['login'] = async (username, password) => {
     const response = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
+    const data = await response.json() as { token: string; error?: string };
     if (!response.ok) {
-      throw new Error('Login fallito');
+      throw new Error(data.error ?? 'Login fallito');
     }
-    const { token: newToken } = await response.json() as { token: string };
-    setToken(newToken);
-  };
-
-  const logout: AuthContextType['logout'] = () => {
-    setToken(null);
+    setToken(data.token);
   };
 
   return (

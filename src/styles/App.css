@@ -25,13 +25,64 @@ body {
   background-attachment: fixed;
 }
 
-.container {
+/* .container {
   background: rgba(0, 0, 0, 0.6);
   padding: 40px;
   border-radius: 8px;
   width: 100%;
   max-width: 700px;
   box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+} */
+
+.container,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 40px;
+}
+
+/* Small (sm) ≥576px */
+@media (min-width: 576px) {
+  .container-sm {
+    max-width: 540px;
+  }
+}
+
+/* Medium (md) ≥768px */
+@media (min-width: 768px) {
+  .container-md {
+    max-width: 720px;
+  }
+}
+
+/* Large (lg) ≥992px */
+@media (min-width: 992px) {
+  .container-lg {
+    max-width: 960px;
+  }
+}
+
+/* Extra-large (xl) ≥1200px */
+@media (min-width: 1200px) {
+  .container-xl {
+    max-width: 1140px;
+  }
+}
+
+/* (Opzionale) addizionale XXL ≥1400px */
+@media (min-width: 1400px) {
+  .container-xxl {
+    max-width: 1320px;
+  }
 }
 
 .lang-select {
@@ -146,4 +197,13 @@ textarea {
   color: #0f0;
   border-radius: 4px;
   font-size: 0.8rem;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: #282c34;
+  color: #fff;
 }

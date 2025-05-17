@@ -3,6 +3,7 @@ import type { FormEvent, JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../contexts/AuthContext';
 import useLanguage from '../hooks/useLanguage';
+import '../styles/App.css';
 
 export default function Login(): JSX.Element {
     const { t } = useLanguage();
@@ -23,7 +24,7 @@ export default function Login(): JSX.Element {
     };
 
   return (
-    <div className="container">
+    <div className="container-md" style={{ maxWidth: '1200px !important' }}>
       <h1>{t.loginTitle}</h1>
       <form onSubmit={handleSubmit}>
           <div>

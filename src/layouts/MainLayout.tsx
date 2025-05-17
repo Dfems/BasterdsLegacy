@@ -1,35 +1,34 @@
-// src/layouts/MainLayout.tsx
-import React, { useState, type JSX } from 'react';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
 import useLanguage from '../hooks/useLanguage';
 import Navbar from '../components/Navbar';
-import MainLayoutContext from '../contexts/MainLayoutContext';
+import type { JSX } from 'react';
+import { useContext } from 'react';
+import AuthContext from '../contexts/AuthContext';
 
 export default function MainLayout(): JSX.Element {
   const { language, setLanguage } = useLanguage();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { token, logout } = useContext(AuthContext);
 
-  const handleLogin = () => setIsLoggedIn(true);
-  const handleLogout = () => setIsLoggedIn(false);
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setLanguage(e.target.value);
   };
 
+  const isLoggedIn = Boolean(token);
+
   return (
-    <MainLayoutContext.Provider value={{ handleLogin }}>
-      <div>
-        <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
-        <div style={{ marginTop: '60px' }}>
-          <Outlet />
-        </div>
-        <div style={{ position: 'fixed', bottom: '20px', right: '20px' }}>
-          <select value={language} onChange={handleLanguageChange}>
-            <option value="it">Italiano</option>
-            <option value="en">English</option>
-            <option value="es">Español</option>
-          </select>
-        </div>
+    <div>
+      <Navbar isLoggedIn={isLoggedIn} onLogout={logout} />
+      <div style={{ marginTop: '30px' }}>
+        <Outlet />
       </div>
-    </MainLayoutContext.Provider>
+      <div style={{ position: 'fixed', bottom: '20px', right: '20px' }}>
+        <select value={language} onChange={handleLanguageChange}>
+          <option value="it">Italiano</option>
+          <option value="en">English</option>
+          <option value="es">Español</option>
+        </select>
+      </div>
+    </div>
   );
 }

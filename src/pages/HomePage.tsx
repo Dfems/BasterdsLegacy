@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import '../styles/App.css';
 import useLanguage from '../hooks/useLanguage';
 
@@ -7,13 +6,13 @@ const HomePage: React.FC = () => {
   const { t } = useLanguage();
 
   return (
-    <div className="container">
+    <div className="container-md">
       <h1 id="server-title">{t.title}</h1>
       <div id="welcome-message">
         <p>{t.welcomePart}</p>
       </div>
       <br></br>
-      <p id="instructions-text" className="instructions">{t.instructions}</p>
+      {/* <p id="instructions-text" className="instructions">{t.instructions}</p> */}
       <ul className="links">
         <li>
           <a
@@ -46,11 +45,11 @@ const HomePage: React.FC = () => {
             {t.donateBtn}
           </a>
         </li>
-        <li>
+        {/* <li>
           <Link to="/login" className="btn">
             {t.loginTitle}
           </Link>
-        </li>
+        </li> */}
       </ul>
       <footer id="footer-text">{t.footer}</footer>
     </div>

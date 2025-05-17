@@ -4,6 +4,7 @@ import type { Translations } from '../types/translationTypes';
 
 const translations: Translations = {
   it: {
+    appName: 'Minecraft',
     title: 'Basterd\'s Legacy!',
     welcomePart: 'Preparatevi a un\'esperienza unica e imprevedibile: un immenso multiverso con qualche mod selezionata per rendere le cose ancora più... interessanti 😉',
     instructions: 'Segui le istruzioni per connetterti al nostro server:',
@@ -28,6 +29,7 @@ const translations: Translations = {
     consoleLoginMessage: 'Effettua il login per accedere alla console.',
   },
   en: {
+    appName: 'Minecraft',
     title: 'Basterd\'s Legacy!',
     welcomePart: 'Get ready for a unique and unpredictable experience: a huge multiverse with some selected mods to make things even more... interesting 😉',
     instructions: 'Follow the instructions to connect to our server:',
@@ -52,6 +54,7 @@ const translations: Translations = {
     consoleLoginMessage: 'Log in to access the console.',
   },
   es: {
+    appName: 'Minecraft',
     title: 'Basterd\'s Legacy',
     welcomePart: 'Prepárense para una experiencia única e impredecible: un inmenso multiverso con algunos mods seleccionados para hacer las cosas aún más... interesantes 😉',
     instructions: 'Sigue las instrucciones para conectarte a nuestro servidor:',
@@ -67,7 +70,7 @@ const translations: Translations = {
     modalSubmitBtn: 'Verificar y Descargar',
     modalCancelBtn: 'Cancelar',
     modalError: 'No estás en la whitelist y no puedes descargar.',
-    loginTitle: 'Iniciar Sesión',
+    loginTitle: 'Login',
     passwordLabel: 'Contraseña:',
     passwordIncorrect: 'Contraseña incorrecta.',
     commandLabel: 'Comando del Servidor:',
