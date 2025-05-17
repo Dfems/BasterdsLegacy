@@ -74,7 +74,7 @@ const translations: Translations = {
     passwordLabel: 'Contraseña:',
     passwordIncorrect: 'Contraseña incorrecta.',
     commandLabel: 'Comando del Servidor:',
-    consoleTitle: 'Consola del Servidor:',
+    consoleTitle: 'Consola del Servidor',
     backToHome: 'Volver al Inicio',
     consoleLoginMessage: 'Inicia sesión para acceder a la consola.',
   },

@@ -209,3 +209,11 @@ textarea {
   background: #282c34;
   color: #fff;
 }
+
+.sidebar-buttons {
+  display: flex;
+  flex-direction: column;
+  width: 150px;
+  margin-right: 1rem;
+  justify-content: center;
+}
