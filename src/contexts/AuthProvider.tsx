@@ -4,68 +4,65 @@ import type { JSX, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import AuthContext, { type AuthContextType } from './AuthContext';
 
-interface Props {
-  children: ReactNode;
-}
-
-interface DecodedToken {
-  exp: number;
-}
+interface Props { children: ReactNode; }
+interface DecodedToken { exp: number; }
 
 export default function AuthProvider({ children }: Props): JSX.Element {
   const [token, setToken] = useState<string | null>(
     () => localStorage.getItem('token')
   );
 
-  // Persiste il token in localStorage
+  // salvataggio/cleanup in localStorage
   useEffect(() => {
-    if (token !== null) {
+    if (token) {
       localStorage.setItem('token', token);
     } else {
       localStorage.removeItem('token');
     }
   }, [token]);
 
-  // Auto-logout alla scadenza del token
-  const logout = useCallback(() => {
-    setToken(null);
-  }, []);
-
+  // auto-logout alla scadenza
+  const logout = useCallback(() => setToken(null), []);
   useEffect(() => {
-    if (!token) {
-      return;
-    }
-    let timeoutId: number;
-    try {
-      const { exp } = jwtDecode<DecodedToken>(token);
-      const msLeft = exp * 1000 - Date.now();
-      if (msLeft <= 0) {
-        logout();
-      } else {
-        timeoutId = window.setTimeout(logout, msLeft);
-      }
-    } catch {
-      // In caso di token malformato
-      logout();
-    }
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
+    if (!token) return;
+    const { exp } = jwtDecode<DecodedToken>(token);
+    const msLeft = exp * 1000 - Date.now();
+    if (msLeft <= 0) return logout();
+
+    const id = window.setTimeout(logout, msLeft);
+    return () => clearTimeout(id);
   }, [token, logout]);
 
-  // Funzione di login: salva il nuovo token
+  useEffect(() => {
+    const realFetch = window.fetch;
+    window.fetch = async (input, init = {}) => {
+      // 1) inietto sempre il Bearer token se esiste
+      const headers = new Headers(init.headers);
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+
+      // 2) faccio la chiamata
+      const response = await realFetch(input, { ...init, headers });
+
+      // 3) intercetto il nuovo token se presente
+      const refresh = response.headers.get('x-refresh-token');
+      if (refresh) {
+        console.log('🔄 Received x-refresh-token, updating client token');
+        setToken(refresh);
+      }
+
+      return response;
+    };
+    return () => { window.fetch = realFetch; };
+  }, [token]);
+
   const login: AuthContextType['login'] = async (username, password) => {
-    const response = await fetch('/api/login', {
+    const resp = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
-    const data = await response.json() as { token: string; error?: string };
-    if (!response.ok) {
-      throw new Error(data.error ?? 'Login fallito');
-    }
+    const data = await resp.json() as { token: string; error?: string };
+    if (!resp.ok) throw new Error(data.error ?? 'Login fallito');
     setToken(data.token);
   };
 

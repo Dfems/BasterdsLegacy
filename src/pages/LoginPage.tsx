@@ -24,7 +24,7 @@ export default function Login(): JSX.Element {
     };
 
   return (
-    <div className="container-md" style={{ maxWidth: '1200px !important' }}>
+    <div className="container-md">
       <h1>{t.loginTitle}</h1>
       <form onSubmit={handleSubmit}>
           <div>

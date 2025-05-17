@@ -1,19 +1,16 @@
 import { Link } from 'react-router-dom';
 import type { JSX } from 'react';
 import useLanguage from '../hooks/useLanguage';
+import '../styles/App.css';
 
 interface NavbarProps {
   isLoggedIn: boolean;
   onLogout: () => void;
-  loginTitle?: string; // opzionale, se vuoi personalizzare il testo del link login
 }
 
-export default function Navbar({
-  isLoggedIn,
-  onLogout
-}: NavbarProps): JSX.Element {
-
+export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Element {
   const { t } = useLanguage();
+
   return (
     <nav className='navbar'>
       <div>

@@ -1,56 +1,71 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/ConsolePage.tsx
+import { useState, useContext, useEffect, type FormEvent, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useLanguage from '../hooks/useLanguage';
+import AuthContext from '../contexts/AuthContext';
+import '../styles/App.css';
 
-const ConsolePage: React.FC = () => {
+export default function ConsolePage(): JSX.Element {
   const { t } = useLanguage();
+  const { token } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [command, setCommand] = useState('');
   const [consoleOutput, setConsoleOutput] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // Se non sei autenticato, torni a login
   useEffect(() => {
-    // Qui dovresti implementare la logica per verificare se l'utente è loggato
-    // Potrebbe essere una chiamata a un'API, controllo di un cookie, ecc.
-    // Per ora, simuleremo un login riuscito dopo un breve ritardo
-    setTimeout(() => {
-      setIsLoggedIn(true);
-    }, 1000); // Simulazione di 1 secondo di attesa
-  }, []);
+    if (!token) {
+      navigate('/login', { replace: true });
+    }
+  }, [token, navigate]);
 
-  const executeCommand = async () => {
-    // Qui dovresti implementare la logica per inviare il comando al server
-    // e ottenere l'output della console.
-    // Questo è un esempio di "mock" per dimostrazione.
-    setConsoleOutput(`Eseguito comando: ${command}\nOutput: Server avviato con successo!`);
+  const executeCommand = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      const resp = await fetch('/api/console', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ command }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error ?? resp.statusText);
+      }
+      const data = await resp.text();
+      setConsoleOutput(data);
+    } catch (err: unknown) {
+      setConsoleOutput(`Errore: ${(err as Error).message}`);
+    }
   };
 
-  if (!isLoggedIn) {
-    return (
-      <div className="container">
-        <h1>{t.consoleTitle}</h1>
-        <p>{t.consoleLoginMessage}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="container">
+    <div className="container-xl">
       <h1>{t.consoleTitle}</h1>
+      <form onSubmit={executeCommand}>
+        <div>
+          <label htmlFor="command">{t.commandLabel}</label>{' '}
+          <input
+            id="command"
+            type="text"
+            value={command}
+            onChange={(e) => setCommand(e.target.value)}
+            required
+          />{' '}
+          <button type="submit">{t.executeButtonLabel}</button>
+        </div>
+      </form>
       <div>
-        <label htmlFor="command">{t.commandLabel}</label>
-        <input
-          type="text"
-          id="command"
-          value={command}
-          onChange={(e) => setCommand(e.target.value)}
+        <h2>{t.consoleOutputTitle}</h2>
+        <textarea
+          value={consoleOutput}
+          readOnly
+          rows={20}
+          cols={80}
         />
-        <button onClick={executeCommand}>Esegui</button>
-      </div>
-      <div>
-        <h2>{t.consoleTitle}</h2>
-        <textarea value={consoleOutput} readOnly rows={10} cols={50} />
       </div>
     </div>
   );
-};
-
-export default ConsolePage;
+}
