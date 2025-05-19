@@ -213,7 +213,7 @@ textarea {
 .sidebar-buttons {
   display: flex;
   flex-direction: column;
-  width: 150px;
+  width: 250px;
   margin-right: 1rem;
   justify-content: center;
 }

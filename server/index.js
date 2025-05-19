@@ -6,10 +6,12 @@ const jwt         = require('jsonwebtoken');
 const fs          = require('fs');
 const path        = require('path');
 const { spawn }    = require('child_process');
+const os = require('os');
 
 const app = express();
 app.use(bodyParser.json());
 
+// --- Config ---
 const HOST        = process.env.BACKEND_HOST || '0.0.0.0';
 const PORT        = parseInt(process.env.BACKEND_PORT ?? '4000', 10);
 const BASE_URL    = process.env.BACKEND_URL ?? `http://${HOST}:${PORT}`;
@@ -17,10 +19,10 @@ const USERS_FILE           = path.join(__dirname, 'users.json');
 const JWT_SECRET           = process.env.JWT_SECRET;
 const TOKEN_EXPIRY         = process.env.TOKEN_EXPIRY;                 
 const REFRESH_THRESHOLD_MS = parseInt(process.env.REFRESH_THRESHOLD_MINUTES, 10) * 60 * 1000;
-const OS_TYPE = process.env.OS_TYPE;
+const OS_TYPE = process.env.OS_TYPE ?? 'linux';
 const SHELL_WORK_DIR = process.env.SHELL_WORK_DIR;
 
-// All’avvio spawniamo una singola shell persistente
+// --- Shell persistente ---
 const shellCmd = OS_TYPE === 'windows' ? 'powershell.exe' : '/bin/bash';
 const shell = spawn(shellCmd, [], {
   cwd: SHELL_WORK_DIR,
@@ -28,68 +30,9 @@ const shell = spawn(shellCmd, [], {
 });
 shell.stdout.setEncoding('utf-8');
 shell.stderr.setEncoding('utf-8');
-
 console.log(`🐚 Spawned shell (${shellCmd}) in ${SHELL_WORK_DIR}`);
 
-function runCommand(command) {
-  return new Promise((resolve, reject) => {
-    const marker = `__CMD_END_${Date.now()}__`;
-    let buffer = '';
-
-    function onStdout(data) {
-      buffer += data;
-      if (buffer.includes(marker)) {
-        shell.stdout.off('data', onStdout);
-        shell.stderr.off('data', onStdErr);
-        console.log(`📦 [CMD STDOUT] ${data}`);
-        // Estraggo tutto fino al marker
-        const raw = buffer.split(marker)[0].trimEnd();
-        const lines = raw.split(/\r?\n/);
-
-        lines.shift();
-
-        console.log(`📦 [CMD RAW] ${raw}`);
-        console.log(`📦 [CMD LINES] ${lines}`);
-
-        // L’ultima riga la consideriamo la cwd
-        const cwd = (lines.pop() || '').replace("echo","");
-
-        lines.pop();
-
-        // Tutti questi pop servono per eliminare le righe di output del comando pwd e del marker
-        // renderlo più pulito
-        lines.pop();
-        lines.pop();
-        lines.pop();
-        lines.pop();
-        lines.pop();
-        lines.pop();
-
-        // Il resto è l’output “vero”
-        const output = lines.join('\n');
-
-        console.log(`📦 [CMD OUTPUT] ${output}`);
-        console.log(`📦 [CMD CWD] ${cwd}`);
-
-        // Restituiamo un JSON-like object
-        resolve({ output, cwd });
-      }
-    }
-
-    function onStdErr(data) {
-      buffer += data;
-    }
-
-    shell.stdout.on('data', onStdout);
-    shell.stderr.on('data', onStdErr);
-
-    // Inietto:   comando utente → pwd → marker
-    shell.stdin.write(`${command}\n`);
-    shell.stdin.write(`pwd\n`);
-    shell.stdin.write(`echo ${marker}\n`);
-  });
-}
-
+// --- Autenticazione & JWT ---
 function loadUsers() {
   return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
 }
@@ -107,7 +50,8 @@ function signToken(payload) {
   return token;
 }
 
-// Login endpoint
+
+// --- Login endpoint ---
 app.post('/api/login', async (req, res) => {
   console.log('🔐 Login attempt:', req.body);
   const { username, password } = req.body;
@@ -129,7 +73,7 @@ app.post('/api/login', async (req, res) => {
   return res.json({ token });
 });
 
-// Middleware di autenticazione + sliding-expiration
+// --- Middleware JWT & sliding-expiration ---
 app.use('/api', (req, res, next) => {
   if (req.path === '/login') return next();
 
@@ -172,16 +116,47 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-// Dopo il tuo middleware "app.use('/api', ...)" e prima della rot­ta /api/profile
-app.post('/api/console', async (req, res) => {
+// --- Streaming /api/console ---
+app.post('/api/console', (req, res) => {
   const { command } = req.body;
-  try {
-    const { output, cwd } = await runCommand(command);
-    // Mando un JSON con output e cwd
-    res.json({ output, cwd });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+
+  // chunked & text
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Transfer-Encoding', 'chunked');
+  res.flushHeaders();
+
+  const marker = `__CMD_END_${Date.now()}__`;
+
+  const onStdout = chunk => {
+    const text = chunk.toString('utf-8');
+    if (text.includes(marker)) {
+      // scrivo tutto prima del marker, poi chiudo
+      const [before] = text.split(marker);
+      if (before) res.write(before);
+      cleanup();
+      return res.end();
+    }
+    res.write(text);
+  };
+
+  const onStdErr = chunk => {
+    res.write(chunk.toString('utf-8'));
+  };
+
+  const cleanup = () => {
+    shell.stdout.off('data', onStdout);
+    shell.stderr.off('data', onStdErr);
+  };
+
+  shell.stdout.on('data', onStdout);
+  shell.stderr.on('data', onStdErr);
+
+  // inietto il comando e poi il marker
+  // shell.stdin.write(`${command}\n`);
+  // shell.stdin.write(`echo ${marker}\n`);
+  shell.stdin.write(`${command}${os.EOL}`);
+  const markerCmd = OS_TYPE === 'windows' ? `Write-Output ${marker}` : `echo "${marker}"`;
+  shell.stdin.write(`${markerCmd}${os.EOL}`);
 });
 
 app.get('/api/profile', (req, res) => {

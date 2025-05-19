@@ -9,6 +9,5 @@ interface Props {
 
 export default function ProtectedRoute({ children }: Props): JSX.Element {
     const { token } = useContext(AuthContext);
-    console.log('🔐 ProtectedRoute token:', token);
     return token ? children : <Navigate to="/login" />;
 }
