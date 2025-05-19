@@ -41,16 +41,35 @@ function runCommand(command) {
       if (buffer.includes(marker)) {
         shell.stdout.off('data', onStdout);
         shell.stderr.off('data', onStdErr);
-
+        console.log(`📦 [CMD STDOUT] ${data}`);
         // Estraggo tutto fino al marker
         const raw = buffer.split(marker)[0].trimEnd();
         const lines = raw.split(/\r?\n/);
 
+        lines.shift();
+
+        console.log(`📦 [CMD RAW] ${raw}`);
+        console.log(`📦 [CMD LINES] ${lines}`);
+
         // L’ultima riga la consideriamo la cwd
-        const cwd = lines.pop() || '';
+        const cwd = (lines.pop() || '').replace("echo","");
+
+        lines.pop();
+
+        // Tutti questi pop servono per eliminare le righe di output del comando pwd e del marker
+        // renderlo più pulito
+        lines.pop();
+        lines.pop();
+        lines.pop();
+        lines.pop();
+        lines.pop();
+        lines.pop();
 
         // Il resto è l’output “vero”
         const output = lines.join('\n');
+
+        console.log(`📦 [CMD OUTPUT] ${output}`);
+        console.log(`📦 [CMD CWD] ${cwd}`);
 
         // Restituiamo un JSON-like object
         resolve({ output, cwd });
@@ -163,70 +182,6 @@ app.post('/api/console', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-// SSE per il comando di installazione
-app.get('/api/console/stream', (req, res) => {
-  // 1) Autenticazione: prendi il token da header o query
-  const token = req.query.token || req.headers.authorization?.slice(7);
-  if (!token) return res.status(401).end();
-  try {
-    jwt.verify(token, JWT_SECRET);
-  } catch {
-    return res.status(401).end();
-  }
-
-  // 2) Parametro JAR
-  const jar = req.query.jar;
-  if (!jar) {
-    return res.status(400).json({ error: 'Parametro jar mancante' });
-  }
-
-  // 3) Prepara SSE headers
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-  });
-  res.write('\n');
-
-  // 4) Spawn java -jar … --installServer
-  const cmd = OS_TYPE === 'windows'
-    ? 'java.exe'
-    : 'java';
-  const args = ['-jar', jar, '--installServer'];
-
-  const proc = spawn(cmd, args, {
-    cwd: SHELL_WORK_DIR,
-    shell: false,
-  });
-
-  // on stdout
-  proc.stdout.on('data', chunk => {
-    const lines = chunk.toString().split(/\r?\n/);
-    lines.forEach(line => {
-      if (line) res.write(`data: ${line}\n\n`);
-    });
-  });
-
-  // on stderr
-  proc.stderr.on('data', chunk => {
-    const lines = chunk.toString().split(/\r?\n/);
-    lines.forEach(line => {
-      if (line) res.write(`data: STDERR: ${line}\n\n`);
-    });
-  });
-
-  // on exit
-  proc.on('close', code => {
-    res.write(`event: end\ndata: Process exited with code ${code}\n\n`);
-    res.end();
-  });
-
-  // cleanup se il client chiude la connessione
-  req.on('close', () => {
-    proc.kill();
-  });
 });
 
 app.get('/api/profile', (req, res) => {
