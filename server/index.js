@@ -5,7 +5,7 @@ const bcrypt      = require('bcrypt');
 const jwt         = require('jsonwebtoken');
 const fs          = require('fs');
 const path        = require('path');
-const { spawn }    = require('child_process');
+const { spawn } = require('child_process');
 const os = require('os');
 
 const app = express();
@@ -23,10 +23,13 @@ const OS_TYPE = process.env.OS_TYPE ?? 'linux';
 const SHELL_WORK_DIR = process.env.SHELL_WORK_DIR;
 
 // --- Shell persistente ---
-const shellCmd = OS_TYPE === 'windows' ? 'powershell.exe' : '/bin/bash';
-const shell = spawn(shellCmd, [], {
+const shellCmd = OS_TYPE === 'windows' ? 'cmd.exe' : '/bin/bash';
+// su Windows usiamo /Q per disabilitare l’echo dei comandi stessi e /K per restare in shell
+// su Linux -i per shell interattiva
+const shellArgs = OS_TYPE === 'windows' ? ['/Q', '/K'] : ['-i'];
+const shell = spawn(shellCmd, shellArgs, {
   cwd: SHELL_WORK_DIR,
-  stdio: ['pipe', 'pipe', 'pipe'],
+  stdio: ['pipe', 'pipe', 'pipe']
 });
 shell.stdout.setEncoding('utf-8');
 shell.stderr.setEncoding('utf-8');
@@ -139,9 +142,7 @@ app.post('/api/console', (req, res) => {
     res.write(text);
   };
 
-  const onStdErr = chunk => {
-    res.write(chunk.toString('utf-8'));
-  };
+  const onStdErr = chunk => res.write(chunk.toString('utf-8'));
 
   const cleanup = () => {
     shell.stdout.off('data', onStdout);
@@ -151,11 +152,8 @@ app.post('/api/console', (req, res) => {
   shell.stdout.on('data', onStdout);
   shell.stderr.on('data', onStdErr);
 
-  // inietto il comando e poi il marker
-  // shell.stdin.write(`${command}\n`);
-  // shell.stdin.write(`echo ${marker}\n`);
   shell.stdin.write(`${command}${os.EOL}`);
-  const markerCmd = OS_TYPE === 'windows' ? `Write-Output ${marker}` : `echo "${marker}"`;
+  const markerCmd = `echo ${marker}`;
   shell.stdin.write(`${markerCmd}${os.EOL}`);
 });
 
