@@ -6,7 +6,7 @@ const { MC_RCON_HOST, MC_RCON_PORT, MC_RCON_PASSWORD } = require('../config/conf
  * GET /api/status
  * Ritorna { running: true } se RCON risponde, altrimenti { running: false }.
  */
-async function getStatus(req, res) {
+async function status(req, res) {
     try {
         // Proviamo a connetterci via RCON
         const rcon = await Rcon.connect({
@@ -21,4 +21,4 @@ async function getStatus(req, res) {
     }
 }
 
-module.exports = { getStatus };
+module.exports = { status };

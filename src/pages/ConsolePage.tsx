@@ -1,187 +1,271 @@
-import { useState, useContext, useEffect, useRef, useCallback, type FormEvent, type JSX } from 'react';
+import {
+  useState,
+  useContext,
+  useEffect,
+  useRef,
+  useCallback,
+  type FormEvent,
+  type JSX
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import useLanguage from '../hooks/useLanguage';
 import AuthContext from '../contexts/AuthContext';
 import '../styles/App.css';
-
-const OS_TYPE = import.meta.env.VITE_OS_TYPE ?? 'linux';
 
 export default function ConsolePage(): JSX.Element {
   const { t } = useLanguage();
   const { token } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [command, setCommand] = useState('');
-  const [output, setOutput] = useState('');
-  const [busy, setBusy] = useState(false);
+  // — stati principali —
+  const [command, setCommand]           = useState('');
+  const [output, setOutput]             = useState('');
+  const [busy, setBusy]                 = useState(false);
+  const [serverRunning, setServerRunning] = useState(false);
+  const [eventSource, setEventSource]   = useState<EventSource | null>(null);
+
   const outputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Redirect to login if unauthenticated
+  // Redirect to login
   useEffect(() => {
     if (!token) navigate('/login', { replace: true });
   }, [token, navigate]);
 
-  // Auto-scroll on output change
+  // Auto-scroll dell’output
   useEffect(() => {
     const el = outputRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [output]);
 
-  // Stream command output
-  const streamCommand = useCallback(async (cmd: string) => {
-    const resp = await fetch('/api/console', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ command: cmd }),
-    });
-
-    if (!resp.ok) {
-      const { error } = await resp.json().catch(() => ({}));
-      throw new Error(error ?? resp.statusText);
-    }
-
-    const reader = resp.body!.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let done = false;
-
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      if (value) {
-        setOutput(prev => prev + decoder.decode(value, { stream: true }));
-      }
-      done = doneReading;
+  // 1) FETCH STATUS
+  const fetchStatus = useCallback(async () => {
+    try {
+      const resp = await fetch('/api/status', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const { running } = await resp.json();
+      setServerRunning(running);
+    } catch {
+      setServerRunning(false);
     }
   }, [token]);
 
-  // Execute arbitrary command
-  const execute = useCallback(async (cmd: string) => {
-    const trimmed = cmd.trim();
-    if (!trimmed) return;
+  useEffect(() => {
+    if (token) fetchStatus();
+  }, [token, fetchStatus]);
 
-    if (trimmed === 'clear') {
-      setOutput('');
-      return;
-    }
-
-    setOutput(prev => prev + `> ${trimmed}\n`);
-
+  // 2) LOG HISTORY + STREAM
+  const fetchLogsHistoryAndStream = useCallback(async () => {
+    // storicizziamo
     try {
-      await streamCommand(trimmed);
-      setOutput(prev => prev + '\n');
+      const resp = await fetch('/api/logs/history?lines=200', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const text = await resp.text();
+      setOutput(text);
     } catch (err) {
-      setOutput(prev => prev + `\nErrore: ${(err as Error).message}\n`);
+      setOutput(o => o + `Errore history: ${(err as Error).message}\n`);
     }
-  }, [streamCommand]);
+    // SSE live
+    eventSource?.close();
+    const es = new EventSource('/api/logs/stream');
+    es.onmessage = e => setOutput(o => o + e.data + '\n');
+    setEventSource(es);
+  }, [token, eventSource]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    execute(command);
-    setCommand('');
-  };
+  // quando il server diventa “running” carichiamo i log
+  useEffect(() => {
+    if (serverRunning) {
+      fetchLogsHistoryAndStream();
+    } else {
+      // se spento, chiudiamo lo stream
+      eventSource?.close();
+      setEventSource(null);
+      setOutput(''); // puliamo console
+    }
+  }, [serverRunning, fetchLogsHistoryAndStream, eventSource]);
 
-  // Build install commands
-  const buildJvmArgs = (minGb: string, maxGb: string): string => `-Xms${minGb}G -Xmx${maxGb}G`;
+  // 3) RCON: invio comandi di gioco
+  const sendMcCommand = useCallback(async (cmd: string) => {
+    setOutput(o => o + `> ${cmd}\n`);
+    const resp = await fetch('/api/mc-command', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ command: cmd })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || resp.statusText);
+    setOutput(o => o + data.output + '\n');
+  }, [token]);
 
+  // 4) INSTALL
   const runInstall = useCallback(async () => {
-    const jar = prompt('Nome del file JAR:');
-    if (!jar) return alert('Nessun file JAR fornito.');
-
-    const minGb = prompt('RAM minima (GB):');
-    const maxGb = prompt('RAM massima (GB):');
-    if (!minGb || !maxGb) return alert('Valori di RAM non validi.');
+    const jar   = prompt('Nome del file JAR:');
+    const minGb = jar ? prompt('RAM minima (GB):') : null;
+    const maxGb = minGb ? prompt('RAM massima (GB):') : null;
+    if (!jar || !minGb || !maxGb) return alert('Installazione annullata.');
 
     setBusy(true);
+    setOutput('');
     try {
-      // Install server
-      await execute(`java -jar ${jar} --installServer`);
-
-      // Configure JVM args
-      const args = buildJvmArgs(minGb, maxGb);
-      const fileCmd = OS_TYPE === 'windows'
-        ? `echo.>>user_jvm_args.txt & echo ${args}>>user_jvm_args.txt`
-        : `echo "" >> user_jvm_args.txt && echo "${args}" >> user_jvm_args.txt`;
-      await execute(fileCmd);
-
-      // Remove 'pause' on Windows
-      if (OS_TYPE === 'windows') {
-        const removePause = `findstr /V /C:"pause" run.bat > run.tmp && move /Y run.tmp run.bat`;
-        await execute(removePause);
+      const resp = await fetch('/api/install', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ jarName: jar, minGb, maxGb })
+      });
+      const reader  = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      while (!done) {
+        const { value, done: rDone } = await reader.read();
+        if (value) setOutput(o => o + decoder.decode(value, { stream: true }));
+        done = rDone;
       }
+      setOutput(o => o + '\nInstallazione completata.\n');
+    } catch (err) {
+      setOutput(o => o + `\nErrore install: ${(err as Error).message}\n`);
+    } finally {
+      setBusy(false);
+      fetchStatus();
+    }
+  }, [token, fetchStatus]);
 
-      // Generate eula.txt with current CEST timestamp
-      const now = new Date();
-      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const day = days[now.getDay()];
-      const month = months[now.getMonth()];
-      const dateNum = now.getDate();
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      const hours = pad(now.getHours());
-      const minutes = pad(now.getMinutes());
-      const seconds = pad(now.getSeconds());
-      const year = now.getFullYear();
-      const formattedDate = `${day} ${month} ${dateNum} ${hours}:${minutes}:${seconds} CEST ${year}`;
-
-      const eulaCmd = OS_TYPE === 'windows'
-        ? `echo #By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).>eula.txt & echo #${formattedDate}>>eula.txt & echo #Generated by Dfems>>eula.txt & echo eula=true>>eula.txt`
-        : `cat <<EOF > eula.txt
-#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).
-#${formattedDate}
-#Generated by Dfems
-eula=true
-EOF`;
-      await execute(eulaCmd);
-
-      setOutput(prev => prev + `\nInstallazione e configurazione completate.\n`);
-      alert(`Installazione completata. user_jvm_args.txt aggiornato con: ${args}`);
+  // 5) START / STOP / RESTART / DELETE
+  const startServer = useCallback(async () => {
+    setBusy(true);
+    try {
+      await fetch('/api/start', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setOutput(o => o + 'Avviando server…\n');
+      setServerRunning(true);
+    } catch (err) {
+      setOutput(o => o + `Errore start: ${(err as Error).message}\n`);
     } finally {
       setBusy(false);
     }
-  }, [execute]);
+  }, [token]);
 
-  const runServer = useCallback(() => {
-    const cmd = OS_TYPE === 'windows' ? '.\\run.bat nogui' : './run.sh nogui';
-    execute(cmd);
-  }, [execute]);
+  const stopServer = useCallback(async () => {
+    setBusy(true);
+    try {
+      await fetch('/api/stop', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setOutput(o => o + 'Server fermato.\n');
+      setServerRunning(false);
+    } catch (err) {
+      setOutput(o => o + `Errore stop: ${(err as Error).message}\n`);
+    } finally {
+      setBusy(false);
+    }
+  }, [token]);
 
-  const clearOutput = () => setOutput('');
+  const restartServer = useCallback(async () => {
+    setBusy(true);
+    try {
+      await fetch('/api/restart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setOutput(o => o + 'Server riavviato.\n');
+      setServerRunning(true);
+    } catch (err) {
+      setOutput(o => o + `Errore restart: ${(err as Error).message}\n`);
+    } finally {
+      setBusy(false);
+    }
+  }, [token]);
 
   const deleteServer = useCallback(async () => {
     if (!confirm('Eliminare tutti i file del server?')) return;
-    const cmd = OS_TYPE === 'windows'
-      ? 'del /Q *.* & for /D %i in (*) do rmdir /S /Q "%i"'
-      : 'rm -rf .* *';
+    setBusy(true);
+    try {
+      await fetch('/api/delete', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setOutput(o => o + 'Server eliminato.\n');
+      setServerRunning(false);
+    } catch (err) {
+      setOutput(o => o + `Errore delete: ${(err as Error).message}\n`);
+    } finally {
+      setBusy(false);
+    }
+  }, [token]);
 
-    await execute(cmd);
-    setOutput(prev => prev + 'Tutti i file del server sono stati eliminati.\n');
-  }, [execute]);
+  const clearOutput = () => setOutput('');
 
+  // 6) Invio comandi di gioco
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!serverRunning) return;
+    const trimmed = command.trim();
+    if (trimmed) sendMcCommand(trimmed);
+    setCommand('');
+  };
+
+  // 7) Pulsanti
   const shortcuts = [
     { label: 'Install', action: runInstall, disabled: busy },
-    { label: 'Run', action: runServer },
-    { label: 'Clear', action: clearOutput },
-    { label: 'Delete Server', action: deleteServer, className: 'danger' },
+    {
+      label: serverRunning ? 'Stop' : 'Start',
+      action: serverRunning ? stopServer : startServer,
+      disabled: busy
+    },
+    {
+      label: 'Restart',
+      action: restartServer,
+      disabled: busy || !serverRunning
+    },
+    {
+      label: 'Delete',
+      action: deleteServer,
+      disabled: busy
+    },
+    {
+      label: 'Clear',
+      action: clearOutput,
+      disabled: busy
+    }
   ];
 
   return (
     <div className="console-container">
       <aside className="sidebar-buttons">
-        {shortcuts.map(({ label, action, disabled, className }) => (
+        {shortcuts.map(({ label, action, disabled }) => (
           <button
             key={label}
             onClick={action}
             disabled={disabled}
-            className={className}
-          >{busy && label === 'Install' ? `${label}…` : label}</button>
+          >
+            {busy && label === 'Install' ? 'Install…' : label}
+          </button>
         ))}
       </aside>
 
       <main className="console-main">
         <h1>{t.consoleTitle}</h1>
 
+        {/* Stato server */}
+        <div>
+          Stato server:{' '}
+          {serverRunning ? (
+            <span style={{ color: 'green' }}>Avviato</span>
+          ) : (
+            <span style={{ color: 'red' }}>Spento</span>
+          )}
+        </div>
+
+        {/* Form comandi di gioco */}
         <form onSubmit={handleSubmit} className="command-form">
           <label htmlFor="command">{t.commandLabel}</label>
           <input
@@ -189,11 +273,12 @@ EOF`;
             type="text"
             value={command}
             onChange={e => setCommand(e.target.value)}
-            disabled={busy}
+            disabled={busy || !serverRunning}
             required
           />
         </form>
 
+        {/* Output console */}
         <h2>{t.consoleOutputTitle}</h2>
         <textarea
           ref={outputRef}
