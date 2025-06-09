@@ -16,14 +16,11 @@ app.use(bodyParser.json());
 
 // Public routes
 app.use('/api', authRouter);
-app.use('/api', authMiddleware);
-
-// log e status
-app.use('/api', logRouter);
-app.use('/api', statusRouter);
 
 // Protected
 app.use('/api', authMiddleware);
+app.use('/api', logRouter);
+app.use('/api', statusRouter);
 app.use('/api/console', consoleRouter);
 app.use('/api', mcRouter);
 
