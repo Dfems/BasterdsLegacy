@@ -2,6 +2,10 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, TOKEN_EXPIRY, REFRESH_THRESHOLD_MS } = require('../config/config');
 
+/**
+ * Firma un payload (es. { username }) e restituisce un JWT.
+ * Logga anche createdAt ed expiry.
+ */
 function signToken(payload) {
     const createdAt = Date.now();
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
@@ -11,6 +15,9 @@ function signToken(payload) {
     return token;
 }
 
+/**
+ * Verifica un token JWT e ritorna il payload o lancia un errore.
+ */
 function verifyToken(token) {
     return jwt.verify(token, JWT_SECRET);
 }

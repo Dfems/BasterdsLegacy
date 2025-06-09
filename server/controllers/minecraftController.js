@@ -6,6 +6,10 @@ const { sendRconCommand } = require('../lib/rcon');
 const { MC_RCON_PORT, MC_RCON_PASSWORD, MC_RCON_HOST } = require('../config/config');
 const SERVER_DIR = path.join(__dirname, '../minecraft');
 
+/**
+ * POST /api/install
+ * Installa il server Minecraft e genera server.properties, eula.txt e user_jvm_args.txt.
+ */
 function installServer(req, res) {
     const { jarName, minGb, maxGb } = req.body;
     const installer = spawn('java', ['-jar', jarName, '--installServer'], {
@@ -31,13 +35,22 @@ function installServer(req, res) {
     });
 }
 
+/**
+ * POST /api/mc-command
+ * Invia un comando di gioco via RCON e restituisce l’output.
+ */
 async function mcCommand(req, res) {
+    const { command } = req.body;
+    if (!command) {
+        return res.status(400).json({ error: 'Nessun comando fornito' });
+    }
+
     try {
-        const out = await sendRconCommand(req.body.command);
-        res.json({ output: out });
+        const output = await sendRconCommand(command);
+        res.json({ output });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('RCON error:', err);
+        res.status(500).json({ error: 'Errore invio comando RCON: ' + err.message });
     }
 }
-
 module.exports = { installServer, mcCommand };

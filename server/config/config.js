@@ -14,5 +14,6 @@ module.exports = {
     MC_RCON_HOST: process.env.MC_RCON_HOST || '127.0.0.1',
     MC_RCON_PORT: Number(process.env.MC_RCON_PORT),
     MC_RCON_PASSWORD: process.env.MC_RCON_PASSWORD,
-    LOG_PATH: path.join(__dirname, process.env.LOGS_DIR ),
+    LOGS_DIR: process.env.LOGS_DIR,
+    LOG_PATH: path.join(process.env.LOGS_DIR, 'latest.log'),
 };

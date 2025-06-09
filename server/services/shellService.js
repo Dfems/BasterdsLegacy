@@ -13,6 +13,10 @@ const shell = spawn(shellCmd, shellArgs, {
 shell.stdout.setEncoding('utf-8');
 shell.stderr.setEncoding('utf-8');
 
+ /**
+  * Esegue in streaming chunked un comando sulla shell persistente.
+  * Usa un marker per delimitare la fine.
+  */
 function streamCommand(cmd, res) {
     res.setHeader('Content-Type','text/plain; charset=utf-8');
     res.setHeader('Transfer-Encoding','chunked');

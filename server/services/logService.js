@@ -1,5 +1,6 @@
 // server/services/logService.js
-const { spawn } = require('child_process');
+const fs    = require('fs');
+const { Tail } = require('tail');
 const { LOG_PATH } = require('../config/config');
 
 /**
@@ -8,37 +9,43 @@ const { LOG_PATH } = require('../config/config');
  * @returns {Promise<string>}
  */
 function getLogHistory(lines = 200) {
-    return new Promise((resolve, reject) => {
-        const tail = spawn('tail', ['-n', String(lines), LOG_PATH]);
-        let output = '';
-        tail.stdout.on('data', chunk => output += chunk.toString());
-        tail.stderr.on('data', err => console.error('tail error:', err.toString()));
-        tail.on('close', code => {
-        if (code !== 0) return reject(new Error(`tail exited with ${code}`));
-        resolve(output);
-        });
-    });
+    try {
+        // Legge tutto il file e prende le ultime `lines` righe
+        const data = fs.readFileSync(LOG_PATH, 'utf-8');
+        const allLines = data.split(/\r?\n/);
+        const selected = allLines.slice(-lines);
+        return Promise.resolve(selected.join('\n'));
+    } catch (err) {
+        return Promise.reject(err);
+    }
 }
 
 /**
  * Inizia lo streaming SSE delle nuove righe di log
  * @param {Response} res Express response con header già settati
- * @returns {ChildProcess} il processo tail -F
+ * @returns {Tail} istanza di Tail, da disattivare con unwatch()
  */
 function streamLogs(res) {
-    // Imposta header SSE
+    // SSE headers
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.flushHeaders?.();
 
-    const tail = spawn('tail', ['-F', LOG_PATH]);
-    tail.stdout.on('data', chunk => {
-        const lines = chunk.toString().split(/\r?\n/);
-        for (const line of lines) {
-        if (line) res.write(`data: ${line}\n\n`);
-        }
+    // Inizializza il tail cross-platform
+    const tail = new Tail(LOG_PATH, {
+        useWatchFile: true,     // fallback fs.watch o fs.watchFile
+        follow: true,
+        flushAtEOF: true
     });
-    tail.stderr.on('data', err => console.error('tail -F error:', err.toString()));
+
+    tail.on('line', line => {
+        if (line) res.write(`data: ${line}\n\n`);
+    });
+    tail.on('error', err => console.error('tail error:', err));
+
+    // Cleanup alla chiusura della connessione
+    res.on('close', () => tail.unwatch());
+
     return tail;
 }
 

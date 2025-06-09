@@ -10,9 +10,9 @@ async function getStatus(req, res) {
     try {
         // Proviamo a connetterci via RCON
         const rcon = await Rcon.connect({
-        host: MC_RCON_HOST,
-        port: MC_RCON_PORT,
-        password: MC_RCON_PASSWORD,
+            host: MC_RCON_HOST,
+            port: MC_RCON_PORT,
+            password: MC_RCON_PASSWORD,
         });
         await rcon.end();
         return res.json({ running: true });
