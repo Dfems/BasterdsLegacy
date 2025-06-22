@@ -9,6 +9,7 @@ const { LOG_PATH } = require('../config/config');
  * @returns {Promise<string>}
  */
 function getLogHistory(lines = 200) {
+    console.log(`Recupero ultime ${lines} righe di log da ${LOG_PATH}`);
     try {
         // Legge tutto il file e prende le ultime `lines` righe
         const data = fs.readFileSync(LOG_PATH, 'utf-8');

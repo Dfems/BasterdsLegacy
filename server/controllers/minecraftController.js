@@ -3,8 +3,8 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { sendRconCommand } = require('../lib/rcon');
-const { MC_RCON_PORT, MC_RCON_PASSWORD, SHELL_WORK_DIR } = require('../config/config');
-const SERVER_DIR = path.join(__dirname, '../minecraft');
+const { MC_RCON_PORT, MC_RCON_PASSWORD, SHELL_WORK_DIR, OS_TYPE } = require('../config/config');
+const SERVER_DIR = SHELL_WORK_DIR;
 
 /**
  * POST /api/install
@@ -59,17 +59,22 @@ async function mcCommand(req, res) {
  * Avvia il server Minecraft in background.
  */
 function startServer(req, res) {
-    if (config.OS_TYPE === 'windows') {
+    console.log('Starting Minecraft server...');
+    console.log('OS_TYPE:', OS_TYPE);
+    console.log('SERVER_DIR:', SERVER_DIR);
+    if (OS_TYPE === 'windows') {
         // Windows: usa `start` per lanciare run.bat in una nuova finestra
-        const cmd = spawn('cmd.exe', ['/C', 'start', 'run.bat', 'nogui'], {
-        cwd: SERVER_DIR,
-        shell: true
+        const cmd = spawn('cmd', ['/C', 'run.bat', 'nogui'], {
+            cwd: SERVER_DIR,
+            detached: true,
+            windowsHide: true,
+            stdio: 'ignore'
         });
-        cmd.on('exit', code =>
-        code === 0
-            ? res.json({ message: 'Server avviato' })
-            : res.status(500).json({ error: `Start failed (code ${code})` })
-        );
+        // Consente a Node di uscire senza attendere la chiusura del batch
+        cmd.unref();
+
+        // Rispondi subito al client
+        return res.json({ message: 'Server avviato' });
     } else {
         // Linux: crea una sessione tmux “mc_server”
         const cmd = spawn('tmux', ['new-session', '-d', '-s', 'mc_server', './run.sh', 'nogui'], {
@@ -119,14 +124,14 @@ function restartServer(req, res) {
         } else {
             const kill = spawn('tmux', ['kill-session', '-t', 'mc_server']);
             kill.on('exit', () => {
-            const cmd = spawn('tmux', ['new-session', '-d', '-s', 'mc_server', './run.sh', 'nogui'], {
-                cwd: SERVER_DIR
-            });
-            cmd.on('exit', code =>
-                code === 0
-                ? res.json({ message: 'Server riavviato' })
-                : res.status(500).json({ error: `Restart failed (code ${code})` })
-            );
+                const cmd = spawn('tmux', ['new-session', '-d', '-s', 'mc_server', './run.sh', 'nogui'], {
+                    cwd: SERVER_DIR
+                });
+                cmd.on('exit', code =>
+                    code === 0
+                    ? res.json({ message: 'Server riavviato' })
+                    : res.status(500).json({ error: `Restart failed (code ${code})` })
+                );
             });
         }
         });
@@ -138,16 +143,16 @@ function restartServer(req, res) {
  * poi ricrea la cartella vuota.
  */
 async function deleteServer(req, res) {
-  try {
-    // rimuove ricorsivamente (node 14+)
-    await fs.promises.rm(SHELL_WORK_DIR, { recursive: true, force: true });
-    // ricrea la cartella vuota
-    await fs.promises.mkdir(SHELL_WORK_DIR, { recursive: true });
-    return res.json({ message: 'Server eliminato con successo.' });
-  } catch (err) {
-    console.error('DeleteServer error:', err);
-    return res.status(500).json({ error: 'Errore delete server: ' + err.message });
-  }
+    try {
+        // rimuove ricorsivamente (node 14+)
+        await fs.promises.rm(SHELL_WORK_DIR, { recursive: true, force: true });
+        // ricrea la cartella vuota
+        await fs.promises.mkdir(SHELL_WORK_DIR, { recursive: true });
+        return res.json({ message: 'Server eliminato con successo.' });
+    } catch (err) {
+        console.error('DeleteServer error:', err);
+        return res.status(500).json({ error: 'Errore delete server: ' + err.message });
+    }
 }
 
 module.exports = {
