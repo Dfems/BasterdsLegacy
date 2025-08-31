@@ -4,17 +4,22 @@ import jwt from '@fastify/jwt'
 import websocket from '@fastify/websocket'
 import Fastify from 'fastify'
 
-import { CONFIG } from './lib/config'
+import { authPlugin } from './lib/auth.js'
+import { CONFIG } from './lib/config.js'
+import { loggerOptions } from './lib/logger.js'
+import { consoleRoutes } from './routes/console.js'
+import { healthRoutes } from './routes/health.js'
 
 export const buildApp = () => {
-  const app = Fastify({ logger: true })
+  const app = Fastify({ logger: loggerOptions })
 
   app.register(cors)
   app.register(helmet)
   app.register(websocket)
   app.register(jwt, { secret: CONFIG.JWT_SECRET })
-
-  app.get('/api/health', async () => ({ ok: true }))
+  app.register(authPlugin)
+  app.register(healthRoutes)
+  app.register(consoleRoutes)
 
   return app
 }
