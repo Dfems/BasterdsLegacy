@@ -1,1 +1,9 @@
-.github/workflows/*.yml
+# Do not format Markdown docs or prompts
+**/*.md
+.github/prompts/
+
+# Common build artifacts
+node_modules/
+dist/
+lib/
+coverage/

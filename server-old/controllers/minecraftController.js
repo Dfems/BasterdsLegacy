@@ -84,7 +84,7 @@ function startServer(req, res) {
     cmd.on('exit', (code) =>
       code === 0
         ? res.json({ message: 'Server avviato' })
-        : res.status(500).json({ error: `Start failed (code ${code})` }),
+        : res.status(500).json({ error: `Start failed (code ${code})` })
     )
   }
 }
@@ -120,7 +120,7 @@ function restartServer(req, res) {
         cmd.on('exit', (code) =>
           code === 0
             ? res.json({ message: 'Server riavviato' })
-            : res.status(500).json({ error: `Restart failed (code ${code})` }),
+            : res.status(500).json({ error: `Restart failed (code ${code})` })
         )
       } else {
         const kill = spawn('tmux', ['kill-session', '-t', 'mc_server'])
@@ -131,7 +131,7 @@ function restartServer(req, res) {
           cmd.on('exit', (code) =>
             code === 0
               ? res.json({ message: 'Server riavviato' })
-              : res.status(500).json({ error: `Restart failed (code ${code})` }),
+              : res.status(500).json({ error: `Restart failed (code ${code})` })
           )
         })
       }

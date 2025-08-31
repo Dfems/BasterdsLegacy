@@ -103,7 +103,7 @@ export default function ConsolePage(): JSX.Element {
       if (!resp.ok) throw new Error(data.error || resp.statusText)
       setOutput((o) => o + data.output + '\n')
     },
-    [token],
+    [token]
   )
 
   // 4) INSTALL
