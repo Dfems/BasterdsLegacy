@@ -50,4 +50,35 @@ describe('Status and Power endpoints', () => {
     })
     expect(r.ok).toBe(true)
   })
+
+  it('installs modpack (fabric)', async () => {
+    fetchSpy.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true, notes: 'installed' }),
+      headers: new Headers(),
+    } as unknown as Response)
+
+    const r = await fetch('/api/modpack/install', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ loader: 'fabric', mcVersion: '1.20.1' }),
+    })
+    expect(r.ok).toBe(true)
+    const data = await r.json()
+    expect(data.ok).toBe(true)
+  })
+
+  it('deletes a file via /api/files', async () => {
+    fetchSpy.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true }),
+      headers: new Headers(),
+    } as unknown as Response)
+    const r = await fetch('/api/files', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: '/server/logs/latest.log' }),
+    })
+    expect(r.ok).toBe(true)
+  })
 })

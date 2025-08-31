@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -13,7 +14,11 @@ import SettingsPage from '../pages/SettingsPage'
 describe('Settings and Dashboard render basics', () => {
   const fetchSpy = vi.spyOn(window, 'fetch')
   const system = createSystem(defaultConfig, {})
-  const wrap = (ui: JSX.Element) => <ChakraProvider value={system}>{ui}</ChakraProvider>
+  const wrap = (ui: JSX.Element) => (
+    <ChakraProvider value={system}>
+      <QueryClientProvider client={new QueryClient()}>{ui}</QueryClientProvider>
+    </ChakraProvider>
+  )
 
   beforeEach(() => {
     fetchSpy.mockReset()

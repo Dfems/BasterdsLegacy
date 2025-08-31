@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState, type JSX } from 'react'
+import { useMemo, type JSX } from 'react'
 
 import { Box, Button, Grid, Heading, HStack, Text } from '@chakra-ui/react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Status = {
   state: 'RUNNING' | 'STOPPED' | 'CRASHED'
@@ -19,26 +20,33 @@ const fmtUptime = (ms: number): string => {
 }
 
 const DashboardPage = (): JSX.Element => {
-  const [data, setData] = useState<Status | null>(null)
-  const [err, setErr] = useState<string | null>(null)
+  const qc = useQueryClient()
+  const { data, error, isFetching } = useQuery({
+    queryKey: ['status'],
+    queryFn: async (): Promise<Status> => {
+      const r = await fetch('/api/status')
+      if (!r.ok) throw new Error('status error')
+      return (await r.json()) as Status
+    },
+    refetchInterval: 3000,
+    staleTime: 1000,
+  })
+  const err = (error as Error | null)?.message ?? null
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const r = await fetch('/api/status')
-        if (!r.ok) throw new Error('status error')
-        setData((await r.json()) as Status)
-        setErr(null)
-      } catch (e) {
-        setErr((e as Error).message)
-      }
-    }
-    void load()
-    const timer = window.setInterval(load, 3000)
-    return () => {
-      window.clearInterval(timer)
-    }
-  }, [])
+  const powerMutation = useMutation({
+    mutationFn: async (action: 'start' | 'stop' | 'restart') => {
+      const r = await fetch('/api/power', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      if (!r.ok) throw new Error('power error')
+      return (await r.json()) as { ok: true }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['status'] })
+    },
+  })
 
   const stateColor = useMemo(() => {
     switch (data?.state) {
@@ -63,7 +71,7 @@ const DashboardPage = (): JSX.Element => {
       <Grid columns={3} gap={4}>
         <Box p={4} borderWidth="1px" rounded="md">
           <Text fontWeight="bold">State</Text>
-          <Text color={stateColor}>{data?.state ?? 'Unknown'}</Text>
+          <Text color={stateColor}>{data?.state ?? (isFetching ? 'Loading…' : 'Unknown')}</Text>
           <Text color="gray.500">PID: {data?.pid ?? '-'}</Text>
         </Box>
         <Box p={4} borderWidth="1px" rounded="md">
@@ -85,40 +93,25 @@ const DashboardPage = (): JSX.Element => {
           <HStack gap={2} wrap="wrap">
             <Button
               size="sm"
-              onClick={() =>
-                fetch('/api/power', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'start' }),
-                }).then(() => void 0)
-              }
-              disabled={data?.state === 'RUNNING'}
+              onClick={() => powerMutation.mutate('start')}
+              disabled={data?.state === 'RUNNING' || powerMutation.isPending}
+              loading={powerMutation.isPending}
             >
               Start
             </Button>
             <Button
               size="sm"
-              onClick={() =>
-                fetch('/api/power', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'stop' }),
-                }).then(() => void 0)
-              }
-              disabled={data?.state !== 'RUNNING'}
+              onClick={() => powerMutation.mutate('stop')}
+              disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
+              loading={powerMutation.isPending}
             >
               Stop
             </Button>
             <Button
               size="sm"
-              onClick={() =>
-                fetch('/api/power', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'restart' }),
-                }).then(() => void 0)
-              }
-              disabled={data?.state !== 'RUNNING'}
+              onClick={() => powerMutation.mutate('restart')}
+              disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
+              loading={powerMutation.isPending}
             >
               Restart
             </Button>
