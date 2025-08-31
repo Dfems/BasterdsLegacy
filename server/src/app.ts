@@ -7,8 +7,15 @@ import Fastify from 'fastify'
 import { authPlugin } from './lib/auth.js'
 import { CONFIG } from './lib/config.js'
 import { loggerOptions } from './lib/logger.js'
+import { backupRoutes } from './routes/backups.js'
 import { consoleRoutes } from './routes/console.js'
+import { filesRoutes } from './routes/files.js'
 import { healthRoutes } from './routes/health.js'
+import { logRoutes } from './routes/logs.js'
+import { modpackRoutes } from './routes/modpack.js'
+import { powerRoutes } from './routes/power.js'
+import { serverRoutes } from './routes/server.js'
+import { whitelistRoutes } from './routes/whitelist.js'
 
 export const buildApp = () => {
   const app = Fastify({ logger: loggerOptions })
@@ -20,6 +27,13 @@ export const buildApp = () => {
   app.register(authPlugin)
   app.register(healthRoutes)
   app.register(consoleRoutes)
+  app.register(logRoutes)
+  app.register(powerRoutes)
+  app.register(whitelistRoutes)
+  app.register(filesRoutes)
+  app.register(backupRoutes)
+  app.register(modpackRoutes)
+  app.register(serverRoutes)
 
   return app
 }

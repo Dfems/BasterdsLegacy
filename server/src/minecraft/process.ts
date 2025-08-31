@@ -1,6 +1,7 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import path from 'node:path'
+import pidusage from 'pidusage'
 
 import { CONFIG } from '../lib/config.js'
 import { appendLog } from './logs.js'
@@ -12,6 +13,7 @@ export type LogEvent = { ts: number; line: string }
 class ProcessManager extends EventEmitter {
   private proc: ChildProcessWithoutNullStreams | null = null
   private _state: ProcState = 'STOPPED'
+  private startedAt: number | null = null
 
   get state() {
     return this._state
@@ -26,6 +28,7 @@ class ProcessManager extends EventEmitter {
       const proc = spawn(CONFIG.JAVA_BIN, args, { cwd: CONFIG.MC_DIR, stdio: 'pipe' })
       this.proc = proc
       this._state = 'RUNNING'
+      this.startedAt = Date.now()
       this.emit('status', { state: this._state } as const)
 
       const onData = (buf: Buffer) => {
@@ -42,6 +45,7 @@ class ProcessManager extends EventEmitter {
       proc.on('exit', () => {
         this.proc = null
         this._state = 'STOPPED'
+        this.startedAt = null
         this.emit('status', { state: this._state } as const)
       })
       proc.on('error', (err) => {
@@ -49,10 +53,12 @@ class ProcessManager extends EventEmitter {
         appendLog(evt)
         this.emit('log', evt)
         this._state = 'CRASHED'
+        this.startedAt = null
         this.emit('status', { state: this._state } as const)
       })
     } catch (err) {
       this._state = 'CRASHED'
+      this.startedAt = null
       this.emit('status', { state: this._state } as const)
       const evt: LogEvent = {
         ts: Date.now(),
@@ -76,6 +82,19 @@ class ProcessManager extends EventEmitter {
   write = (data: string): void => {
     if (!this.proc) return
     this.proc.stdin.write(data)
+  }
+
+  getStatus = async () => {
+    const pid = this.proc?.pid
+    const uptimeMs = this.startedAt ? Date.now() - this.startedAt : 0
+    const base = { state: this._state, pid: pid ?? null, uptimeMs }
+    if (!pid) return { ...base, cpu: 0, memMB: 0 }
+    try {
+      const stat = await pidusage(pid)
+      return { ...base, cpu: stat.cpu / 100, memMB: Math.round(stat.memory / (1024 * 1024)) }
+    } catch {
+      return { ...base, cpu: 0, memMB: 0 }
+    }
   }
 }
 
