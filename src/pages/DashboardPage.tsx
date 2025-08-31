@@ -1,4 +1,4 @@
-import { useMemo, type JSX } from 'react'
+import { useMemo, useState, type JSX } from 'react'
 
 import { Box, Button, Grid, Heading, HStack, Text } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -21,6 +21,7 @@ const fmtUptime = (ms: number): string => {
 
 const DashboardPage = (): JSX.Element => {
   const qc = useQueryClient()
+  const [note, setNote] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const { data, error, isFetching } = useQuery({
     queryKey: ['status'],
     queryFn: async (): Promise<Status> => {
@@ -33,7 +34,7 @@ const DashboardPage = (): JSX.Element => {
   })
   const err = (error as Error | null)?.message ?? null
 
-  const powerMutation = useMutation({
+  const powerMutation = useMutation<{ ok: true }, Error, 'start' | 'stop' | 'restart'>({
     mutationFn: async (action: 'start' | 'stop' | 'restart') => {
       const r = await fetch('/api/power', {
         method: 'POST',
@@ -43,8 +44,12 @@ const DashboardPage = (): JSX.Element => {
       if (!r.ok) throw new Error('power error')
       return (await r.json()) as { ok: true }
     },
-    onSuccess: () => {
+    onSuccess: (_data, action) => {
+      setNote({ type: 'success', text: `Operazione ${action} avviata` })
       void qc.invalidateQueries({ queryKey: ['status'] })
+    },
+    onError: (error, action) => {
+      setNote({ type: 'error', text: `Errore ${action}: ${error.message}` })
     },
   })
 
@@ -66,6 +71,11 @@ const DashboardPage = (): JSX.Element => {
       {err && (
         <Text color="red.500" mb={4}>
           {err}
+        </Text>
+      )}
+      {note && (
+        <Text color={note.type === 'success' ? 'green.500' : 'red.500'} mb={2}>
+          {note.text}
         </Text>
       )}
       <Grid columns={3} gap={4}>
