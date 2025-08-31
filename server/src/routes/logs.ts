@@ -4,14 +4,14 @@ import { readLogs } from '../minecraft/logs.js'
 import { processManager } from '../minecraft/process.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
-  fastify.get('/api/logs', async (req) => {
+  fastify.get('/api/logs', { preHandler: fastify.authorize('viewer') }, async (req) => {
     const { cursor, limit } = req.query as { cursor?: string; limit?: string }
     const cur = cursor ? Number(cursor) : undefined
     const lim = limit ? Math.min(5000, Math.max(10, Number(limit))) : 1000
     return readLogs(cur, lim)
   })
 
-  fastify.get('/api/logs/stream', async (req, res) => {
+  fastify.get('/api/logs/stream', { preHandler: fastify.authorize('viewer') }, async (req, res) => {
     res.raw.setHeader('Content-Type', 'text/event-stream')
     res.raw.setHeader('Cache-Control', 'no-cache')
     res.raw.setHeader('Connection', 'keep-alive')

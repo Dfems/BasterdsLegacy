@@ -6,7 +6,7 @@ import { CONFIG } from '../lib/config.js'
 import { processManager } from '../minecraft/process.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
-  fastify.delete('/api/server', async () => {
+  fastify.delete('/api/server', { preHandler: fastify.authorize('owner') }, async () => {
     // stop processo e sposta MC_DIR in quarantine
     await processManager.stop()
     const quarantine = path.join(path.dirname(CONFIG.MC_DIR), 'quarantine')

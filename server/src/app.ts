@@ -1,12 +1,14 @@
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import jwt from '@fastify/jwt'
+import rateLimit from '@fastify/rate-limit'
 import websocket from '@fastify/websocket'
 import Fastify from 'fastify'
 
 import { authPlugin } from './lib/auth.js'
 import { CONFIG } from './lib/config.js'
 import { loggerOptions } from './lib/logger.js'
+import { authRoutes } from './routes/auth.js'
 import { backupRoutes } from './routes/backups.js'
 import { consoleRoutes } from './routes/console.js'
 import { filesRoutes } from './routes/files.js'
@@ -23,8 +25,10 @@ export const buildApp = () => {
   app.register(cors)
   app.register(helmet)
   app.register(websocket)
+  app.register(rateLimit, { max: 100, timeWindow: '1 minute' })
   app.register(jwt, { secret: CONFIG.JWT_SECRET })
   app.register(authPlugin)
+  app.register(authRoutes)
   app.register(healthRoutes)
   app.register(consoleRoutes)
   app.register(logRoutes)
