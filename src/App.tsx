@@ -1,13 +1,15 @@
 // src/App.tsx
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import type { JSX } from 'react';
-import AuthProvider from './contexts/AuthProvider';
-import LanguageProvider from './contexts/LanguageProvider';
-import ProtectedRoute from './components/ProtectedRoute';
-import MainLayout from './layouts/MainLayout';
-import HomePage from './pages/HomePage';
-import Login from './pages/LoginPage';      
-import AppRoutes from './routes/AppRoutes';
+import type { JSX } from 'react'
+
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+
+import ProtectedRoute from './components/ProtectedRoute'
+import AuthProvider from './contexts/AuthProvider'
+import LanguageProvider from './contexts/LanguageProvider'
+import MainLayout from './layouts/MainLayout'
+import HomePage from './pages/HomePage'
+import Login from './pages/LoginPage'
+import AppRoutes from './routes/AppRoutes'
 
 export default function App(): JSX.Element {
   return (
@@ -39,5 +41,5 @@ export default function App(): JSX.Element {
         </BrowserRouter>
       </LanguageProvider>
     </AuthProvider>
-  );
+  )
 }

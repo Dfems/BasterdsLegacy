@@ -12,7 +12,7 @@ body {
 }
 
 body {
-  background: linear-gradient(to bottom, #87CEEB 0%, #4CAF50 100%);
+  background: linear-gradient(to bottom, #87ceeb 0%, #4caf50 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -128,7 +128,9 @@ a.btn {
   font-size: 0.8rem;
   border: 2px solid #0f0;
   border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 a.btn:hover {

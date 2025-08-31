@@ -1,5 +1,5 @@
 // server/lib/rcon.js
-const { Rcon } = require('rcon-client');
+const { Rcon } = require('rcon-client')
 
 /**
  * Invia un singolo comando via RCON al server Minecraft.
@@ -7,16 +7,16 @@ const { Rcon } = require('rcon-client');
  * @returns {Promise<string>} L'output restituito dalla console di gioco
  */
 async function sendCommand(command) {
-    const rcon = await Rcon.connect({
-        host: '127.0.0.1',
-        port: Number(process.env.MC_RCON_PORT),
-        password: process.env.MC_RCON_PASSWORD
-    });
+  const rcon = await Rcon.connect({
+    host: '127.0.0.1',
+    port: Number(process.env.MC_RCON_PORT),
+    password: process.env.MC_RCON_PASSWORD,
+  })
 
-    const response = await rcon.send(command);
-    await rcon.end();
+  const response = await rcon.send(command)
+  await rcon.end()
 
-    return response;
+  return response
 }
 
-module.exports = { sendCommand };
+module.exports = { sendCommand }

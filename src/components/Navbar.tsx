@@ -1,18 +1,20 @@
-import { Link } from 'react-router-dom';
-import type { JSX } from 'react';
-import useLanguage from '../hooks/useLanguage';
-import '../styles/App.css';
+import type { JSX } from 'react'
+
+import { Link } from 'react-router-dom'
+
+import useLanguage from '../hooks/useLanguage'
+import '../styles/App.css'
 
 interface NavbarProps {
-  isLoggedIn: boolean;
-  onLogout: () => void;
+  isLoggedIn: boolean
+  onLogout: () => void
 }
 
 export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Element {
-  const { t } = useLanguage();
+  const { t } = useLanguage()
 
   return (
-    <nav className='navbar'>
+    <nav className="navbar">
       <div>
         <Link to="/" style={{ color: '#61dafb', textDecoration: 'none', fontWeight: 'bold' }}>
           {t.appName}
@@ -40,7 +42,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                   borderRadius: '4px',
                   color: '#61dafb',
                   padding: '0.25rem 0.5rem',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
               >
                 Disconnect
@@ -56,5 +58,5 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
         )}
       </ul>
     </nav>
-  );
+  )
 }

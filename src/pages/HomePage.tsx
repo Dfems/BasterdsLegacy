@@ -1,9 +1,10 @@
-import React from 'react';
-import '../styles/App.css';
-import useLanguage from '../hooks/useLanguage';
+import React from 'react'
+
+import useLanguage from '../hooks/useLanguage'
+import '../styles/App.css'
 
 const HomePage: React.FC = () => {
-  const { t } = useLanguage();
+  const { t } = useLanguage()
 
   return (
     <div className="container-md">
@@ -53,7 +54,7 @@ const HomePage: React.FC = () => {
       </ul>
       <footer id="footer-text">{t.footer}</footer>
     </div>
-  );
-};
+  )
+}
 
-export default HomePage;
+export default HomePage

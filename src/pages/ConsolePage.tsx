@@ -5,213 +5,218 @@ import {
   useRef,
   useCallback,
   type FormEvent,
-  type JSX
-} from 'react';
-import { useNavigate } from 'react-router-dom';
-import useLanguage from '../hooks/useLanguage';
-import AuthContext from '../contexts/AuthContext';
-import '../styles/App.css';
+  type JSX,
+} from 'react'
+
+import { useNavigate } from 'react-router-dom'
+
+import AuthContext from '../contexts/AuthContext'
+import useLanguage from '../hooks/useLanguage'
+import '../styles/App.css'
 
 export default function ConsolePage(): JSX.Element {
-  const { t } = useLanguage();
-  const { token } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const { t } = useLanguage()
+  const { token } = useContext(AuthContext)
+  const navigate = useNavigate()
 
   // — stati principali —
-  const [command, setCommand]           = useState('');
-  const [output, setOutput]             = useState('');
-  const [busy, setBusy]                 = useState(false);
-  const [serverRunning, setServerRunning] = useState(false);
-  const [eventSource, setEventSource]   = useState<EventSource | null>(null);
+  const [command, setCommand] = useState('')
+  const [output, setOutput] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [serverRunning, setServerRunning] = useState(false)
+  const [eventSource, setEventSource] = useState<EventSource | null>(null)
 
-  const outputRef = useRef<HTMLTextAreaElement>(null);
+  const outputRef = useRef<HTMLTextAreaElement>(null)
 
   // Redirect to login
   useEffect(() => {
-    if (!token) navigate('/login', { replace: true });
-  }, [token, navigate]);
+    if (!token) navigate('/login', { replace: true })
+  }, [token, navigate])
 
   // Auto-scroll dell’output
   useEffect(() => {
-    const el = outputRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [output]);
+    const el = outputRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [output])
 
   // 1) FETCH STATUS
   const fetchStatus = useCallback(async () => {
     try {
       const resp = await fetch('/api/status', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const { running } = await resp.json();
-      setServerRunning(running);
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const { running } = await resp.json()
+      setServerRunning(running)
     } catch {
-      setServerRunning(false);
+      setServerRunning(false)
     }
-  }, [token]);
+  }, [token])
 
   useEffect(() => {
-    if (token) fetchStatus();
-  }, [token, fetchStatus]);
+    if (token) fetchStatus()
+  }, [token, fetchStatus])
 
   // 2) LOG HISTORY + STREAM
   const fetchLogsHistoryAndStream = useCallback(async () => {
     // storicizziamo
     try {
       const resp = await fetch('/api/logs/history?lines=200', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const text = await resp.text();
-      setOutput(text);
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const text = await resp.text()
+      setOutput(text)
     } catch (err) {
-      setOutput(o => o + `Errore history: ${(err as Error).message}\n`);
+      setOutput((o) => o + `Errore history: ${(err as Error).message}\n`)
     }
     // SSE live
-    eventSource?.close();
-    const es = new EventSource('/api/logs/stream');
-    es.onmessage = e => setOutput(o => o + e.data + '\n');
-    setEventSource(es);
-  }, [token, eventSource]);
+    eventSource?.close()
+    const es = new EventSource('/api/logs/stream')
+    es.onmessage = (e) => setOutput((o) => o + e.data + '\n')
+    setEventSource(es)
+  }, [token, eventSource])
 
   // quando il server diventa “running” carichiamo i log
   useEffect(() => {
     if (serverRunning) {
-      fetchLogsHistoryAndStream();
+      fetchLogsHistoryAndStream()
     } else {
       // se spento, chiudiamo lo stream
-      eventSource?.close();
-      setEventSource(null);
-      setOutput(''); // puliamo console
+      eventSource?.close()
+      setEventSource(null)
+      setOutput('') // puliamo console
     }
-  }, [serverRunning, fetchLogsHistoryAndStream, eventSource]);
+  }, [serverRunning, fetchLogsHistoryAndStream, eventSource])
 
   // 3) RCON: invio comandi di gioco
-  const sendMcCommand = useCallback(async (cmd: string) => {
-    setOutput(o => o + `> ${cmd}\n`);
-    const resp = await fetch('/api/mc-command', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ command: cmd })
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || resp.statusText);
-    setOutput(o => o + data.output + '\n');
-  }, [token]);
+  const sendMcCommand = useCallback(
+    async (cmd: string) => {
+      setOutput((o) => o + `> ${cmd}\n`)
+      const resp = await fetch('/api/mc-command', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ command: cmd }),
+      })
+      const data = await resp.json()
+      if (!resp.ok) throw new Error(data.error || resp.statusText)
+      setOutput((o) => o + data.output + '\n')
+    },
+    [token],
+  )
 
   // 4) INSTALL
   const runInstall = useCallback(async () => {
-    const jar   = prompt('Nome del file JAR:');
-    const minGb = jar ? prompt('RAM minima (GB):') : null;
-    const maxGb = minGb ? prompt('RAM massima (GB):') : null;
-    if (!jar || !minGb || !maxGb) return alert('Installazione annullata.');
+    const jar = prompt('Nome del file JAR:')
+    const minGb = jar ? prompt('RAM minima (GB):') : null
+    const maxGb = minGb ? prompt('RAM massima (GB):') : null
+    if (!jar || !minGb || !maxGb) return alert('Installazione annullata.')
 
-    setBusy(true);
-    setOutput('');
+    setBusy(true)
+    setOutput('')
     try {
       const resp = await fetch('/api/install', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ jarName: jar, minGb, maxGb })
-      });
-      const reader  = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
+        body: JSON.stringify({ jarName: jar, minGb, maxGb }),
+      })
+      const reader = resp.body!.getReader()
+      const decoder = new TextDecoder()
+      let done = false
       while (!done) {
-        const { value, done: rDone } = await reader.read();
-        if (value) setOutput(o => o + decoder.decode(value, { stream: true }));
-        done = rDone;
+        const { value, done: rDone } = await reader.read()
+        if (value) setOutput((o) => o + decoder.decode(value, { stream: true }))
+        done = rDone
       }
-      setOutput(o => o + '\nInstallazione completata.\n');
+      setOutput((o) => o + '\nInstallazione completata.\n')
     } catch (err) {
-      setOutput(o => o + `\nErrore install: ${(err as Error).message}\n`);
+      setOutput((o) => o + `\nErrore install: ${(err as Error).message}\n`)
     } finally {
-      setBusy(false);
-      fetchStatus();
+      setBusy(false)
+      fetchStatus()
     }
-  }, [token, fetchStatus]);
+  }, [token, fetchStatus])
 
   // 5) START / STOP / RESTART / DELETE
   const startServer = useCallback(async () => {
-    setBusy(true);
+    setBusy(true)
     try {
       await fetch('/api/start', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOutput(o => o + 'Avviando server…\n');
-      setServerRunning(true);
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setOutput((o) => o + 'Avviando server…\n')
+      setServerRunning(true)
     } catch (err) {
-      setOutput(o => o + `Errore start: ${(err as Error).message}\n`);
+      setOutput((o) => o + `Errore start: ${(err as Error).message}\n`)
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
-  }, [token]);
+  }, [token])
 
   const stopServer = useCallback(async () => {
-    setBusy(true);
+    setBusy(true)
     try {
       await fetch('/api/stop', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOutput(o => o + 'Server fermato.\n');
-      setServerRunning(false);
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setOutput((o) => o + 'Server fermato.\n')
+      setServerRunning(false)
     } catch (err) {
-      setOutput(o => o + `Errore stop: ${(err as Error).message}\n`);
+      setOutput((o) => o + `Errore stop: ${(err as Error).message}\n`)
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
-  }, [token]);
+  }, [token])
 
   const restartServer = useCallback(async () => {
-    setBusy(true);
+    setBusy(true)
     try {
       await fetch('/api/restart', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOutput(o => o + 'Server riavviato.\n');
-      setServerRunning(true);
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setOutput((o) => o + 'Server riavviato.\n')
+      setServerRunning(true)
     } catch (err) {
-      setOutput(o => o + `Errore restart: ${(err as Error).message}\n`);
+      setOutput((o) => o + `Errore restart: ${(err as Error).message}\n`)
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
-  }, [token]);
+  }, [token])
 
   const deleteServer = useCallback(async () => {
-    if (!confirm('Eliminare tutti i file del server?')) return;
-    setBusy(true);
+    if (!confirm('Eliminare tutti i file del server?')) return
+    setBusy(true)
     try {
       await fetch('/api/delete', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOutput(o => o + 'Server eliminato.\n');
-      setServerRunning(false);
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setOutput((o) => o + 'Server eliminato.\n')
+      setServerRunning(false)
     } catch (err) {
-      setOutput(o => o + `Errore delete: ${(err as Error).message}\n`);
+      setOutput((o) => o + `Errore delete: ${(err as Error).message}\n`)
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
-  }, [token]);
+  }, [token])
 
-  const clearOutput = () => setOutput('');
+  const clearOutput = () => setOutput('')
 
   // 6) Invio comandi di gioco
   const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!serverRunning) return;
-    const trimmed = command.trim();
-    if (trimmed) sendMcCommand(trimmed);
-    setCommand('');
-  };
+    e.preventDefault()
+    if (!serverRunning) return
+    const trimmed = command.trim()
+    if (trimmed) sendMcCommand(trimmed)
+    setCommand('')
+  }
 
   // 7) Pulsanti
   const shortcuts = [
@@ -219,34 +224,30 @@ export default function ConsolePage(): JSX.Element {
     {
       label: serverRunning ? 'Stop' : 'Start',
       action: serverRunning ? stopServer : startServer,
-      disabled: busy
+      disabled: busy,
     },
     {
       label: 'Restart',
       action: restartServer,
-      disabled: busy || !serverRunning
+      disabled: busy || !serverRunning,
     },
     {
       label: 'Delete',
       action: deleteServer,
-      disabled: busy
+      disabled: busy,
     },
     {
       label: 'Clear',
       action: clearOutput,
-      disabled: busy
-    }
-  ];
+      disabled: busy,
+    },
+  ]
 
   return (
     <div className="console-container">
       <aside className="sidebar-buttons">
         {shortcuts.map(({ label, action, disabled }) => (
-          <button
-            key={label}
-            onClick={action}
-            disabled={disabled}
-          >
+          <button key={label} onClick={action} disabled={disabled}>
             {busy && label === 'Install' ? 'Install…' : label}
           </button>
         ))}
@@ -272,7 +273,7 @@ export default function ConsolePage(): JSX.Element {
             id="command"
             type="text"
             value={command}
-            onChange={e => setCommand(e.target.value)}
+            onChange={(e) => setCommand(e.target.value)}
             disabled={busy || !serverRunning}
             required
           />
@@ -290,5 +291,5 @@ export default function ConsolePage(): JSX.Element {
         />
       </main>
     </div>
-  );
+  )
 }

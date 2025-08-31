@@ -1,6 +1,9 @@
-import { Route, Navigate } from 'react-router-dom';
-import type { JSX } from 'react';
-import ConsolePage from '../pages/ConsolePage';
+import type { JSX } from 'react'
+
+import { Route, Navigate } from 'react-router-dom'
+
+import ConsolePage from '../pages/ConsolePage'
+
 // import DashboardPage from '../pages/DashboardPage';
 // import ProfilePage   from '../pages/ProfilePage';
 
@@ -15,5 +18,5 @@ export default function AppRoutes(): JSX.Element[] {
     // in futuro:
     // <Route path="dashboard" element={<DashboardPage />} key="dashboard" />,
     // <Route path="profile"   element={<ProfilePage   />} key="profile"   />,
-  ];
+  ]
 }
