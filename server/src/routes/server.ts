@@ -6,15 +6,27 @@ import { CONFIG } from '../lib/config.js'
 import { processManager } from '../minecraft/process.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
-  fastify.delete('/api/server', { preHandler: fastify.authorize('owner') }, async () => {
-    // stop processo e sposta MC_DIR in quarantine
-    await processManager.stop()
-    const quarantine = path.join(path.dirname(CONFIG.MC_DIR), 'quarantine')
-    const dest = path.join(quarantine, String(Date.now()))
-    await fse.mkdirp(quarantine)
-    await fse.move(CONFIG.MC_DIR, dest, { overwrite: false })
-    return { movedTo: dest }
-  })
+  fastify.delete(
+    '/api/server',
+    {
+      preHandler: fastify.authorize('owner'),
+      config: { rateLimit: { max: 1, timeWindow: '1 hour' } },
+    },
+    async (req) => {
+      // stop processo e sposta MC_DIR in quarantine
+      await processManager.stop()
+      const quarantine = path.join(path.dirname(CONFIG.MC_DIR), 'quarantine')
+      const dest = path.join(quarantine, String(Date.now()))
+      await fse.mkdirp(quarantine)
+      await fse.move(CONFIG.MC_DIR, dest, { overwrite: false })
+      try {
+        await (
+          await import('../lib/audit.js')
+        ).auditLog({ type: 'command', cmd: 'server delete', userId: req.user?.sub })
+      } catch {}
+      return { movedTo: dest }
+    }
+  )
 
   // purge semplice a intervalli (ogni ora)
   const PURGE_MS = 48 * 60 * 60 * 1000

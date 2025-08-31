@@ -7,6 +7,7 @@ import Fastify from 'fastify'
 
 import { authPlugin } from './lib/auth.js'
 import { CONFIG } from './lib/config.js'
+import { checkJavaBin } from './lib/java.js'
 import { loggerOptions } from './lib/logger.js'
 import { authRoutes } from './routes/auth.js'
 import { backupRoutes } from './routes/backups.js'
@@ -17,6 +18,7 @@ import { logRoutes } from './routes/logs.js'
 import { modpackRoutes } from './routes/modpack.js'
 import { powerRoutes } from './routes/power.js'
 import { serverRoutes } from './routes/server.js'
+import { settingsRoutes } from './routes/settings.js'
 import { whitelistRoutes } from './routes/whitelist.js'
 
 export const buildApp = () => {
@@ -29,6 +31,8 @@ export const buildApp = () => {
   app.register(jwt, { secret: CONFIG.JWT_SECRET })
   app.register(authPlugin)
   app.register(authRoutes)
+  // Cross-platform: valida JAVA_BIN (best-effort)
+  checkJavaBin(app)
   app.register(healthRoutes)
   app.register(consoleRoutes)
   app.register(logRoutes)
@@ -38,6 +42,7 @@ export const buildApp = () => {
   app.register(backupRoutes)
   app.register(modpackRoutes)
   app.register(serverRoutes)
+  app.register(settingsRoutes)
 
   return app
 }

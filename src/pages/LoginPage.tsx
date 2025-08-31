@@ -1,5 +1,5 @@
-import { useState, useContext } from 'react'
 import type { FormEvent, JSX } from 'react'
+import { useContext, useState } from 'react'
 
 import { useNavigate } from 'react-router-dom'
 
@@ -30,8 +30,9 @@ export default function Login(): JSX.Element {
       <h1>{t.loginTitle}</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Utente:</label>
+          <label htmlFor="username">Utente:</label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -39,8 +40,9 @@ export default function Login(): JSX.Element {
           />
         </div>
         <div>
-          <label>Password:</label>
+          <label htmlFor="password">Password:</label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

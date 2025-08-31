@@ -9,6 +9,9 @@ export type AuditEvent =
       durationMs?: number | null | undefined
     }
   | { type: 'login'; userId: string }
+  | { type: 'file'; op: 'rename' | 'delete' | 'upload' | 'zip' | 'unzip'; path: string; userId?: string | undefined }
+  | { type: 'power'; op: 'start' | 'stop' | 'restart'; userId?: string | undefined }
+  | { type: 'backup'; op: 'create' | 'restore'; id?: string | undefined; userId?: string | undefined }
 
 export const auditLog = async (evt: AuditEvent) => {
   try {

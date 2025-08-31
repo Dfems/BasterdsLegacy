@@ -32,15 +32,19 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     processManager.on('log', onLog)
     processManager.on('status', onStatus)
 
-    // semplice throttle locale
-    let last = 0
+    // throttle locale: max 10 cmd ogni 5s
+    const windowMs = 5000
+    const maxInWindow = 10
+    let timestamps: number[] = []
     socket.on('message', async (raw: RawData) => {
       try {
         const msg = JSON.parse(String(raw)) as { type?: string; data?: string }
         if (msg.type === 'cmd' && typeof msg.data === 'string') {
           const now = Date.now()
-          if (now - last < 100) return // throttle 10 msg/s
-          last = now
+          // mantieni solo eventi nella finestra
+          timestamps = timestamps.filter((t) => now - t < windowMs)
+          if (timestamps.length >= maxInWindow) return
+          timestamps.push(now)
           processManager.write(`${msg.data}\n`)
           const userId = ((req as any).user?.sub as string | undefined) ?? undefined
           await auditLog({ type: 'command', cmd: msg.data, userId: userId as string | undefined })

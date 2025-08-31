@@ -1,6 +1,6 @@
 // src/contexts/AuthProvider.tsx
-import { useState, useEffect, useCallback } from 'react'
 import type { JSX, ReactNode } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { jwtDecode } from 'jwt-decode'
 
@@ -62,10 +62,10 @@ export default function AuthProvider({ children }: Props): JSX.Element {
   }, [token])
 
   const login: AuthContextType['login'] = async (username, password) => {
-    const resp = await fetch('/api/login', {
+    const resp = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email: username, password }),
     })
     const data = (await resp.json()) as { token: string; error?: string }
     if (!resp.ok) throw new Error(data.error ?? 'Login fallito')

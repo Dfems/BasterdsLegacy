@@ -22,6 +22,27 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     return { sub: u.sub, role: u.role }
   })
 
+  // Seed iniziale: crea owner se non esiste alcun utente
+  fastify.post('/api/auth/seed-owner', async (req, reply) => {
+    const { email, password } = (await req.body) as { email?: string; password?: string }
+    if (!email || !password) return reply.status(400).send({ error: 'Invalid body' })
+    const users = await db.user.count()
+    if (users > 0) {
+      // consentito solo a owner successivamente
+      try {
+        await fastify.authorize('owner')(req, reply)
+      } catch {
+        return // risposta già inviata in authorize
+      }
+    }
+    const exists = await db.user.findUnique({ where: { email } })
+    if (exists) return reply.status(409).send({ error: 'Email already exists' })
+    const passHash = await bcrypt.hash(password, 10)
+    const user = await db.user.create({ data: { email, passHash, role: 'owner' } })
+    const token = await fastify.issueToken(user.id, user.role)
+    return { token, role: user.role, userId: user.id }
+  })
+
   done()
 }
 

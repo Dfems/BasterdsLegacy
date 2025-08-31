@@ -1,7 +1,7 @@
 // src/App.tsx
-import type { JSX } from 'react'
+import { Suspense, type JSX } from 'react'
 
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import AuthProvider from './contexts/AuthProvider'
@@ -29,7 +29,9 @@ export default function App(): JSX.Element {
                 element={
                   <ProtectedRoute>
                     {/* Outlet farà il render delle sotto‐route protette */}
-                    <Outlet />
+                    <Suspense fallback={<div style={{ padding: 16 }}>Caricamento…</div>}>
+                      <Outlet />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               >
