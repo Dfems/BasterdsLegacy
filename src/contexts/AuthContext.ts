@@ -2,6 +2,7 @@ import { createContext } from 'react'
 
 export interface AuthContextType {
   token: string | null
+  role: 'owner' | 'user' | 'viewer' | null
   login: (username: string, password: string) => Promise<void>
   logout: () => void
 }
@@ -9,6 +10,7 @@ export interface AuthContextType {
 // Context con valore di default: tutte le funzioni “no-op”
 const AuthContext = createContext<AuthContextType>({
   token: null,
+  role: null,
   login: () => Promise.reject(),
   logout: () => {
     /* no-op */

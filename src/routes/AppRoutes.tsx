@@ -9,6 +9,7 @@ const BackupsPage = lazy(() => import('../pages/BackupsPage'))
 const WhitelistPage = lazy(() => import('../pages/WhitelistPage'))
 const ModpackPage = lazy(() => import('../pages/ModpackPage'))
 const SettingsPage = lazy(() => import('../pages/SettingsPage'))
+const CreateUserPage = lazy(() => import('../pages/CreateUserPage'))
 
 // import DashboardPage from '../pages/DashboardPage';
 // import ProfilePage   from '../pages/ProfilePage';
@@ -26,6 +27,7 @@ export default function AppRoutes(): JSX.Element[] {
     <Route path="whitelist" element={<WhitelistPage />} key="whitelist" />,
     <Route path="modpack" element={<ModpackPage />} key="modpack" />,
     <Route path="settings" element={<SettingsPage />} key="settings" />,
+    <Route path="users/new" element={<CreateUserPage />} key="users-new" />,
 
     // in futuro:
     // <Route path="dashboard" element={<DashboardPage />} key="dashboard" />,

@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "prepare": "husky install",
     "preview": "vite preview",
+    "seed:owner": "node scripts/seed-owner.mjs --email admin@example.com --password changeme",
     "test": "vitest --run",
     "test:watch": "vitest",
     "type-check": "tsc -b --pretty"

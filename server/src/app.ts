@@ -3,7 +3,9 @@ import helmet from '@fastify/helmet'
 import jwt from '@fastify/jwt'
 import rateLimit from '@fastify/rate-limit'
 import websocket from '@fastify/websocket'
+import dotenv from 'dotenv'
 import Fastify from 'fastify'
+import { pathToFileURL } from 'node:url'
 
 import { authPlugin } from './lib/auth.js'
 import { CONFIG } from './lib/config.js'
@@ -19,7 +21,11 @@ import { modpackRoutes } from './routes/modpack.js'
 import { powerRoutes } from './routes/power.js'
 import { serverRoutes } from './routes/server.js'
 import { settingsRoutes } from './routes/settings.js'
+import { usersRoutes } from './routes/users.js'
 import { whitelistRoutes } from './routes/whitelist.js'
+
+// Carica variabili d'ambiente da .env (DATABASE_URL per Prisma, ecc.)
+dotenv.config()
 
 export const buildApp = () => {
   const app = Fastify({ logger: loggerOptions })
@@ -43,11 +49,13 @@ export const buildApp = () => {
   app.register(modpackRoutes)
   app.register(serverRoutes)
   app.register(settingsRoutes)
+  app.register(usersRoutes)
 
   return app
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Usa un confronto robusto tra URL del modulo ed argv (compatibile Windows)
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const app = buildApp()
   app
     .listen({ port: CONFIG.PORT, host: '0.0.0.0' })

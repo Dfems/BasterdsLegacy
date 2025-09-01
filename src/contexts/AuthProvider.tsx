@@ -15,6 +15,16 @@ interface DecodedToken {
 
 export default function AuthProvider({ children }: Props): JSX.Element {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
+  const [role, setRole] = useState<'owner' | 'user' | 'viewer' | null>(() => {
+    const t = localStorage.getItem('token')
+    if (!t) return null
+    try {
+      const decoded = jwtDecode<DecodedToken & { role?: 'owner' | 'user' | 'viewer' }>(t)
+      return decoded.role ?? null
+    } catch {
+      return null
+    }
+  })
 
   // salvataggio/cleanup in localStorage
   useEffect(() => {
@@ -26,14 +36,20 @@ export default function AuthProvider({ children }: Props): JSX.Element {
   }, [token])
 
   // auto-logout alla scadenza
-  const logout = useCallback(() => setToken(null), [])
+  const logout = useCallback(() => {
+    setToken(null)
+    setRole(null)
+  }, [])
   useEffect(() => {
     if (!token) return
-    const { exp } = jwtDecode<DecodedToken>(token)
+    const { exp, role: r } = jwtDecode<DecodedToken & { role?: 'owner' | 'user' | 'viewer' }>(token)
+    if (r) setRole(r)
     const msLeft = exp * 1000 - Date.now()
     if (msLeft <= 0) return logout()
 
     const id = window.setTimeout(logout, msLeft)
+  // Se il token non ha exp, non schedulare auto-logout lato client
+  if (!exp || Number.isNaN(exp)) return
     return () => clearTimeout(id)
   }, [token, logout])
 
@@ -52,6 +68,10 @@ export default function AuthProvider({ children }: Props): JSX.Element {
       if (refresh) {
         console.log('🔄 Received x-refresh-token, updating client token')
         setToken(refresh)
+        try {
+          const d = jwtDecode<DecodedToken & { role?: 'owner' | 'user' | 'viewer' }>(refresh)
+          if (d.role) setRole(d.role)
+        } catch {}
       }
 
       return response
@@ -67,10 +87,17 @@ export default function AuthProvider({ children }: Props): JSX.Element {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: username, password }),
     })
-    const data = (await resp.json()) as { token: string; error?: string }
+    const data = (await resp.json()) as {
+      token: string
+      role?: 'owner' | 'user' | 'viewer'
+      error?: string
+    }
     if (!resp.ok) throw new Error(data.error ?? 'Login fallito')
     setToken(data.token)
+    if (data.role) setRole(data.role)
   }
 
-  return <AuthContext.Provider value={{ token, login, logout }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ token, role, login, logout }}>{children}</AuthContext.Provider>
+  )
 }

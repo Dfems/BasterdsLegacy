@@ -1,8 +1,10 @@
 import type { ChangeEvent, JSX } from 'react'
+import { useContext } from 'react'
 
 import { Box, Button, Flex, HStack, Text } from '@chakra-ui/react'
 import { Link, NavLink } from 'react-router-dom'
 
+import AuthContext from '@/contexts/AuthContext'
 import useLanguage from '@/hooks/useLanguage'
 
 interface NavbarProps {
@@ -21,6 +23,7 @@ const NavItem = ({ to, children }: { to: string; children: JSX.Element | string 
 
 export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Element {
   const { t, language, setLanguage } = useLanguage()
+  const { role } = useContext(AuthContext)
 
   return (
     <Box
@@ -47,7 +50,13 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
             {t.appName}
           </Link>
           <NavItem to="/">Home</NavItem>
-          {isLoggedIn && <NavItem to="/app/console">Console</NavItem>}
+          {isLoggedIn && (
+            <>
+              <NavItem to="/app/console">Console</NavItem>
+              <NavItem to="/app/dashboard">Dashboard</NavItem>
+              {role === 'owner' && <NavItem to="/app/users/new">New User</NavItem>}
+            </>
+          )}
         </HStack>
 
         <HStack gap={3} align="center">
