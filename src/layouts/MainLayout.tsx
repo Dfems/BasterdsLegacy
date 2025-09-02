@@ -16,7 +16,7 @@ export default function MainLayout(): JSX.Element {
   return (
     <div>
       <Navbar isLoggedIn={isLoggedIn} onLogout={logout} />
-      <div style={{ paddingTop: 56 }}>
+      <div style={{ paddingTop: 56, paddingBottom: 64 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px' }}>
           <Outlet />
         </div>
