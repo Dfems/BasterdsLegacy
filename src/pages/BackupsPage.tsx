@@ -1,7 +1,10 @@
 import { useMemo, type JSX } from 'react'
 
-import { Box, Button, Heading, HStack, Table } from '@chakra-ui/react'
+import { Box, Heading, HStack, Table } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { GlassButton } from '@/shared/components/GlassButton'
+import { GlassCard } from '@/shared/components/GlassCard'
 
 type Backup = { id: string; size: number; createdAt: number }
 
@@ -45,38 +48,44 @@ export default function BackupsPage(): JSX.Element {
     <Box p={6}>
       <Heading mb={4}>Backups</Heading>
 
-      <HStack mb={4} gap={3} wrap="wrap">
-        <Button onClick={() => create.mutate('full')}>Crea backup completo</Button>
-        <Button onClick={() => create.mutate('world')}>Crea backup del mondo</Button>
-      </HStack>
+      <GlassCard mb={4}>
+        <HStack gap={3} wrap="wrap">
+          <GlassButton onClick={() => create.mutate('full')}>Crea backup completo</GlassButton>
+          <GlassButton onClick={() => create.mutate('world')}>Crea backup del mondo</GlassButton>
+        </HStack>
+      </GlassCard>
 
       {!isLoading && rows.length === 0 && <div>Nessun backup</div>}
 
       {rows.length > 0 && (
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeader>ID</Table.ColumnHeader>
-              <Table.ColumnHeader>Creato</Table.ColumnHeader>
-              <Table.ColumnHeader textAlign="end">Dimensione</Table.ColumnHeader>
-              <Table.ColumnHeader>Azioni</Table.ColumnHeader>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rows.map((b) => (
-              <Table.Row key={b.id}>
-                <Table.Cell>{b.id}</Table.Cell>
-                <Table.Cell>{new Date(b.createdAt).toLocaleString()}</Table.Cell>
-                <Table.Cell textAlign="end">{(b.size / (1024 * 1024)).toFixed(1)} MB</Table.Cell>
-                <Table.Cell>
-                  <Button size="xs" onClick={() => restore.mutate(b.id)}>
-                    Ripristina
-                  </Button>
-                </Table.Cell>
+        <GlassCard inset>
+          <Table.Root data-variant="glass">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader color="green.300">ID</Table.ColumnHeader>
+                <Table.ColumnHeader color="green.300">Creato</Table.ColumnHeader>
+                <Table.ColumnHeader textAlign="end" color="green.300">
+                  Dimensione
+                </Table.ColumnHeader>
+                <Table.ColumnHeader color="green.300">Azioni</Table.ColumnHeader>
               </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
+            </Table.Header>
+            <Table.Body>
+              {rows.map((b) => (
+                <Table.Row key={b.id}>
+                  <Table.Cell>{b.id}</Table.Cell>
+                  <Table.Cell>{new Date(b.createdAt).toLocaleString()}</Table.Cell>
+                  <Table.Cell textAlign="end">{(b.size / (1024 * 1024)).toFixed(1)} MB</Table.Cell>
+                  <Table.Cell bg="transparent" boxShadow="none">
+                    <GlassButton size="xs" onClick={() => restore.mutate(b.id)}>
+                      Ripristina
+                    </GlassButton>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </GlassCard>
       )}
     </Box>
   )

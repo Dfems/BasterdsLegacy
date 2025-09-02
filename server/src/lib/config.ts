@@ -5,6 +5,7 @@ const env = (key: string, fallback: string): string => (process.env[key] ?? fall
 export const CONFIG = {
   PORT: Number(env('PORT', '3000')),
   JWT_SECRET: env('JWT_SECRET', 'change_me'),
+  JWT_EXPIRES: env('JWT_EXPIRES', '1h'),
   MC_DIR: path.resolve(env('MC_DIR', './server/runtime')),
   BACKUP_DIR: path.resolve(env('BACKUP_DIR', './server/runtime/backups')),
   JAVA_BIN: env('JAVA_BIN', 'java'),

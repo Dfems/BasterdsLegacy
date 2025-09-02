@@ -1,5 +1,9 @@
-import type { ChangeEvent, FormEvent, JSX } from 'react'
+import type { FormEvent, JSX } from 'react'
 import { useState } from 'react'
+
+import { Box, Button, Heading, Input, Text } from '@chakra-ui/react'
+
+import { SimpleSelect } from '@/shared/components/SimpleSelect'
 
 const CreateUserPage = (): JSX.Element => {
   const [show, setShow] = useState(false)
@@ -35,74 +39,64 @@ const CreateUserPage = (): JSX.Element => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div>
-        <label htmlFor="flag-yes" style={{ marginRight: 8 }}>
-          Mostra form creazione (flag yes):
-        </label>
-        <select
-          id="flag-yes"
+    <Box display="flex" flexDirection="column" gap={4}>
+      <Box>
+        <Heading size="sm" mb={2}>
+          Mostra form creazione (flag yes)
+        </Heading>
+        <SimpleSelect
           value={show ? 'yes' : 'no'}
-          onChange={(e: ChangeEvent<HTMLSelectElement>) => setShow(e.target.value === 'yes')}
-          style={{ padding: '4px 8px' }}
-        >
-          <option value="no">no</option>
-          <option value="yes">yes</option>
-        </select>
-      </div>
+          onChange={(v) => setShow(v === 'yes')}
+          options={[
+            { value: 'no', label: 'no' },
+            { value: 'yes', label: 'yes' },
+          ]}
+        />
+      </Box>
 
       {show && (
-        <form onSubmit={onSubmit} style={{ maxWidth: 480 }}>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <div>
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                style={{ width: '100%', padding: '6px 8px', marginTop: 4 }}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                style={{ width: '100%', padding: '6px 8px', marginTop: 4 }}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="role">Ruolo</label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                  setRole(e.target.value as 'user' | 'viewer')
-                }
-                style={{ width: '100%', padding: '6px 8px', marginTop: 4 }}
-              >
-                <option value="user">user</option>
-                <option value="viewer">viewer</option>
-              </select>
-            </div>
-
-            <button type="submit" disabled={loading} style={{ padding: '8px 12px' }}>
-              {loading ? 'Creazione…' : 'Crea utente'}
-            </button>
-
-            {msg && <div style={{ color: '#48bb78' }}>{msg}</div>}
-            {err && <div style={{ color: '#f56565' }}>{err}</div>}
-          </div>
-        </form>
+        <Box as="form" onSubmit={onSubmit} maxW={480} display="grid" gap={3}>
+          <Box>
+            <Text>Email</Text>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              mt={1}
+            />
+          </Box>
+          <Box>
+            <Text>Password</Text>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              mt={1}
+            />
+          </Box>
+          <Box>
+            <Text as="label">Ruolo</Text>
+            <SimpleSelect
+              value={role}
+              onChange={(v) => setRole(v as 'user' | 'viewer')}
+              options={[
+                { value: 'user', label: 'user' },
+                { value: 'viewer', label: 'viewer' },
+              ]}
+            />
+          </Box>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Creazione…' : 'Crea utente'}
+          </Button>
+          {msg && <Text color="green.400">{msg}</Text>}
+          {err && <Text color="red.400">{err}</Text>}
+        </Box>
       )}
-    </div>
+    </Box>
   )
 }
 

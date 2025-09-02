@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Press Start 2P', cursive;
   line-height: 1.5;
   font-weight: 400;
 
@@ -70,4 +70,68 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Usa il token bg del sistema: non forzare più il dark */
+
+/* Native select + option: dark readable dropdown */
+select,
+select option {
+  background-color: rgba(17, 25, 40, 0.95);
+  color: #fff;
+}
+
+/* Varianti Chakra "glass" per Button, Input, Menu e Table */
+html.dark [data-scope='button'][data-variant='glass'] {
+  background: var(--chakra-colors-whiteAlpha-100);
+  border: 1px solid var(--chakra-colors-borderStrong);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+html.light [data-scope='button'][data-variant='glass'] {
+  background: var(--chakra-colors-blackAlpha-50);
+  border: 1px solid var(--chakra-colors-borderStrong);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+[data-scope='button'][data-variant='glass']:hover {
+  filter: brightness(1.05);
+}
+
+html.dark [data-scope='input'][data-variant='glass'] [data-part='field'] {
+  background: var(--chakra-colors-whiteAlpha-100);
+  border: 1px solid var(--chakra-colors-borderStrong);
+}
+html.light [data-scope='input'][data-variant='glass'] [data-part='field'] {
+  background: var(--chakra-colors-blackAlpha-50);
+  border: 1px solid var(--chakra-colors-borderStrong);
+}
+
+[data-scope='menu'][data-part='content'][data-variant='glass'] {
+  backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid var(--chakra-colors-borderStrong);
+}
+html.dark [data-scope='menu'][data-part='content'][data-variant='glass'] {
+  background: var(--chakra-colors-surfaceSolid);
+}
+html.light [data-scope='menu'][data-part='content'][data-variant='glass'] {
+  background: var(--chakra-colors-surfaceSolid);
+}
+
+/* Table variant */
+[data-scope='table'][data-variant='glass'] [data-part='header'],
+[data-scope='table'][data-variant='glass'] [data-part='footer'] {
+  background: var(--chakra-colors-surface) !important;
+}
+[data-scope='table'][data-variant='glass'] [data-part='cell'],
+[data-scope='table'][data-variant='glass'] [data-part='column-header'],
+[data-scope='table'][data-variant='glass'] [data-part='row-header'],
+[data-scope='table'][data-variant='glass'] td,
+[data-scope='table'][data-variant='glass'] th {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+[data-scope='table'][data-variant='glass'] [data-part='row'] {
+  border-bottom: 1px solid var(--chakra-colors-border);
+}
+[data-scope='table'][data-variant='glass'] [data-part='row']:hover {
+  background: color-mix(in oklab, var(--chakra-colors-bg), transparent 85%);
 }

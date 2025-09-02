@@ -42,15 +42,25 @@ export default function AuthProvider({ children }: Props): JSX.Element {
   }, [])
   useEffect(() => {
     if (!token) return
-    const { exp, role: r } = jwtDecode<DecodedToken & { role?: 'owner' | 'user' | 'viewer' }>(token)
-    if (r) setRole(r)
-    const msLeft = exp * 1000 - Date.now()
-    if (msLeft <= 0) return logout()
+    try {
+      const decoded = jwtDecode<DecodedToken & { role?: 'owner' | 'user' | 'viewer' }>(token)
+      if (decoded.role) setRole(decoded.role)
 
-    const id = window.setTimeout(logout, msLeft)
-  // Se il token non ha exp, non schedulare auto-logout lato client
-  if (!exp || Number.isNaN(exp)) return
-    return () => clearTimeout(id)
+      // Se il token non ha exp, non schedulare auto-logout lato client
+      const exp = decoded.exp
+      if (!exp || Number.isNaN(exp)) return
+
+      const msLeft = exp * 1000 - Date.now()
+      if (msLeft <= 0) {
+        logout()
+        return
+      }
+      const id = window.setTimeout(logout, msLeft)
+      return () => clearTimeout(id)
+    } catch {
+      // Token malformato → logout per sicurezza
+      logout()
+    }
   }, [token, logout])
 
   useEffect(() => {

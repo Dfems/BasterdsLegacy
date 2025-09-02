@@ -8,9 +8,12 @@ import {
   type JSX,
 } from 'react'
 
+import { Badge, Box, HStack, Heading, Input, Stack, Text, Textarea } from '@chakra-ui/react'
+
+import { GlassButton } from '@/shared/components/GlassButton'
+
 import AuthContext from '../contexts/AuthContext'
 import useLanguage from '../hooks/useLanguage'
-import '../styles/App.css'
 
 type WsMsg = { type?: string; data?: unknown }
 
@@ -114,52 +117,80 @@ export default function ConsolePage(): JSX.Element {
   const clearOutput = () => setOutput('')
 
   return (
-    <div className="console-container">
-      <aside className="sidebar-buttons">
-        <button onClick={() => power(serverRunning ? 'stop' : 'start')} disabled={busy}>
-          {serverRunning ? 'Stop' : 'Start'}
-        </button>
-        <button onClick={() => power('restart')} disabled={busy || !serverRunning}>
-          Restart
-        </button>
-        <button onClick={clearOutput} disabled={busy}>
-          Clear
-        </button>
-      </aside>
+    <Box p={6}>
+      <Heading mb={2}>{t.consoleTitle}</Heading>
+      <HStack mb={4} gap={3} align="center" wrap="wrap">
+        <Text>Stato server:</Text>
+        <Badge colorPalette={serverRunning ? 'green' : 'red'} variant="solid">
+          {serverRunning ? 'Avviato' : 'Spento'}
+        </Badge>
+      </HStack>
 
-      <main className="console-main">
-        <h1>{t.consoleTitle}</h1>
-        <div>
-          Stato server:{' '}
-          {serverRunning ? (
-            <span style={{ color: 'green' }}>Avviato</span>
-          ) : (
-            <span style={{ color: 'red' }}>Spento</span>
-          )}
-        </div>
+      <Stack direction={{ base: 'column', md: 'row' }} gap={4} align="stretch">
+        <Box
+          p={4}
+          borderWidth="1px"
+          rounded="md"
+          bg="whiteAlpha.100"
+          borderColor="whiteAlpha.200"
+          minW={{ md: '220px' }}
+          boxShadow="md"
+          style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
+        >
+          <Stack gap={2}>
+            <GlassButton
+              size="sm"
+              onClick={() => void power(serverRunning ? 'stop' : 'start')}
+              disabled={busy}
+            >
+              {serverRunning ? 'Stop' : 'Start'}
+            </GlassButton>
+            <GlassButton
+              size="sm"
+              onClick={() => void power('restart')}
+              disabled={busy || !serverRunning}
+            >
+              Restart
+            </GlassButton>
+            <GlassButton size="sm" onClick={clearOutput} disabled={busy}>
+              Clear
+            </GlassButton>
+          </Stack>
+        </Box>
 
-        <form onSubmit={handleSubmit} className="command-form">
-          <label htmlFor="command">{t.commandLabel}</label>
-          <input
-            id="command"
-            type="text"
-            value={command}
-            onChange={(e) => setCommand(e.target.value)}
-            disabled={busy || !serverRunning}
-            required
-          />
-        </form>
+        <Box
+          flex="1"
+          p={4}
+          borderWidth="1px"
+          rounded="md"
+          bg="whiteAlpha.100"
+          borderColor="whiteAlpha.200"
+          boxShadow="md"
+          style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
+        >
+          <Box as="form" onSubmit={handleSubmit} mb={3} display="flex" gap={2} flexWrap="wrap">
+            <label htmlFor="command" style={{ alignSelf: 'center' }}>
+              {t.commandLabel}
+            </label>
+            <Input
+              id="command"
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              disabled={busy || !serverRunning}
+              flex="1"
+              minW={{ base: '100%', sm: '280px' }}
+            />
+            <GlassButton type="submit" size="sm" disabled={busy || !serverRunning}>
+              Invia
+            </GlassButton>
+          </Box>
 
-        <h2>{t.consoleOutputTitle}</h2>
-        <textarea
-          ref={outputRef}
-          readOnly
-          rows={25}
-          cols={130}
-          value={output}
-          className="console-output"
-        />
-      </main>
-    </div>
+          <Heading size="sm" mb={2}>
+            {t.consoleOutputTitle}
+          </Heading>
+          <Textarea ref={outputRef} readOnly rows={20} value={output} resize="vertical" />
+        </Box>
+      </Stack>
+    </Box>
   )
 }

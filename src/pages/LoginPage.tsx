@@ -1,11 +1,15 @@
 import type { FormEvent, JSX } from 'react'
 import { useContext, useState } from 'react'
 
+import { Box, Button, Heading, Input, Stack, Text } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
+
+import { GlassCard } from '@/shared/components/GlassCard'
 
 import AuthContext from '../contexts/AuthContext'
 import useLanguage from '../hooks/useLanguage'
-import '../styles/App.css'
+
+// removed legacy CSS; page inherits global styles
 
 export default function Login(): JSX.Element {
   const { t } = useLanguage()
@@ -26,34 +30,49 @@ export default function Login(): JSX.Element {
   }
 
   return (
-    <div className="container-md">
-      <h1>{t.loginTitle}</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Utente:</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password:</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Login</button>
-        <br />
-        <br />
-        {error && <div style={{ color: 'red' }}>{error}</div>}
-      </form>
-    </div>
+    <Box p={6} display="flex" justifyContent="center">
+      <GlassCard as="form" onSubmit={handleSubmit} maxW={440} w="100%">
+        <Heading size="lg" mb={4} textAlign="center">
+          {t.loginTitle}
+        </Heading>
+        <Stack gap={3}>
+          <Box>
+            <label htmlFor="username" style={{ display: 'block', marginBottom: 4 }}>
+              Utente
+            </label>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              data-variant="glass"
+            />
+          </Box>
+          <Box>
+            <label htmlFor="password" style={{ display: 'block', marginBottom: 4 }}>
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              data-variant="glass"
+            />
+          </Box>
+          <GlassCard inset>
+            <Button type="submit" width="100%" data-variant="glass">
+              Login
+            </Button>
+          </GlassCard>
+          {error && (
+            <Text color="red.400" textAlign="center">
+              {error}
+            </Text>
+          )}
+        </Stack>
+      </GlassCard>
+    </Box>
   )
 }

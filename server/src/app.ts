@@ -34,7 +34,7 @@ export const buildApp = () => {
   app.register(helmet)
   app.register(websocket)
   app.register(rateLimit, { max: 100, timeWindow: '1 minute' })
-  app.register(jwt, { secret: CONFIG.JWT_SECRET })
+  app.register(jwt, { secret: CONFIG.JWT_SECRET, sign: { expiresIn: CONFIG.JWT_EXPIRES } })
   app.register(authPlugin)
   app.register(authRoutes)
   // Cross-platform: valida JAVA_BIN (best-effort)

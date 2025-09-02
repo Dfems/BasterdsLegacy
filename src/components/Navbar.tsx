@@ -1,40 +1,36 @@
-import type { ChangeEvent, JSX } from 'react'
+import type { JSX } from 'react'
 import { useContext } from 'react'
 
-import { Box, Button, Flex, HStack, Text } from '@chakra-ui/react'
-import { Link, NavLink } from 'react-router-dom'
+import { Box, Drawer, Flex, HStack, IconButton, Link, Menu } from '@chakra-ui/react'
+import { Link as RouterLink } from 'react-router-dom'
 
 import AuthContext from '@/contexts/AuthContext'
 import useLanguage from '@/hooks/useLanguage'
+import { GlassButton } from '@/shared/components/GlassButton'
+import { SimpleSelect } from '@/shared/components/SimpleSelect'
 
 interface NavbarProps {
   isLoggedIn: boolean
   onLogout: () => void
 }
 
-const NavItem = ({ to, children }: { to: string; children: JSX.Element | string }) => (
-  <NavLink
-    to={to}
-    style={({ isActive }) => ({ textDecoration: 'none', color: isActive ? '#67e8f9' : '#fff' })}
-  >
-    {children}
-  </NavLink>
-)
-
 export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Element {
-  const { t, language, setLanguage } = useLanguage()
-  const { role } = useContext(AuthContext)
+  useContext(AuthContext)
+  const { language, setLanguage, t } = useLanguage()
 
   return (
     <Box
       as="header"
-      position="sticky"
-      top="0"
-      zIndex="docked"
-      bg="gray.800"
-      color="white"
+      position="fixed"
+      top={0}
+      left={0}
+      right={0}
+      zIndex={100}
+      bg="var(--chakra-colors-surface)"
       borderBottomWidth="1px"
-      borderColor="gray.700"
+      borderColor="var(--chakra-colors-border)"
+      boxShadow="sm"
+      color="var(--chakra-colors-text)"
     >
       <Flex
         as="nav"
@@ -42,52 +38,239 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
         align="center"
         justify="space-between"
         px={4}
-        py={3}
+        py={2.5}
         w="100%"
       >
-        <HStack gap={3} align="center">
-          <Link to="/" style={{ color: '#67e8f9', textDecoration: 'none', fontWeight: 700 }}>
-            {t.appName}
+        <Flex gap={2} align="center" wrap="wrap">
+          <Link asChild fontWeight={800} _hover={{ textDecoration: 'none', color: '#bbf7d0' }}>
+            <RouterLink to="/">{t.appName}</RouterLink>
           </Link>
-          <NavItem to="/">Home</NavItem>
+          {/* <NavItem to="/">Home</NavItem> */}
+
+          {/* Desktop: gruppi con sottomenu */}
           {isLoggedIn && (
-            <>
-              <NavItem to="/app/console">Console</NavItem>
-              <NavItem to="/app/dashboard">Dashboard</NavItem>
-              {role === 'owner' && <NavItem to="/app/users/new">New User</NavItem>}
-            </>
+            <HStack gap={2} align="center" display={{ base: 'none', md: 'flex' }}>
+              <Menu.Root data-variant="glass">
+                <Menu.Trigger asChild>
+                  <GlassButton size="sm">Server ▾</GlassButton>
+                </Menu.Trigger>
+                <Menu.Positioner>
+                  <Menu.Content boxShadow="lg" color="var(--chakra-colors-text)">
+                    <Menu.Item value="console" asChild>
+                      <RouterLink
+                        to="/app/console"
+                        style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
+                      >
+                        Console
+                      </RouterLink>
+                    </Menu.Item>
+                    <Menu.Item value="dashboard" asChild>
+                      <RouterLink
+                        to="/app/dashboard"
+                        style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
+                      >
+                        Dashboard
+                      </RouterLink>
+                    </Menu.Item>
+                    <Menu.Item value="settings" asChild>
+                      <RouterLink
+                        to="/app/settings"
+                        style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
+                      >
+                        Settings
+                      </RouterLink>
+                    </Menu.Item>
+                  </Menu.Content>
+                </Menu.Positioner>
+              </Menu.Root>
+
+              <Menu.Root data-variant="glass">
+                <Menu.Trigger asChild>
+                  <GlassButton size="sm">Storage ▾</GlassButton>
+                </Menu.Trigger>
+                <Menu.Positioner>
+                  <Menu.Content boxShadow="lg" color="var(--chakra-colors-text)">
+                    <Menu.Item value="files" asChild>
+                      <RouterLink
+                        to="/app/files"
+                        style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
+                      >
+                        Files
+                      </RouterLink>
+                    </Menu.Item>
+                    <Menu.Item value="backups" asChild>
+                      <RouterLink
+                        to="/app/backups"
+                        style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
+                      >
+                        Backups
+                      </RouterLink>
+                    </Menu.Item>
+                  </Menu.Content>
+                </Menu.Positioner>
+              </Menu.Root>
+
+              <Menu.Root data-variant="glass">
+                <Menu.Trigger asChild>
+                  <GlassButton size="sm">Gameplay ▾</GlassButton>
+                </Menu.Trigger>
+                <Menu.Positioner>
+                  <Menu.Content boxShadow="lg" color="var(--chakra-colors-text)">
+                    <Menu.Item value="whitelist" asChild>
+                      <RouterLink
+                        to="/app/whitelist"
+                        style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
+                      >
+                        Whitelist
+                      </RouterLink>
+                    </Menu.Item>
+                    <Menu.Item value="modpack" asChild>
+                      <RouterLink
+                        to="/app/modpack"
+                        style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
+                      >
+                        Modpack
+                      </RouterLink>
+                    </Menu.Item>
+                  </Menu.Content>
+                </Menu.Positioner>
+              </Menu.Root>
+
+              {/* {role === 'owner' && <NavItem to="/app/users/new">New User</NavItem>} */}
+            </HStack>
           )}
-        </HStack>
+
+          {/* Mobile: hamburger → Drawer */}
+          {isLoggedIn && (
+            <Drawer.Root>
+              <Drawer.Trigger asChild>
+                <IconButton
+                  aria-label="Apri menu"
+                  size="sm"
+                  variant="ghost"
+                  colorScheme="whiteAlpha"
+                  display={{ base: 'inline-flex', md: 'none' }}
+                >
+                  <Box as="span" fontSize="lg" lineHeight="1">
+                    ☰
+                  </Box>
+                </IconButton>
+              </Drawer.Trigger>
+              <Drawer.Backdrop />
+              <Drawer.Positioner>
+                <Drawer.Content
+                  data-variant="glass"
+                  bg="var(--chakra-colors-surfaceSolid)"
+                  color="var(--chakra-colors-text)"
+                >
+                  <Drawer.Header color="green.300">Menu</Drawer.Header>
+                  <Drawer.Body>
+                    <Box mb={2} fontWeight="bold" color="green.300">
+                      Server
+                    </Box>
+                    <Box mb={1}>
+                      <Drawer.CloseTrigger asChild>
+                        <Link asChild>
+                          <RouterLink to="/app/console">Console</RouterLink>
+                        </Link>
+                      </Drawer.CloseTrigger>
+                    </Box>
+                    <Box mb={1}>
+                      <Drawer.CloseTrigger asChild>
+                        <Link asChild>
+                          <RouterLink to="/app/dashboard">Dashboard</RouterLink>
+                        </Link>
+                      </Drawer.CloseTrigger>
+                    </Box>
+                    <Box mb={1}>
+                      <Drawer.CloseTrigger asChild>
+                        <Link asChild>
+                          <RouterLink to="/app/settings">Settings</RouterLink>
+                        </Link>
+                      </Drawer.CloseTrigger>
+                    </Box>
+
+                    <Box mt={4} mb={2} fontWeight="bold" color="green.300">
+                      Storage
+                    </Box>
+                    <Box mb={1}>
+                      <Drawer.CloseTrigger asChild>
+                        <Link asChild>
+                          <RouterLink to="/app/files">Files</RouterLink>
+                        </Link>
+                      </Drawer.CloseTrigger>
+                    </Box>
+                    <Box mb={1}>
+                      <Drawer.CloseTrigger asChild>
+                        <Link asChild>
+                          <RouterLink to="/app/backups">Backups</RouterLink>
+                        </Link>
+                      </Drawer.CloseTrigger>
+                    </Box>
+
+                    <Box mt={4} mb={2} fontWeight="bold" color="green.300">
+                      Gameplay
+                    </Box>
+                    <Box mb={1}>
+                      <Drawer.CloseTrigger asChild>
+                        <Link asChild>
+                          <RouterLink to="/app/whitelist">Whitelist</RouterLink>
+                        </Link>
+                      </Drawer.CloseTrigger>
+                    </Box>
+                    <Box mb={1}>
+                      <Drawer.CloseTrigger asChild>
+                        <Link asChild>
+                          <RouterLink to="/app/modpack">Modpack</RouterLink>
+                        </Link>
+                      </Drawer.CloseTrigger>
+                    </Box>
+
+                    {/* {role === 'owner' && (
+                      <>
+                        <Box mt={4} mb={2} fontWeight="bold" color="green.300">
+                          Admin
+                        </Box>
+                        <Box mb={1}>
+                          <Drawer.CloseTrigger asChild>
+                            <Link asChild>
+                              <RouterLink to="/app/users/new">New User</RouterLink>
+                            </Link>
+                          </Drawer.CloseTrigger>
+                        </Box>
+                      </>
+                    )} */}
+                  </Drawer.Body>
+                </Drawer.Content>
+              </Drawer.Positioner>
+            </Drawer.Root>
+          )}
+        </Flex>
 
         <HStack gap={3} align="center">
           <HStack gap={2} align="center">
-            <Text as="span" fontSize="sm" color="gray.300">
-              Lang
-            </Text>
-            <select
+            <SimpleSelect
               value={language}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) => setLanguage(e.target.value)}
-              style={{
-                background: '#2d3748',
-                color: '#fff',
-                borderColor: '#4a5568',
-                borderRadius: 6,
-                padding: '2px 6px',
-              }}
-            >
-              <option value="it">Italiano</option>
-              <option value="en">English</option>
-              <option value="es">Español</option>
-            </select>
+              onChange={(v) => setLanguage(v)}
+              options={[
+                { value: 'it', label: 'Italiano' },
+                { value: 'en', label: 'English' },
+                { value: 'es', label: 'Español' },
+              ]}
+            />
           </HStack>
 
           {isLoggedIn ? (
-            <Button size="sm" variant="outline" colorScheme="cyan" onClick={onLogout} type="button">
+            <GlassButton size="sm" onClick={onLogout} type="button">
               Disconnect
-            </Button>
+            </GlassButton>
           ) : (
-            <Link to="/login" style={{ color: '#fff', textDecoration: 'none' }}>
-              {t.loginTitle}
+            <Link
+              asChild
+              color="var(--chakra-colors-link)"
+              _hover={{ textDecoration: 'none', color: 'var(--chakra-colors-link)' }}
+            >
+              <RouterLink to="/login">{t.loginTitle}</RouterLink>
             </Link>
           )}
         </HStack>

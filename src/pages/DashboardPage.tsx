@@ -1,7 +1,10 @@
 import { useMemo, useState, type JSX } from 'react'
 
-import { Box, Button, Grid, Heading, HStack, Text } from '@chakra-ui/react'
+import { Box, Grid, GridItem, Heading, HStack, Text } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { GlassButton } from '@/shared/components/GlassButton'
+import { GlassCard } from '@/shared/components/GlassCard'
 
 type Status = {
   state: 'RUNNING' | 'STOPPED' | 'CRASHED'
@@ -78,55 +81,65 @@ const DashboardPage = (): JSX.Element => {
           {note.text}
         </Text>
       )}
-      <Grid columns={3} gap={4}>
-        <Box p={4} borderWidth="1px" rounded="md">
+      <Grid
+        templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }}
+        gridAutoRows="1fr"
+        gap={4}
+        alignItems="stretch"
+      >
+        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
           <Text fontWeight="bold">State</Text>
           <Text color={stateColor}>{data?.state ?? (isFetching ? 'Loading…' : 'Unknown')}</Text>
           <Text color="gray.500">PID: {data?.pid ?? '-'}</Text>
-        </Box>
-        <Box p={4} borderWidth="1px" rounded="md">
+        </GlassCard>
+        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
           <Text fontWeight="bold">CPU</Text>
           <Text>{data ? `${(data.cpu * 100).toFixed(1)}%` : '-'}</Text>
-        </Box>
-        <Box p={4} borderWidth="1px" rounded="md">
+        </GlassCard>
+        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
           <Text fontWeight="bold">Memory</Text>
           <Text>{data ? `${data.memMB} MB` : '-'}</Text>
-        </Box>
-        <Box p={4} borderWidth="1px" rounded="md">
+        </GlassCard>
+        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
           <Text fontWeight="bold">Uptime</Text>
           <Text>{data ? fmtUptime(data.uptimeMs) : '-'}</Text>
-        </Box>
-        <Box p={4} borderWidth="1px" rounded="md">
-          <Text fontWeight="bold" mb={2}>
-            Azioni
-          </Text>
-          <HStack gap={2} wrap="wrap">
-            <Button
-              size="sm"
-              onClick={() => powerMutation.mutate('start')}
-              disabled={data?.state === 'RUNNING' || powerMutation.isPending}
-              loading={powerMutation.isPending}
-            >
-              Start
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => powerMutation.mutate('stop')}
-              disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
-              loading={powerMutation.isPending}
-            >
-              Stop
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => powerMutation.mutate('restart')}
-              disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
-              loading={powerMutation.isPending}
-            >
-              Restart
-            </Button>
-          </HStack>
-        </Box>
+        </GlassCard>
+        <GridItem colSpan={{ base: 1, md: 2, lg: 3 }}>
+          <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
+            <Text fontWeight="bold" mb={2}>
+              Azioni
+            </Text>
+            <HStack gap={2} wrap="wrap">
+              <GlassButton
+                size="sm"
+                onClick={() => powerMutation.mutate('start')}
+                disabled={data?.state === 'RUNNING' || powerMutation.isPending}
+                loading={powerMutation.isPending}
+                w="130px"
+              >
+                Start
+              </GlassButton>
+              <GlassButton
+                size="sm"
+                onClick={() => powerMutation.mutate('stop')}
+                disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
+                loading={powerMutation.isPending}
+                w="130px"
+              >
+                Stop
+              </GlassButton>
+              <GlassButton
+                size="sm"
+                onClick={() => powerMutation.mutate('restart')}
+                disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
+                loading={powerMutation.isPending}
+                w="130px"
+              >
+                Restart
+              </GlassButton>
+            </HStack>
+          </GlassCard>
+        </GridItem>
       </Grid>
     </Box>
   )

@@ -1,7 +1,10 @@
 import { useMemo, useState, type JSX } from 'react'
 
-import { Box, Button, Heading, HStack, Input, Text } from '@chakra-ui/react'
+import { Box, Heading, HStack, Input, Text } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { GlassButton } from '@/shared/components/GlassButton'
+import { GlassCard } from '@/shared/components/GlassCard'
 
 export default function WhitelistPage(): JSX.Element {
   const qc = useQueryClient()
@@ -34,38 +37,40 @@ export default function WhitelistPage(): JSX.Element {
     <Box p={6}>
       <Heading mb={4}>Whitelist</Heading>
 
-      <HStack mb={4} gap={3} wrap="wrap">
-        <Input
-          placeholder="Username"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          width="auto"
-        />
-        <Button
-          onClick={() => name && mutate.mutate({ action: 'add', player: name })}
-          disabled={!name}
-        >
-          Aggiungi
-        </Button>
-      </HStack>
+      <GlassCard mb={4}>
+        <HStack gap={3} wrap="wrap">
+          <Input
+            placeholder="Username"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            width="auto"
+          />
+          <GlassButton
+            onClick={() => name && mutate.mutate({ action: 'add', player: name })}
+            disabled={!name}
+          >
+            Aggiungi
+          </GlassButton>
+        </HStack>
+      </GlassCard>
 
       {isLoading && <Text>Caricamento…</Text>}
       {isError && <Text color="red">Errore</Text>}
 
-      <Box as="ul" style={{ listStyle: 'none', padding: 0 }}>
+      <GlassCard as="ul" p={2} style={{ listStyle: 'none', padding: 0 }}>
         {players.map((p) => (
-          <Box as="li" key={p} display="flex" alignItems="center" gap={8} mb={2}>
+          <HStack as="li" key={p} justify="space-between" mb={2}>
             <span>{p}</span>
-            <Button
+            <GlassButton
               size="xs"
-              colorPalette="red"
+              colorScheme="red"
               onClick={() => mutate.mutate({ action: 'remove', player: p })}
             >
               Rimuovi
-            </Button>
-          </Box>
+            </GlassButton>
+          </HStack>
         ))}
-      </Box>
+      </GlassCard>
     </Box>
   )
 }

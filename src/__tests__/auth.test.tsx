@@ -1,3 +1,4 @@
+import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -8,15 +9,19 @@ import Login from '../pages/LoginPage'
 
 // Minimal translations provider stub through LanguageProvider
 
+const system = createSystem(defaultConfig)
+
 const setup = () =>
   render(
-    <MemoryRouter>
-      <AuthProvider>
-        <LanguageProvider>
-          <Login />
-        </LanguageProvider>
-      </AuthProvider>
-    </MemoryRouter>
+    <ChakraProvider value={system}>
+      <MemoryRouter>
+        <AuthProvider>
+          <LanguageProvider>
+            <Login />
+          </LanguageProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    </ChakraProvider>
   )
 
 describe('Login flow', () => {

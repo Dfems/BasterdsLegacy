@@ -1,6 +1,10 @@
 import { useState, type JSX } from 'react'
 
-import { Box, Button, Heading, HStack, Input, Text, Textarea } from '@chakra-ui/react'
+import { Box, Heading, HStack, Input, Text, Textarea } from '@chakra-ui/react'
+
+import { GlassButton } from '@/shared/components/GlassButton'
+import { GlassCard } from '@/shared/components/GlassCard'
+import { SimpleSelect } from '@/shared/components/SimpleSelect'
 
 export default function ModpackPage(): JSX.Element {
   const [loader, setLoader] = useState<'Fabric' | 'Forge' | 'Quilt' | 'NeoForge'>('Fabric')
@@ -30,26 +34,30 @@ export default function ModpackPage(): JSX.Element {
   return (
     <Box p={6}>
       <Heading mb={4}>Modpack</Heading>
-      <HStack mb={4} gap={3} wrap="wrap">
-        <select
-          value={loader}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setLoader(e.target.value as 'Fabric' | 'Forge' | 'Quilt' | 'NeoForge')
-          }
-          style={{ padding: '8px', borderRadius: 6 }}
-        >
-          <option value="Fabric">Fabric</option>
-          <option value="Forge">Forge</option>
-          <option value="Quilt">Quilt</option>
-          <option value="NeoForge">NeoForge</option>
-        </select>
-        <Input value={mcVersion} onChange={(e) => setMcVersion(e.target.value)} width="auto" />
-        <Button onClick={runInstall} disabled={busy}>
-          {busy ? 'Installazione…' : 'Installa'}
-        </Button>
-      </HStack>
-      <Text mb={2}>Note</Text>
-      <Textarea value={notes} readOnly rows={12} width="100%" />
+
+      <GlassCard mb={4}>
+        <HStack gap={3} wrap="wrap">
+          <SimpleSelect
+            value={loader}
+            onChange={(v) => setLoader(v as typeof loader)}
+            options={[
+              { value: 'Fabric', label: 'Fabric' },
+              { value: 'Forge', label: 'Forge' },
+              { value: 'Quilt', label: 'Quilt' },
+              { value: 'NeoForge', label: 'NeoForge' },
+            ]}
+          />
+          <Input value={mcVersion} onChange={(e) => setMcVersion(e.target.value)} width="auto" />
+          <GlassButton onClick={runInstall} disabled={busy}>
+            {busy ? 'Installazione…' : 'Installa'}
+          </GlassButton>
+        </HStack>
+      </GlassCard>
+
+      <GlassCard inset>
+        <Text mb={2}>Note</Text>
+        <Textarea value={notes} readOnly rows={12} width="100%" />
+      </GlassCard>
     </Box>
   )
 }
