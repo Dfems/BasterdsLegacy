@@ -29,12 +29,7 @@ export const SimpleSelect = ({
         </GlassButton>
       </Menu.Trigger>
       <Menu.Positioner>
-        <Menu.Content
-          boxShadow="lg"
-          data-variant="glass"
-          color="var(--chakra-colors-text)"
-          zIndex="999"
-        >
+        <Menu.Content boxShadow="lg" color="var(--chakra-colors-text)" zIndex="999">
           {options.map((o) => (
             <Menu.Item key={o.value} value={o.value} onClick={() => onChange(o.value)}>
               {o.label} {o.value === value ? '✓' : ''}

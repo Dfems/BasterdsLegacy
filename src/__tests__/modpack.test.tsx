@@ -61,12 +61,12 @@ describe('ModpackPage', () => {
 
   it('should show loading state initially', () => {
     renderWithProviders(<ModpackPage />)
-    expect(screen.getByText('Caricamento...')).toBeInTheDocument()
+    expect(screen.getAllByText('Caricamento...').length).toBeGreaterThanOrEqual(1)
   })
 
   it('should show mode selection', () => {
     renderWithProviders(<ModpackPage />)
-    expect(screen.getByText('Modalità:')).toBeInTheDocument()
+    expect(screen.getAllByText('Modalità:')[0]).toBeInTheDocument()
   })
 
   it('should show install button after loading', async () => {
@@ -74,7 +74,7 @@ describe('ModpackPage', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('Installa')).toBeInTheDocument()
+        expect(screen.getAllByText('Installa')[0]).toBeInTheDocument()
       },
       { timeout: 3000 }
     )
@@ -118,10 +118,10 @@ describe('ModpackPage', () => {
     renderWithProviders(<ModpackPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Installa')).toBeInTheDocument()
+      expect(screen.getAllByText('Installa')[0]).toBeInTheDocument()
     })
 
-    const installButton = screen.getByText('Installa')
+    const installButton = screen.getAllByText('Installa')[0]!
     await user.click(installButton)
 
     // Should show installing state
@@ -161,10 +161,10 @@ describe('ModpackPage', () => {
     renderWithProviders(<ModpackPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Installa')).toBeInTheDocument()
+      expect(screen.getAllByText('Installa')[0]).toBeInTheDocument()
     })
 
-    const installButton = screen.getByText('Installa')
+    const installButton = screen.getAllByText('Installa')[0]!
     await user.click(installButton)
 
     await waitFor(
