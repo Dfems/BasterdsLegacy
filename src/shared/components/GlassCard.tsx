@@ -11,10 +11,11 @@ export function GlassCard({ children, inset = false, ...props }: GlassCardProps)
       p={inset ? 2 : 4}
       borderWidth="1px"
       rounded="md"
-      bg={inset ? 'whiteAlpha.50' : 'whiteAlpha.100'}
-      borderColor="whiteAlpha.200"
+      bg={inset ? 'surface' : 'surfaceSolid'}
+      borderColor="borderAccent"
       boxShadow={inset ? 'sm' : 'md'}
-      style={{ backdropFilter: 'blur(8px) saturate(120%)' }}
+      style={{ backdropFilter: 'blur(12px) saturate(130%)' }}
+      color="text"
       {...props}
     >
       {children}

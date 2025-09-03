@@ -133,13 +133,13 @@ export default function FilesPage(): JSX.Element {
           <Table.Root data-variant="glass">
             <Table.Header>
               <Table.Row>
-                <Table.ColumnHeader color="green.300">Nome</Table.ColumnHeader>
-                <Table.ColumnHeader color="green.300">Tipo</Table.ColumnHeader>
-                <Table.ColumnHeader textAlign="end" color="green.300">
+                <Table.ColumnHeader color="brand.primary">Nome</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.primary">Tipo</Table.ColumnHeader>
+                <Table.ColumnHeader textAlign="end" color="brand.primary">
                   Dimensione
                 </Table.ColumnHeader>
-                <Table.ColumnHeader color="green.300">Modificato</Table.ColumnHeader>
-                <Table.ColumnHeader color="green.300">Azioni</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.primary">Modificato</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.primary">Azioni</Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
             <Table.Body>

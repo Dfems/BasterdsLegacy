@@ -101,6 +101,7 @@ html.dark [data-scope='button'][data-variant='glass'] {
     0 4px 16px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px) saturate(130%);
+  color: #e5e7eb; /* testo chiaro per tema dark */
 }
 
 html.light [data-scope='button'][data-variant='glass'] {
@@ -110,12 +111,18 @@ html.light [data-scope='button'][data-variant='glass'] {
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px) saturate(130%);
+  color: #1f2937; /* testo scuro per tema light */
 }
 
 [data-scope='button'][data-variant='glass']:hover {
   filter: brightness(1.1) saturate(120%);
   transform: translateY(-1px);
   transition: all 0.2s ease;
+}
+
+/* Ensure all glass buttons have proper text color regardless of Chakra scope */
+[data-variant='glass']:where(button, .chakra-button) {
+  color: var(--chakra-colors-text) !important;
 }
 
 html.dark [data-scope='input'][data-variant='glass'] [data-part='field'] {

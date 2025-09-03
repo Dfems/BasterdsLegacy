@@ -34,20 +34,20 @@ const system = createSystem(defaultConfig, {
         bg: { value: { base: '#f1f5f9', _dark: '#0a0e1a' } },
         bgElevated: { value: { base: '#ffffff', _dark: '#1a1f2e' } },
 
-        // Text - contrasti migliorati
-        text: { value: { base: 'gray.900', _dark: 'gray.50' } },
-        textMuted: { value: { base: 'gray.600', _dark: 'gray.300' } },
-        textSubtle: { value: { base: 'gray.500', _dark: 'gray.400' } },
+        // Text - contrasti migliorati e garantita leggibilità
+        text: { value: { base: '#1f2937', _dark: '#e5e7eb' } },
+        textMuted: { value: { base: '#6b7280', _dark: '#9ca3af' } },
+        textSubtle: { value: { base: '#9ca3af', _dark: '#6b7280' } },
 
         // Borders - più definiti
-        border: { value: { base: 'gray.200', _dark: 'rgba(255, 255, 255, 0.15)' } },
-        borderStrong: { value: { base: 'gray.300', _dark: 'rgba(255, 255, 255, 0.25)' } },
-        borderAccent: { value: { base: '#10b981', _dark: '#34d399' } },
+        border: { value: { base: '#e5e7eb', _dark: 'rgba(255, 255, 255, 0.15)' } },
+        borderStrong: { value: { base: '#d1d5db', _dark: 'rgba(255, 255, 255, 0.25)' } },
+        borderAccent: { value: { base: '#059669', _dark: '#10b981' } },
 
-        // Surface - effetti glass potenziati
+        // Surface - effetti glass potenziati con migliore adattamento tema
         surface: {
           value: {
-            base: 'rgba(255, 255, 255, 0.85)',
+            base: 'rgba(255, 255, 255, 0.9)',
             _dark: 'rgba(16, 185, 129, 0.08)',
           },
         },
@@ -63,7 +63,7 @@ const system = createSystem(defaultConfig, {
         'brand.secondary': { value: { base: '#ea580c', _dark: '#fb923c' } },
         'brand.tertiary': { value: { base: '#1e40af', _dark: '#3b82f6' } },
 
-        // Accent Colors
+        // Accent Colors - correzioni per migliore leggibilità
         'accent.success': { value: { base: '#16a34a', _dark: '#22c55e' } },
         'accent.warning': { value: { base: '#d97706', _dark: '#f59e0b' } },
         'accent.danger': { value: { base: '#dc2626', _dark: '#ef4444' } },
