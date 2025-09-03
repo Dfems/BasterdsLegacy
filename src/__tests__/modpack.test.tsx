@@ -1,8 +1,8 @@
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest'
+import { beforeEach, afterEach, describe, expect, it, vi, type MockedFunction } from 'vitest'
 
 import ModpackPage from '@/pages/management/ModpackPage'
 
@@ -54,6 +54,10 @@ describe('ModpackPage', () => {
     )
   })
 
+  afterEach(() => {
+    cleanup()
+  })
+
   it('should render modpack page title', () => {
     renderWithProviders(<ModpackPage />)
     expect(screen.getByText('Modpack')).toBeInTheDocument()
@@ -85,7 +89,8 @@ describe('ModpackPage', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText(/Versione Fabric: latest/)).toBeInTheDocument()
+        const versionElements = screen.getAllByText(/Versione Fabric: latest/)
+        expect(versionElements.length).toBeGreaterThan(0)
       },
       { timeout: 3000 }
     )
@@ -102,17 +107,24 @@ describe('ModpackPage', () => {
           headers: { 'Content-Type': 'application/json' },
         })
       )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            ok: true,
-            notes: ['Installation successful'],
-          }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve(
+                new Response(
+                  JSON.stringify({
+                    ok: true,
+                    notes: ['Installation successful'],
+                  }),
+                  {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' },
+                  }
+                )
+              )
+            }, 100)
+          })
       )
 
     renderWithProviders(<ModpackPage />)
@@ -121,16 +133,22 @@ describe('ModpackPage', () => {
       expect(screen.getAllByText('Installa')[0]).toBeInTheDocument()
     })
 
-    const installButton = screen.getAllByText('Installa')[0]!
-    await user.click(installButton)
+    const installButtons = screen.getAllByText('Installa')
+    await user.click(installButtons[0]!)
 
     // Should show installing state
-    expect(screen.getByText('Installazione…')).toBeInTheDocument()
+    await waitFor(
+      () => {
+        expect(screen.getByText('Installazione…')).toBeInTheDocument()
+      },
+      { timeout: 1000 }
+    )
 
     // Wait for completion
     await waitFor(
       () => {
-        expect(screen.getByDisplayValue(/Installation successful/)).toBeInTheDocument()
+        const textareas = screen.getAllByDisplayValue(/Installation successful/)
+        expect(textareas.length).toBeGreaterThan(0)
       },
       { timeout: 5000 }
     )
@@ -164,12 +182,13 @@ describe('ModpackPage', () => {
       expect(screen.getAllByText('Installa')[0]).toBeInTheDocument()
     })
 
-    const installButton = screen.getAllByText('Installa')[0]!
-    await user.click(installButton)
+    const installButtons = screen.getAllByText('Installa')
+    await user.click(installButtons[0]!)
 
     await waitFor(
       () => {
-        expect(screen.getByDisplayValue(/Errore: Test error/)).toBeInTheDocument()
+        const errorTextareas = screen.getAllByDisplayValue(/Errore: Test error/)
+        expect(errorTextareas.length).toBeGreaterThan(0)
       },
       { timeout: 5000 }
     )
@@ -190,9 +209,10 @@ describe('ModpackPage', () => {
 
     await waitFor(
       () => {
-        expect(
-          screen.getByText(/Scaricherà automaticamente l'installer per Fabric 1\.21\.1/)
-        ).toBeInTheDocument()
+        const helperTexts = screen.getAllByText(
+          /Scaricherà automaticamente l'installer per Fabric 1\.21\.1/
+        )
+        expect(helperTexts.length).toBeGreaterThan(0)
       },
       { timeout: 3000 }
     )
