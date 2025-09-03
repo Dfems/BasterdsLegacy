@@ -29,7 +29,7 @@ export const SimpleSelect = ({
         </GlassButton>
       </Menu.Trigger>
       <Menu.Positioner>
-        <Menu.Content boxShadow="lg">
+        <Menu.Content boxShadow="lg" data-variant="glass">
           {options.map((o) => (
             <Menu.Item key={o.value} value={o.value} onClick={() => onChange(o.value)}>
               {o.label} {o.value === value ? '✓' : ''}
