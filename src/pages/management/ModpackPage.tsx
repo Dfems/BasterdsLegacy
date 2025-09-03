@@ -1,4 +1,4 @@
-import { useState, useMemo, type JSX } from 'react'
+import { useMemo, useState, type JSX } from 'react'
 
 import { Box, Heading, HStack, Input, Text, Textarea, VStack } from '@chakra-ui/react'
 
