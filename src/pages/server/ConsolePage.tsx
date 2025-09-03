@@ -116,15 +116,19 @@ export default function ConsolePage(): JSX.Element {
   const clearOutput = () => setOutput('')
 
   return (
-    <Box p={{ base: 4, md: 6 }}> {/* Padding responsive */}
-      <Heading mb={2} fontSize={{ base: 'md', md: 'lg' }}>{t.consoleTitle}</Heading> {/* Font size responsive */}
+    <Box p={{ base: 4, md: 6 }}>
+      {' '}
+      {/* Padding responsive */}
+      <Heading mb={2} fontSize={{ base: 'md', md: 'lg' }}>
+        {t.consoleTitle}
+      </Heading>{' '}
+      {/* Font size responsive */}
       <HStack mb={4} gap={3} align="center" wrap="wrap">
         <Text fontSize={{ base: 'sm', md: 'md' }}>Stato server:</Text> {/* Font size responsive */}
         <Badge colorPalette={serverRunning ? 'green' : 'red'} variant="solid">
           {serverRunning ? 'Avviato' : 'Spento'}
         </Badge>
       </HStack>
-
       <Stack direction={{ base: 'column', md: 'row' }} gap={4} align="stretch">
         <Box
           p={4}
@@ -136,7 +140,9 @@ export default function ConsolePage(): JSX.Element {
           boxShadow="md"
           style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
         >
-          <Stack gap={3}> {/* Aumentato gap per mobile */}
+          <Stack gap={3}>
+            {' '}
+            {/* Aumentato gap per mobile */}
             <GlassButton
               size={{ base: 'sm', md: 'md' }} // Size responsive
               onClick={() => void power(serverRunning ? 'stop' : 'start')}
@@ -153,9 +159,9 @@ export default function ConsolePage(): JSX.Element {
             >
               Restart
             </GlassButton>
-            <GlassButton 
+            <GlassButton
               size={{ base: 'sm', md: 'md' }} // Size responsive
-              onClick={clearOutput} 
+              onClick={clearOutput}
               disabled={busy}
               minH="44px" // Touch target minimo
             >
@@ -175,12 +181,12 @@ export default function ConsolePage(): JSX.Element {
           style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
         >
           <Box as="form" onSubmit={handleSubmit} mb={3} display="flex" gap={2} flexWrap="wrap">
-            <label 
-              htmlFor="command" 
-              style={{ 
+            <label
+              htmlFor="command"
+              style={{
                 alignSelf: 'center',
                 fontSize: '14px', // Font size specifico per label
-                minWidth: '100%' // Su mobile va su riga separata
+                minWidth: '100%', // Su mobile va su riga separata
               }}
             >
               {t.commandLabel}
@@ -195,8 +201,8 @@ export default function ConsolePage(): JSX.Element {
               minH="44px" // Touch target minimo
               fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
             />
-            <GlassButton 
-              type="submit" 
+            <GlassButton
+              type="submit"
               size={{ base: 'sm', md: 'md' }} // Size responsive
               disabled={busy || !serverRunning}
               minH="44px" // Touch target minimo
@@ -206,14 +212,16 @@ export default function ConsolePage(): JSX.Element {
             </GlassButton>
           </Box>
 
-          <Heading size={{ base: 'sm', md: 'md' }} mb={2}> {/* Font size responsive */}
+          <Heading size={{ base: 'sm', md: 'md' }} mb={2}>
+            {' '}
+            {/* Font size responsive */}
             {t.consoleOutputTitle}
           </Heading>
-          <Textarea 
-            ref={outputRef} 
-            readOnly 
+          <Textarea
+            ref={outputRef}
+            readOnly
             rows={15} // Valore fisso, ottimizzato per mobile
-            value={output} 
+            value={output}
             resize="vertical"
             fontSize={{ base: 'xs', md: 'sm' }} // Font size responsive per output
           />

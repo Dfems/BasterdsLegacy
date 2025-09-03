@@ -96,13 +96,21 @@ export default function FilesPage(): JSX.Element {
   const rows = useMemo(() => data?.entries ?? [], [data])
 
   return (
-    <Box p={{ base: 4, md: 6 }}> {/* Padding responsive */}
-      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>Files</Heading> {/* Font size responsive */}
-
-      <GlassCard mb={4} p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-        <HStack gap={3} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}> {/* Centrato su mobile */}
-          <GlassButton 
-            onClick={() => goTo(parentPath(path))} 
+    <Box p={{ base: 4, md: 6 }}>
+      {' '}
+      {/* Padding responsive */}
+      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
+        Files
+      </Heading>{' '}
+      {/* Font size responsive */}
+      <GlassCard mb={4} p={{ base: 3, md: 4 }}>
+        {' '}
+        {/* Padding responsive */}
+        <HStack gap={3} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
+          {' '}
+          {/* Centrato su mobile */}
+          <GlassButton
+            onClick={() => goTo(parentPath(path))}
             disabled={path === '/'}
             size={{ base: 'sm', md: 'md' }} // Size responsive
             minH="44px" // Touch target
@@ -118,7 +126,7 @@ export default function FilesPage(): JSX.Element {
             minH="44px" // Touch target
             fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
           />
-          <GlassButton 
+          <GlassButton
             onClick={() => qc.invalidateQueries({ queryKey: ['files'] })}
             size={{ base: 'sm', md: 'md' }} // Size responsive
             minH="44px" // Touch target
@@ -137,19 +145,24 @@ export default function FilesPage(): JSX.Element {
           />
         </HStack>
       </GlassCard>
-
       {isLoading && <Text fontSize={{ base: 'sm', md: 'md' }}>Caricamento…</Text>}
-      {isError && <Text color="red" fontSize={{ base: 'sm', md: 'md' }}>Errore nel caricamento.</Text>}
-
-      {!isLoading && rows.length === 0 && <Text fontSize={{ base: 'sm', md: 'md' }}>Nessun elemento</Text>}
-
+      {isError && (
+        <Text color="red" fontSize={{ base: 'sm', md: 'md' }}>
+          Errore nel caricamento.
+        </Text>
+      )}
+      {!isLoading && rows.length === 0 && (
+        <Text fontSize={{ base: 'sm', md: 'md' }}>Nessun elemento</Text>
+      )}
       {/* Mobile: Card layout */}
       <Box display={{ base: 'block', md: 'none' }}>
         {rows.map((e) => (
           <GlassCard key={e.name} mb={3} p={3}>
             <HStack justify="space-between" align="start" wrap="wrap">
               <Box flex="1" minW="0">
-                <Text fontWeight="bold" fontSize="sm" mb={1} truncate> {/* truncate invece di noOfLines */}
+                <Text fontWeight="bold" fontSize="sm" mb={1} truncate>
+                  {' '}
+                  {/* truncate invece di noOfLines */}
                   {e.type === 'dir' ? (
                     <GlassButton size="xs" onClick={() => goTo(joinPath(path, e.name))} minH="32px">
                       📁 {e.name}
@@ -195,7 +208,6 @@ export default function FilesPage(): JSX.Element {
           </GlassCard>
         ))}
       </Box>
-
       {/* Desktop: Table layout */}
       {rows.length > 0 && (
         <GlassCard inset display={{ base: 'none', md: 'block' }}>

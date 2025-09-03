@@ -29,19 +29,27 @@ export default function Login(): JSX.Element {
   }
 
   return (
-    <Box p={{ base: 4, md: 6 }} display="flex" justifyContent="center"> {/* Padding responsive */}
-      <GlassCard as="form" onSubmit={handleSubmit} maxW={440} w="100%" p={{ base: 4, md: 6 }}> {/* Padding responsive */}
-        <Heading size={{ base: 'md', md: 'lg' }} mb={4} textAlign="center"> {/* Font size responsive */}
+    <Box p={{ base: 4, md: 6 }} display="flex" justifyContent="center">
+      {' '}
+      {/* Padding responsive */}
+      <GlassCard as="form" onSubmit={handleSubmit} maxW={440} w="100%" p={{ base: 4, md: 6 }}>
+        {' '}
+        {/* Padding responsive */}
+        <Heading size={{ base: 'md', md: 'lg' }} mb={4} textAlign="center">
+          {' '}
+          {/* Font size responsive */}
           {t.loginTitle}
         </Heading>
-        <Stack gap={4}> {/* Aumentato gap per mobile */}
+        <Stack gap={4}>
+          {' '}
+          {/* Aumentato gap per mobile */}
           <Box>
-            <label 
-              htmlFor="username" 
-              style={{ 
-                display: 'block', 
+            <label
+              htmlFor="username"
+              style={{
+                display: 'block',
                 marginBottom: 8, // Aumentato per mobile
-                fontSize: '14px' // Font size specifico per label
+                fontSize: '14px', // Font size specifico per label
               }}
             >
               Utente
@@ -57,12 +65,12 @@ export default function Login(): JSX.Element {
             />
           </Box>
           <Box>
-            <label 
-              htmlFor="password" 
-              style={{ 
-                display: 'block', 
+            <label
+              htmlFor="password"
+              style={{
+                display: 'block',
                 marginBottom: 8, // Aumentato per mobile
-                fontSize: '14px' // Font size specifico per label
+                fontSize: '14px', // Font size specifico per label
               }}
             >
               Password

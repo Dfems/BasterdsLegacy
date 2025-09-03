@@ -69,16 +69,23 @@ const DashboardPage = (): JSX.Element => {
   }, [data?.state])
 
   return (
-    <Box p={{ base: 4, md: 6 }}> {/* Padding responsive */}
-      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>Dashboard</Heading> {/* Font size responsive */}
+    <Box p={{ base: 4, md: 6 }}>
+      {' '}
+      {/* Padding responsive */}
+      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
+        Dashboard
+      </Heading>{' '}
+      {/* Font size responsive */}
       {err && (
-        <Text color="accent.danger" mb={4} fontSize={{ base: 'sm', md: 'md' }}> {/* Font size responsive */}
+        <Text color="accent.danger" mb={4} fontSize={{ base: 'sm', md: 'md' }}>
+          {' '}
+          {/* Font size responsive */}
           {err}
         </Text>
       )}
       {note && (
-        <Text 
-          color={note.type === 'success' ? 'accent.success' : 'accent.danger'} 
+        <Text
+          color={note.type === 'success' ? 'accent.success' : 'accent.danger'}
           mb={2}
           fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
         >
@@ -91,29 +98,99 @@ const DashboardPage = (): JSX.Element => {
         gap={{ base: 3, md: 4 }} // Gap responsive
         alignItems="stretch"
       >
-        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>State</Text> {/* Font size responsive */}
-          <Text color={stateColor} fontSize={{ base: 'sm', md: 'md' }}>{data?.state ?? (isFetching ? 'Loading…' : 'Unknown')}</Text>
-          <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>PID: {data?.pid ?? '-'}</Text> {/* Font size responsive */}
+        <GlassCard
+          h="100%"
+          display="flex"
+          flexDirection="column"
+          justifyContent="space-between"
+          p={{ base: 3, md: 4 }}
+        >
+          {' '}
+          {/* Padding responsive */}
+          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
+            State
+          </Text>{' '}
+          {/* Font size responsive */}
+          <Text color={stateColor} fontSize={{ base: 'sm', md: 'md' }}>
+            {data?.state ?? (isFetching ? 'Loading…' : 'Unknown')}
+          </Text>
+          <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
+            PID: {data?.pid ?? '-'}
+          </Text>{' '}
+          {/* Font size responsive */}
         </GlassCard>
-        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>CPU</Text> {/* Font size responsive */}
-          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${(data.cpu * 100).toFixed(1)}%` : '-'}</Text> {/* Font size responsive */}
+        <GlassCard
+          h="100%"
+          display="flex"
+          flexDirection="column"
+          justifyContent="space-between"
+          p={{ base: 3, md: 4 }}
+        >
+          {' '}
+          {/* Padding responsive */}
+          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
+            CPU
+          </Text>{' '}
+          {/* Font size responsive */}
+          <Text fontSize={{ base: 'sm', md: 'md' }}>
+            {data ? `${(data.cpu * 100).toFixed(1)}%` : '-'}
+          </Text>{' '}
+          {/* Font size responsive */}
         </GlassCard>
-        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>Memory</Text> {/* Font size responsive */}
-          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${data.memMB} MB` : '-'}</Text> {/* Font size responsive */}
+        <GlassCard
+          h="100%"
+          display="flex"
+          flexDirection="column"
+          justifyContent="space-between"
+          p={{ base: 3, md: 4 }}
+        >
+          {' '}
+          {/* Padding responsive */}
+          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
+            Memory
+          </Text>{' '}
+          {/* Font size responsive */}
+          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${data.memMB} MB` : '-'}</Text>{' '}
+          {/* Font size responsive */}
         </GlassCard>
-        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>Uptime</Text> {/* Font size responsive */}
-          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? fmtUptime(data.uptimeMs) : '-'}</Text> {/* Font size responsive */}
+        <GlassCard
+          h="100%"
+          display="flex"
+          flexDirection="column"
+          justifyContent="space-between"
+          p={{ base: 3, md: 4 }}
+        >
+          {' '}
+          {/* Padding responsive */}
+          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
+            Uptime
+          </Text>{' '}
+          {/* Font size responsive */}
+          <Text fontSize={{ base: 'sm', md: 'md' }}>
+            {data ? fmtUptime(data.uptimeMs) : '-'}
+          </Text>{' '}
+          {/* Font size responsive */}
         </GlassCard>
-        <GridItem colSpan={{ base: 1, sm: 2, lg: 3 }}> {/* Migliorato colSpan per mobile */}
-          <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-            <Text fontWeight="bold" mb={2} fontSize={{ base: 'sm', md: 'md' }}> {/* Font size responsive */}
+        <GridItem colSpan={{ base: 1, sm: 2, lg: 3 }}>
+          {' '}
+          {/* Migliorato colSpan per mobile */}
+          <GlassCard
+            h="100%"
+            display="flex"
+            flexDirection="column"
+            justifyContent="space-between"
+            p={{ base: 3, md: 4 }}
+          >
+            {' '}
+            {/* Padding responsive */}
+            <Text fontWeight="bold" mb={2} fontSize={{ base: 'sm', md: 'md' }}>
+              {' '}
+              {/* Font size responsive */}
               Azioni
             </Text>
-            <HStack gap={2} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}> {/* Centrato su mobile */}
+            <HStack gap={2} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
+              {' '}
+              {/* Centrato su mobile */}
               <GlassButton
                 size={{ base: 'sm', md: 'md' }} // Size responsive
                 onClick={() => powerMutation.mutate('start')}
