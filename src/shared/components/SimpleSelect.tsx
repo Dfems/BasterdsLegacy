@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
 
-import { Menu, type ButtonProps } from '@chakra-ui/react'
+import { Menu, Portal, type ButtonProps } from '@chakra-ui/react'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import type { Option } from '@/types/common'
@@ -22,21 +22,33 @@ export const SimpleSelect = ({
 }: Props): JSX.Element => {
   const current = options.find((o) => o.value === value)?.label ?? value
   return (
-    <Menu.Root data-variant="glass">
+    <Menu.Root>
       <Menu.Trigger asChild>
         <GlassButton size={size} {...buttonProps}>
           {current}
         </GlassButton>
       </Menu.Trigger>
-      <Menu.Positioner>
-        <Menu.Content boxShadow="lg">
-          {options.map((o) => (
-            <Menu.Item key={o.value} value={o.value} onClick={() => onChange(o.value)}>
-              {o.label} {o.value === value ? '✓' : ''}
-            </Menu.Item>
-          ))}
-        </Menu.Content>
-      </Menu.Positioner>
+      <Portal>
+        <Menu.Positioner zIndex="9999">
+          <Menu.Content
+            data-variant="glass"
+            boxShadow="lg"
+            color="var(--chakra-colors-text)"
+            zIndex={9999}
+          >
+            {options.map((o) => (
+              <Menu.Item
+                key={o.value}
+                value={o.value}
+                onClick={() => onChange(o.value)}
+                color={o.value === value ? 'accent' : 'inherit'}
+              >
+                {o.label} {o.value === value ? '✓' : ''}
+              </Menu.Item>
+            ))}
+          </Menu.Content>
+        </Menu.Positioner>
+      </Portal>
     </Menu.Root>
   )
 }

@@ -1,8 +1,21 @@
 import type { FastifyInstance, FastifyPluginCallback } from 'fastify'
 
-import { installModpack, type InstallRequest } from '../minecraft/modpack.js'
+import { installModpack, getSupportedVersions, type InstallRequest } from '../minecraft/modpack.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
+  // Endpoint per ottenere le versioni supportate
+  fastify.get(
+    '/api/modpack/versions',
+    {
+      preHandler: fastify.authorize('user'),
+    },
+    async (_req, reply) => {
+      const versions = await getSupportedVersions()
+      return { ok: true, versions }
+    }
+  )
+
+  // Endpoint per installare modpack
   fastify.post(
     '/api/modpack/install',
     {
@@ -11,12 +24,27 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     },
     async (req, reply) => {
       const body = (await req.body) as Partial<InstallRequest>
-      if (!body.loader || !body.mcVersion) return reply.status(400).send({ error: 'Invalid body' })
-      const res = await installModpack({
-        loader: body.loader,
-        mcVersion: body.mcVersion,
-        manifest: body.manifest,
-      })
+
+      // Validazione per modalità automatica
+      if (body.mode === 'automatic') {
+        if (!body.loader || !body.mcVersion) {
+          return reply
+            .status(400)
+            .send({ error: 'Loader e versione MC sono richiesti per modalità automatica' })
+        }
+      }
+      // Validazione per modalità manuale
+      else if (body.mode === 'manual') {
+        if (!body.jarFileName) {
+          return reply
+            .status(400)
+            .send({ error: 'Nome del file JAR è richiesto per modalità manuale' })
+        }
+      } else {
+        return reply.status(400).send({ error: 'Modalità di installazione non specificata' })
+      }
+
+      const res = await installModpack(body as InstallRequest)
       try {
         await (
           await import('../lib/audit.js')
