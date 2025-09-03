@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { jwtDecode } from 'jwt-decode'
 
-import AuthContext, { type AuthContextType } from './AuthContext'
+import type { AuthContextType } from '@/types/auth'
+
+import AuthContext from './AuthContext'
 
 interface Props {
   children: ReactNode
