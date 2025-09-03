@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from 'react'
 
-export type ThemeMode = 'system' | 'light' | 'dark'
+import type { ThemeMode } from '@/types/theme'
 
 type Ctx = {
   mode: ThemeMode
@@ -78,3 +78,6 @@ export const useThemeMode = (): Ctx => {
   if (!ctx) return { mode: 'system', setMode: () => {}, resolved: 'dark' }
   return ctx
 }
+
+// Re-export the centralized ThemeMode type
+export type { ThemeMode } from '@/types/theme'

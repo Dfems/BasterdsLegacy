@@ -3,8 +3,7 @@ import type { JSX } from 'react'
 import { Menu, type ButtonProps } from '@chakra-ui/react'
 
 import { GlassButton } from '@/shared/components/GlassButton'
-
-export type Option = { value: string; label: string }
+import type { Option } from '@/types/common'
 
 type Props = {
   value: string
