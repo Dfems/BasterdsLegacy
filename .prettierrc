@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "printWidth": 100,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "semi": false,
+  "arrowParens": "always",
+  "endOfLine": "auto",
+  "plugins": ["prettier-plugin-packagejson", "@trivago/prettier-plugin-sort-imports"],
+  "importOrder": ["^react$", "^@?\\w", "^@/(.*)$", "^[./]"],
+  "importOrderSeparation": true
+}

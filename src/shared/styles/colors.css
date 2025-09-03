@@ -1,0 +1,82 @@
+/* Gaming-inspired Color Palette - BasterdsLegacy */
+:root {
+  /* Brand Colors */
+  --color-brand-primary: #10b981;
+  --color-brand-primary-dark: #059669;
+  --color-brand-secondary: #fb923c;
+  --color-brand-secondary-dark: #ea580c;
+  --color-brand-tertiary: #3b82f6;
+  --color-brand-tertiary-dark: #1e40af;
+
+  /* Gaming Accent Colors */
+  --color-gaming-success: #22c55e;
+  --color-gaming-success-dark: #16a34a;
+  --color-gaming-warning: #f59e0b;
+  --color-gaming-warning-dark: #d97706;
+  --color-gaming-danger: #ef4444;
+  --color-gaming-danger-dark: #dc2626;
+  --color-gaming-info: #0ea5e9;
+  --color-gaming-info-dark: #0284c7;
+
+  /* Special Gaming Colors */
+  --color-gaming-gold: #eab308;
+  --color-gaming-gold-dark: #ca8a04;
+  --color-gaming-crystal: #a855f7;
+  --color-gaming-crystal-dark: #7c3aed;
+
+  /* Background Gradients */
+  --gradient-glass-light: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(5, 150, 105, 0.08) 100%
+  );
+  --gradient-glass-dark: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.08) 0%,
+    rgba(16, 185, 129, 0.04) 100%
+  );
+
+  /* Glass Effects */
+  --glass-blur: blur(12px) saturate(130%);
+  --glass-blur-subtle: blur(8px) saturate(120%);
+  --glass-blur-strong: blur(16px) saturate(140%);
+
+  /* Shadows */
+  --shadow-glass-light: 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --shadow-glass-dark: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-gaming: 0 4px 20px rgba(16, 185, 129, 0.2);
+}
+
+/* Theme-specific overrides */
+.light {
+  --color-brand-active: var(--color-brand-primary-dark);
+  --color-accent-active: var(--color-brand-secondary-dark);
+  --gradient-glass: var(--gradient-glass-light);
+  --shadow-glass: var(--shadow-glass-light);
+}
+
+.dark {
+  --color-brand-active: var(--color-brand-primary);
+  --color-accent-active: var(--color-brand-secondary);
+  --gradient-glass: var(--gradient-glass-dark);
+  --shadow-glass: var(--shadow-glass-dark);
+}
+
+/* Utility classes for quick gaming-themed styling */
+.gaming-accent-primary {
+  color: var(--color-brand-active);
+}
+
+.gaming-accent-secondary {
+  color: var(--color-accent-active);
+}
+
+.gaming-bg-glass {
+  background: var(--gradient-glass);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-glass);
+}
+
+.gaming-border-accent {
+  border-color: var(--color-brand-active);
+}

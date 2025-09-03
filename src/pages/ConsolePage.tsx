@@ -1,294 +1,196 @@
 import {
-  useState,
+  useCallback,
   useContext,
   useEffect,
   useRef,
-  useCallback,
+  useState,
   type FormEvent,
-  type JSX
-} from 'react';
-import { useNavigate } from 'react-router-dom';
-import useLanguage from '../hooks/useLanguage';
-import AuthContext from '../contexts/AuthContext';
-import '../styles/App.css';
+  type JSX,
+} from 'react'
+
+import { Badge, Box, HStack, Heading, Input, Stack, Text, Textarea } from '@chakra-ui/react'
+
+import { GlassButton } from '@/shared/components/GlassButton'
+
+import AuthContext from '../contexts/AuthContext'
+import useLanguage from '../hooks/useLanguage'
+
+type WsMsg = { type?: string; data?: unknown }
 
 export default function ConsolePage(): JSX.Element {
-  const { t } = useLanguage();
-  const { token } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const { t } = useLanguage()
+  const { token } = useContext(AuthContext)
 
-  // — stati principali —
-  const [command, setCommand]           = useState('');
-  const [output, setOutput]             = useState('');
-  const [busy, setBusy]                 = useState(false);
-  const [serverRunning, setServerRunning] = useState(false);
-  const [eventSource, setEventSource]   = useState<EventSource | null>(null);
+  const [command, setCommand] = useState('')
+  const [output, setOutput] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [serverRunning, setServerRunning] = useState(false)
+  const wsRef = useRef<WebSocket | null>(null)
+  const outputRef = useRef<HTMLTextAreaElement>(null)
 
-  const outputRef = useRef<HTMLTextAreaElement>(null);
-
-  // Redirect to login
+  // auto scroll
   useEffect(() => {
-    if (!token) navigate('/login', { replace: true });
-  }, [token, navigate]);
+    const el = outputRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [output])
 
-  // Auto-scroll dell’output
-  useEffect(() => {
-    const el = outputRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [output]);
-
-  // 1) FETCH STATUS
   const fetchStatus = useCallback(async () => {
     try {
-      const resp = await fetch('/api/status', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const { running } = await resp.json();
-      setServerRunning(running);
+      const resp = await fetch('/api/status')
+      const data = (await resp.json()) as { running?: boolean }
+      setServerRunning(Boolean(data.running))
     } catch {
-      setServerRunning(false);
+      setServerRunning(false)
     }
-  }, [token]);
+  }, [])
 
+  // connect WS when token and running
   useEffect(() => {
-    if (token) fetchStatus();
-  }, [token, fetchStatus]);
-
-  // 2) LOG HISTORY + STREAM
-  const fetchLogsHistoryAndStream = useCallback(async () => {
-    // storicizziamo
-    try {
-      const resp = await fetch('/api/logs/history?lines=200', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const text = await resp.text();
-      setOutput(text);
-    } catch (err) {
-      setOutput(o => o + `Errore history: ${(err as Error).message}\n`);
-    }
-    // SSE live
-    eventSource?.close();
-    const es = new EventSource('/api/logs/stream');
-    es.onmessage = e => setOutput(o => o + e.data + '\n');
-    setEventSource(es);
-  }, [token, eventSource]);
-
-  // quando il server diventa “running” carichiamo i log
-  useEffect(() => {
-    if (serverRunning) {
-      fetchLogsHistoryAndStream();
-    } else {
-      // se spento, chiudiamo lo stream
-      eventSource?.close();
-      setEventSource(null);
-      setOutput(''); // puliamo console
-    }
-  }, [serverRunning, fetchLogsHistoryAndStream, eventSource]);
-
-  // 3) RCON: invio comandi di gioco
-  const sendMcCommand = useCallback(async (cmd: string) => {
-    setOutput(o => o + `> ${cmd}\n`);
-    const resp = await fetch('/api/mc-command', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ command: cmd })
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || resp.statusText);
-    setOutput(o => o + data.output + '\n');
-  }, [token]);
-
-  // 4) INSTALL
-  const runInstall = useCallback(async () => {
-    const jar   = prompt('Nome del file JAR:');
-    const minGb = jar ? prompt('RAM minima (GB):') : null;
-    const maxGb = minGb ? prompt('RAM massima (GB):') : null;
-    if (!jar || !minGb || !maxGb) return alert('Installazione annullata.');
-
-    setBusy(true);
-    setOutput('');
-    try {
-      const resp = await fetch('/api/install', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ jarName: jar, minGb, maxGb })
-      });
-      const reader  = resp.body!.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-      while (!done) {
-        const { value, done: rDone } = await reader.read();
-        if (value) setOutput(o => o + decoder.decode(value, { stream: true }));
-        done = rDone;
+    if (!token) return
+    const connect = () => {
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+      const ws = new WebSocket(
+        `${proto}://${location.host}/ws/console?token=${encodeURIComponent(token)}`
+      )
+      wsRef.current = ws
+      ws.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data as string) as WsMsg
+          if (msg.type === 'log' && typeof msg.data === 'string') {
+            setOutput((o) => o + msg.data + '\n')
+          } else if (msg.type === 'status' && msg.data && typeof msg.data === 'object') {
+            const running = (msg.data as { running?: boolean }).running
+            if (typeof running === 'boolean') setServerRunning(running)
+          }
+        } catch {
+          // ignore
+        }
       }
-      setOutput(o => o + '\nInstallazione completata.\n');
-    } catch (err) {
-      setOutput(o => o + `\nErrore install: ${(err as Error).message}\n`);
-    } finally {
-      setBusy(false);
-      fetchStatus();
+      ws.onclose = () => {
+        wsRef.current = null
+      }
     }
-  }, [token, fetchStatus]);
-
-  // 5) START / STOP / RESTART / DELETE
-  const startServer = useCallback(async () => {
-    setBusy(true);
-    try {
-      await fetch('/api/start', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOutput(o => o + 'Avviando server…\n');
-      setServerRunning(true);
-    } catch (err) {
-      setOutput(o => o + `Errore start: ${(err as Error).message}\n`);
-    } finally {
-      setBusy(false);
+    fetchStatus().then(connect).catch(connect)
+    return () => {
+      wsRef.current?.close()
+      wsRef.current = null
     }
-  }, [token]);
+  }, [token, fetchStatus])
 
-  const stopServer = useCallback(async () => {
-    setBusy(true);
-    try {
-      await fetch('/api/stop', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOutput(o => o + 'Server fermato.\n');
-      setServerRunning(false);
-    } catch (err) {
-      setOutput(o => o + `Errore stop: ${(err as Error).message}\n`);
-    } finally {
-      setBusy(false);
-    }
-  }, [token]);
+  const sendCmd = useCallback((cmd: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
+    const payload = JSON.stringify({ type: 'cmd', data: cmd })
+    wsRef.current.send(payload)
+    setOutput((o) => o + `> ${cmd}\n`)
+  }, [])
 
-  const restartServer = useCallback(async () => {
-    setBusy(true);
-    try {
-      await fetch('/api/restart', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOutput(o => o + 'Server riavviato.\n');
-      setServerRunning(true);
-    } catch (err) {
-      setOutput(o => o + `Errore restart: ${(err as Error).message}\n`);
-    } finally {
-      setBusy(false);
-    }
-  }, [token]);
-
-  const deleteServer = useCallback(async () => {
-    if (!confirm('Eliminare tutti i file del server?')) return;
-    setBusy(true);
-    try {
-      await fetch('/api/delete', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOutput(o => o + 'Server eliminato.\n');
-      setServerRunning(false);
-    } catch (err) {
-      setOutput(o => o + `Errore delete: ${(err as Error).message}\n`);
-    } finally {
-      setBusy(false);
-    }
-  }, [token]);
-
-  const clearOutput = () => setOutput('');
-
-  // 6) Invio comandi di gioco
   const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!serverRunning) return;
-    const trimmed = command.trim();
-    if (trimmed) sendMcCommand(trimmed);
-    setCommand('');
-  };
+    e.preventDefault()
+    if (!serverRunning) return
+    const trimmed = command.trim()
+    if (trimmed) sendCmd(trimmed)
+    setCommand('')
+  }
 
-  // 7) Pulsanti
-  const shortcuts = [
-    { label: 'Install', action: runInstall, disabled: busy },
-    {
-      label: serverRunning ? 'Stop' : 'Start',
-      action: serverRunning ? stopServer : startServer,
-      disabled: busy
+  const power = useCallback(
+    async (action: 'start' | 'stop' | 'restart') => {
+      setBusy(true)
+      try {
+        await fetch('/api/power', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action }),
+        })
+        if (action === 'start') setOutput((o) => o + 'Avvio in corso...\n')
+        if (action === 'stop') setOutput((o) => o + 'Arresto in corso...\n')
+        if (action === 'restart') setOutput((o) => o + 'Riavvio in corso...\n')
+        await fetchStatus()
+      } catch (e) {
+        setOutput((o) => o + `Errore power: ${(e as Error).message}\n`)
+      } finally {
+        setBusy(false)
+      }
     },
-    {
-      label: 'Restart',
-      action: restartServer,
-      disabled: busy || !serverRunning
-    },
-    {
-      label: 'Delete',
-      action: deleteServer,
-      disabled: busy
-    },
-    {
-      label: 'Clear',
-      action: clearOutput,
-      disabled: busy
-    }
-  ];
+    [fetchStatus]
+  )
+
+  const clearOutput = () => setOutput('')
 
   return (
-    <div className="console-container">
-      <aside className="sidebar-buttons">
-        {shortcuts.map(({ label, action, disabled }) => (
-          <button
-            key={label}
-            onClick={action}
-            disabled={disabled}
-          >
-            {busy && label === 'Install' ? 'Install…' : label}
-          </button>
-        ))}
-      </aside>
+    <Box p={6}>
+      <Heading mb={2}>{t.consoleTitle}</Heading>
+      <HStack mb={4} gap={3} align="center" wrap="wrap">
+        <Text>Stato server:</Text>
+        <Badge colorPalette={serverRunning ? 'green' : 'red'} variant="solid">
+          {serverRunning ? 'Avviato' : 'Spento'}
+        </Badge>
+      </HStack>
 
-      <main className="console-main">
-        <h1>{t.consoleTitle}</h1>
+      <Stack direction={{ base: 'column', md: 'row' }} gap={4} align="stretch">
+        <Box
+          p={4}
+          borderWidth="1px"
+          rounded="md"
+          bg="whiteAlpha.100"
+          borderColor="whiteAlpha.200"
+          minW={{ md: '220px' }}
+          boxShadow="md"
+          style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
+        >
+          <Stack gap={2}>
+            <GlassButton
+              size="sm"
+              onClick={() => void power(serverRunning ? 'stop' : 'start')}
+              disabled={busy}
+            >
+              {serverRunning ? 'Stop' : 'Start'}
+            </GlassButton>
+            <GlassButton
+              size="sm"
+              onClick={() => void power('restart')}
+              disabled={busy || !serverRunning}
+            >
+              Restart
+            </GlassButton>
+            <GlassButton size="sm" onClick={clearOutput} disabled={busy}>
+              Clear
+            </GlassButton>
+          </Stack>
+        </Box>
 
-        {/* Stato server */}
-        <div>
-          Stato server:{' '}
-          {serverRunning ? (
-            <span style={{ color: 'green' }}>Avviato</span>
-          ) : (
-            <span style={{ color: 'red' }}>Spento</span>
-          )}
-        </div>
+        <Box
+          flex="1"
+          p={4}
+          borderWidth="1px"
+          rounded="md"
+          bg="whiteAlpha.100"
+          borderColor="whiteAlpha.200"
+          boxShadow="md"
+          style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
+        >
+          <Box as="form" onSubmit={handleSubmit} mb={3} display="flex" gap={2} flexWrap="wrap">
+            <label htmlFor="command" style={{ alignSelf: 'center' }}>
+              {t.commandLabel}
+            </label>
+            <Input
+              id="command"
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              disabled={busy || !serverRunning}
+              flex="1"
+              minW={{ base: '100%', sm: '280px' }}
+            />
+            <GlassButton type="submit" size="sm" disabled={busy || !serverRunning}>
+              Invia
+            </GlassButton>
+          </Box>
 
-        {/* Form comandi di gioco */}
-        <form onSubmit={handleSubmit} className="command-form">
-          <label htmlFor="command">{t.commandLabel}</label>
-          <input
-            id="command"
-            type="text"
-            value={command}
-            onChange={e => setCommand(e.target.value)}
-            disabled={busy || !serverRunning}
-            required
-          />
-        </form>
-
-        {/* Output console */}
-        <h2>{t.consoleOutputTitle}</h2>
-        <textarea
-          ref={outputRef}
-          readOnly
-          rows={25}
-          cols={130}
-          value={output}
-          className="console-output"
-        />
-      </main>
-    </div>
-  );
+          <Heading size="sm" mb={2}>
+            {t.consoleOutputTitle}
+          </Heading>
+          <Textarea ref={outputRef} readOnly rows={20} value={output} resize="vertical" />
+        </Box>
+      </Stack>
+    </Box>
+  )
 }

@@ -1,59 +1,42 @@
-import React from 'react';
-import '../styles/App.css';
-import useLanguage from '../hooks/useLanguage';
+import type { JSX } from 'react'
 
-const HomePage: React.FC = () => {
-  const { t } = useLanguage();
+import { Box, Link as ChakraLink, Heading, Stack, Text } from '@chakra-ui/react'
+
+import { GlassButton } from '@/shared/components/GlassButton'
+import { GlassCard } from '@/shared/components/GlassCard'
+
+import useLanguage from '../hooks/useLanguage'
+
+const HomePage = (): JSX.Element => {
+  const { t } = useLanguage()
 
   return (
-    <div className="container-md">
-      <h1 id="server-title">{t.title}</h1>
-      <div id="welcome-message">
-        <p>{t.welcomePart}</p>
-      </div>
-      <br></br>
-      {/* <p id="instructions-text" className="instructions">{t.instructions}</p> */}
-      <ul className="links">
-        <li>
-          <a
-            id="config-btn"
-            className="btn"
-            href="dfemscraft-config.zip"
-            download="dfemscraft-config.zip"
-          >
+    <Box p={6}>
+      <GlassCard maxW="720px" mx="auto" textAlign="center" p={6}>
+        <Heading mb={3}>{t.title}</Heading>
+        <Text mb={4}>{t.welcomePart}</Text>
+        <Stack gap={3} align="center">
+          <GlassButton as={ChakraLink} href="dfemscraft-config.zip" download>
             {t.configBtn}
-          </a>
-        </li>
-        <li>
-          <a
-            id="launcher-btn"
-            className="btn"
-            href="dfemscraft-launcher.jar"
-            download="dfemscraft-launcher.jar"
-          >
+          </GlassButton>
+          <GlassButton as={ChakraLink} href="dfemscraft-launcher.jar" download>
             {t.launcherBtn}
-          </a>
-        </li>
-        <li>
-          <a
-            id="donate-btn"
-            className="btn"
+          </GlassButton>
+          <GlassButton
+            as={ChakraLink}
             href="https://example.com/donate"
             target="_blank"
             rel="noopener noreferrer"
           >
             {t.donateBtn}
-          </a>
-        </li>
-        {/* <li>
-          <Link to="/login" className="btn">
-            {t.loginTitle}
-          </Link>
-        </li> */}
-      </ul>
-      <footer id="footer-text">{t.footer}</footer>
-    </div>
-  );
-};
+          </GlassButton>
+        </Stack>
+        <Text mt={6} fontSize="sm" color="textMuted">
+          {t.footer}
+        </Text>
+      </GlassCard>
+    </Box>
+  )
+}
 
-export default HomePage;
+export default HomePage

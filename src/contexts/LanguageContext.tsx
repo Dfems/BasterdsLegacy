@@ -1,6 +1,7 @@
-import { createContext } from 'react';
-import type { LanguageContextType } from './LanguageContextTypes';
+import { createContext } from 'react'
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+import type { LanguageContextType } from './LanguageContextTypes'
 
-export default LanguageContext;
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
+
+export default LanguageContext

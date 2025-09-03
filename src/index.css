@@ -1,11 +1,11 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Press Start 2P', cursive;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: rgba(255, 255, 255, 0.95);
+  background-color: #0a0e1a;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,17 +15,23 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #60a5fa;
   text-decoration: inherit;
+  transition: color 0.2s ease;
 }
 a:hover {
-  color: #535bf2;
+  color: #3b82f6;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -42,27 +48,137 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #1a1f2e;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s ease;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #10b981;
+  background-color: #1f2937;
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: #1f2937;
+    background-color: #f1f5f9;
+  }
+  a {
+    color: #1e40af;
   }
   a:hover {
-    color: #747bff;
+    color: #1d4ed8;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
   }
+  button:hover {
+    border-color: #059669;
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+}
+
+/* Usa il token bg del sistema: non forzare più il dark */
+
+/* Native select + option: gaming-themed dropdown */
+select,
+select option {
+  background-color: rgba(26, 31, 46, 0.95);
+  color: #e5e7eb;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Varianti Chakra "glass" migliorate per Button, Input, Menu e Table */
+html.dark [data-scope='button'][data-variant='glass'] {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px) saturate(130%);
+  color: #e5e7eb; /* testo chiaro per tema dark */
+}
+
+html.light [data-scope='button'][data-variant='glass'] {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(5, 150, 105, 0.04) 100%);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px) saturate(130%);
+  color: #1f2937; /* testo scuro per tema light */
+}
+
+[data-scope='button'][data-variant='glass']:hover {
+  filter: brightness(1.1) saturate(120%);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Ensure all glass buttons have proper text color regardless of Chakra scope */
+[data-variant='glass']:where(button, .chakra-button) {
+  color: var(--chakra-colors-text) !important;
+}
+
+html.dark [data-scope='input'][data-variant='glass'] [data-part='field'] {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+html.light [data-scope='input'][data-variant='glass'] [data-part='field'] {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.06) 0%, rgba(5, 150, 105, 0.02) 100%);
+  border: 1px solid rgba(5, 150, 105, 0.15);
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+[data-scope='menu'][data-part='content'][data-variant='glass'] {
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--chakra-colors-borderAccent);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+html.dark [data-scope='menu'][data-part='content'][data-variant='glass'] {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.92) 0%, rgba(16, 185, 129, 0.08) 100%);
+}
+
+html.light [data-scope='menu'][data-part='content'][data-variant='glass'] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(5, 150, 105, 0.05) 100%);
+}
+
+/* Table variant - gaming themed */
+[data-scope='table'][data-variant='glass'] [data-part='header'],
+[data-scope='table'][data-variant='glass'] [data-part='footer'] {
+  background: linear-gradient(
+    135deg,
+    var(--chakra-colors-surface) 0%,
+    rgba(16, 185, 129, 0.05) 100%
+  ) !important;
+  backdrop-filter: blur(8px) saturate(120%);
+}
+
+[data-scope='table'][data-variant='glass'] [data-part='cell'],
+[data-scope='table'][data-variant='glass'] [data-part='column-header'],
+[data-scope='table'][data-variant='glass'] [data-part='row-header'],
+[data-scope='table'][data-variant='glass'] td,
+[data-scope='table'][data-variant='glass'] th {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-scope='table'][data-variant='glass'] [data-part='row'] {
+  border-bottom: 1px solid var(--chakra-colors-borderAccent);
+  transition: all 0.2s ease;
+}
+
+[data-scope='table'][data-variant='glass'] [data-part='row']:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+  transform: translateX(2px);
 }

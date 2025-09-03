@@ -1,54 +1,58 @@
-# React + TypeScript + Vite
+# BasterdsLegacy — Shockbyte‑like Single‑Server Panel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Monorepo semplice: frontend React + Vite e backend Fastify TS single‑service.
 
-Currently, two official plugins are available:
+## Requisiti
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 20+
 
-## Expanding the ESLint configuration
+## Script
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- dev: vite
+- build: tsc -b && vite build
+- preview: vite preview
+- lint: eslint .
+- format / format:check: Prettier
+- type-check: tsc -b --pretty
+- test: vitest
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Struttura
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- server/: backend Fastify TS (porta 3000)
+- src/: frontend React
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Dev
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+1. Installazione dipendenze
+2. Avvio frontend: npm run dev
+3. Avvio backend: node server/src/app.ts (ts-node/tsup consigliati per dev locale)
+
+Proxy vite: /api → http://localhost:3000
+
+## SFTP OS‑level (guida sintetica)
+
+Non integrare un server SFTP in Node. Usa OpenSSH di sistema con un utente dedicato chrootato nella cartella del server.
+
+Esempio Linux (Debian/Ubuntu):
+
+1) Installa server OpenSSH e crea gruppo/utente:
+	- sudo apt-get install openssh-server
+	- sudo groupadd mcserver
+	- sudo useradd -m -G mcserver -s /usr/sbin/nologin mc
+2) Imposta chroot su /opt/mc (o tua MC_DIR) e permessi:
+	- sudo mkdir -p /opt/mc
+	- sudo chown root:root /opt/mc
+	- sudo chmod 755 /opt/mc
+	- sudo mkdir -p /opt/mc/data
+	- sudo chown mc:mcserver /opt/mc/data
+3) Configura /etc/ssh/sshd_config (Match block):
+	- Subsystem sftp internal-sftp
+	- Match User mc
+	  ChrootDirectory /opt/mc
+	  ForceCommand internal-sftp
+	  AllowTCPForwarding no
+	  X11Forwarding no
+4) Riavvia sshd: sudo systemctl restart sshd
+5) Collega via SFTP con utente mc; la root visibile sarà / (chroot), scrivibile in /data.
+
+Su Windows, usa OpenSSH Server (Feature opzionale), crea un utente non amministratore e limita le cartelle con NTFS ACL.

@@ -1,55 +1,90 @@
-import { useState, useContext } from 'react';
-import type { FormEvent, JSX } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AuthContext from '../contexts/AuthContext';
-import useLanguage from '../hooks/useLanguage';
-import '../styles/App.css';
+import type { FormEvent, JSX } from 'react'
+import { useContext, useState } from 'react'
+
+import { Box, Button, Heading, Input, Stack, Text } from '@chakra-ui/react'
+import { useNavigate } from 'react-router-dom'
+
+import { GlassCard } from '@/shared/components/GlassCard'
+
+import AuthContext from '../contexts/AuthContext'
+import useLanguage from '../hooks/useLanguage'
+
+// removed legacy CSS; page inherits global styles
 
 export default function Login(): JSX.Element {
-    const { t } = useLanguage();
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState<string | null>(null);
-    const { login } = useContext(AuthContext);
-    const navigate = useNavigate();
+  const { t } = useLanguage()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const { login } = useContext(AuthContext)
+  const navigate = useNavigate()
 
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        try {
-          await login(username, password);
-          navigate('/');
-        } catch (err) {
-          setError((err as Error).message);
-        }
-    };
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    try {
+      await login(username, password)
+      navigate('/')
+    } catch (err) {
+      setError((err as Error).message)
+    }
+  }
 
   return (
-    <div className="container-md">
-      <h1>{t.loginTitle}</h1>
-      <form onSubmit={handleSubmit}>
-          <div>
-              <label>Utente:</label>
-              <input
-                type="text"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                required
-              />
-          </div>
-          <div>
-              <label>Password:</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
-          </div>
-          <button type="submit">Login</button>
-          <br />
-          <br />
-          {error && <div style={{ color: 'red' }}>{error}</div>}
-      </form>
-    </div>
-  );
+    <Box p={6} display="flex" justifyContent="center">
+      <GlassCard as="form" onSubmit={handleSubmit} maxW={440} w="100%">
+        <Heading size="lg" mb={4} textAlign="center">
+          {t.loginTitle}
+        </Heading>
+        <Stack gap={3}>
+          <Box>
+            <label htmlFor="username" style={{ display: 'block', marginBottom: 4 }}>
+              Utente
+            </label>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              data-variant="glass"
+            />
+          </Box>
+          <Box>
+            <label htmlFor="password" style={{ display: 'block', marginBottom: 4 }}>
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              data-variant="glass"
+            />
+          </Box>
+          <GlassCard inset>
+            <Button
+              type="submit"
+              width="100%"
+              data-variant="glass"
+              bg="surface"
+              borderColor="borderAccent"
+              color="text"
+              _hover={{
+                bg: 'surfaceSolid',
+                borderColor: 'brand.primary',
+                transform: 'translateY(-1px)',
+              }}
+            >
+              Login
+            </Button>
+          </GlassCard>
+          {error && (
+            <Text color="accent.danger" textAlign="center">
+              {error}
+            </Text>
+          )}
+        </Stack>
+      </GlassCard>
+    </Box>
+  )
 }
