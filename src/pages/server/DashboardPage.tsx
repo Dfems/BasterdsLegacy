@@ -69,71 +69,78 @@ const DashboardPage = (): JSX.Element => {
   }, [data?.state])
 
   return (
-    <Box p={6}>
-      <Heading mb={4}>Dashboard</Heading>
+    <Box p={{ base: 4, md: 6 }}> {/* Padding responsive */}
+      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>Dashboard</Heading> {/* Font size responsive */}
       {err && (
-        <Text color="accent.danger" mb={4}>
+        <Text color="accent.danger" mb={4} fontSize={{ base: 'sm', md: 'md' }}> {/* Font size responsive */}
           {err}
         </Text>
       )}
       {note && (
-        <Text color={note.type === 'success' ? 'accent.success' : 'accent.danger'} mb={2}>
+        <Text 
+          color={note.type === 'success' ? 'accent.success' : 'accent.danger'} 
+          mb={2}
+          fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
+        >
           {note.text}
         </Text>
       )}
       <Grid
-        templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }}
+        templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} // Migliorato breakpoint per mobile
         gridAutoRows="1fr"
-        gap={4}
+        gap={{ base: 3, md: 4 }} // Gap responsive
         alignItems="stretch"
       >
-        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
-          <Text fontWeight="bold">State</Text>
-          <Text color={stateColor}>{data?.state ?? (isFetching ? 'Loading…' : 'Unknown')}</Text>
-          <Text color="textMuted">PID: {data?.pid ?? '-'}</Text>
+        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
+          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>State</Text> {/* Font size responsive */}
+          <Text color={stateColor} fontSize={{ base: 'sm', md: 'md' }}>{data?.state ?? (isFetching ? 'Loading…' : 'Unknown')}</Text>
+          <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>PID: {data?.pid ?? '-'}</Text> {/* Font size responsive */}
         </GlassCard>
-        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
-          <Text fontWeight="bold">CPU</Text>
-          <Text>{data ? `${(data.cpu * 100).toFixed(1)}%` : '-'}</Text>
+        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
+          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>CPU</Text> {/* Font size responsive */}
+          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${(data.cpu * 100).toFixed(1)}%` : '-'}</Text> {/* Font size responsive */}
         </GlassCard>
-        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
-          <Text fontWeight="bold">Memory</Text>
-          <Text>{data ? `${data.memMB} MB` : '-'}</Text>
+        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
+          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>Memory</Text> {/* Font size responsive */}
+          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${data.memMB} MB` : '-'}</Text> {/* Font size responsive */}
         </GlassCard>
-        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
-          <Text fontWeight="bold">Uptime</Text>
-          <Text>{data ? fmtUptime(data.uptimeMs) : '-'}</Text>
+        <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
+          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>Uptime</Text> {/* Font size responsive */}
+          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? fmtUptime(data.uptimeMs) : '-'}</Text> {/* Font size responsive */}
         </GlassCard>
-        <GridItem colSpan={{ base: 1, md: 2, lg: 3 }}>
-          <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
-            <Text fontWeight="bold" mb={2}>
+        <GridItem colSpan={{ base: 1, sm: 2, lg: 3 }}> {/* Migliorato colSpan per mobile */}
+          <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between" p={{ base: 3, md: 4 }}> {/* Padding responsive */}
+            <Text fontWeight="bold" mb={2} fontSize={{ base: 'sm', md: 'md' }}> {/* Font size responsive */}
               Azioni
             </Text>
-            <HStack gap={2} wrap="wrap">
+            <HStack gap={2} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}> {/* Centrato su mobile */}
               <GlassButton
-                size="sm"
+                size={{ base: 'sm', md: 'md' }} // Size responsive
                 onClick={() => powerMutation.mutate('start')}
                 disabled={data?.state === 'RUNNING' || powerMutation.isPending}
                 loading={powerMutation.isPending}
-                w="130px"
+                w={{ base: '100%', sm: '130px' }} // Full width su mobile
+                minH="44px" // Touch target minimo
               >
                 Start
               </GlassButton>
               <GlassButton
-                size="sm"
+                size={{ base: 'sm', md: 'md' }} // Size responsive
                 onClick={() => powerMutation.mutate('stop')}
                 disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
                 loading={powerMutation.isPending}
-                w="130px"
+                w={{ base: '100%', sm: '130px' }} // Full width su mobile
+                minH="44px" // Touch target minimo
               >
                 Stop
               </GlassButton>
               <GlassButton
-                size="sm"
+                size={{ base: 'sm', md: 'md' }} // Size responsive
                 onClick={() => powerMutation.mutate('restart')}
                 disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
                 loading={powerMutation.isPending}
-                w="130px"
+                w={{ base: '100%', sm: '130px' }} // Full width su mobile
+                minH="44px" // Touch target minimo
               >
                 Restart
               </GlassButton>

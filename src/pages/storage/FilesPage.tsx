@@ -96,12 +96,17 @@ export default function FilesPage(): JSX.Element {
   const rows = useMemo(() => data?.entries ?? [], [data])
 
   return (
-    <Box p={6}>
-      <Heading mb={4}>Files</Heading>
+    <Box p={{ base: 4, md: 6 }}> {/* Padding responsive */}
+      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>Files</Heading> {/* Font size responsive */}
 
-      <GlassCard mb={4}>
-        <HStack gap={3} wrap="wrap">
-          <GlassButton onClick={() => goTo(parentPath(path))} disabled={path === '/'}>
+      <GlassCard mb={4} p={{ base: 3, md: 4 }}> {/* Padding responsive */}
+        <HStack gap={3} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}> {/* Centrato su mobile */}
+          <GlassButton 
+            onClick={() => goTo(parentPath(path))} 
+            disabled={path === '/'}
+            size={{ base: 'sm', md: 'md' }} // Size responsive
+            minH="44px" // Touch target
+          >
             Su
           </GlassButton>
           <Input
@@ -109,8 +114,15 @@ export default function FilesPage(): JSX.Element {
             onChange={(e) => setPath(e.target.value || '/')}
             width="auto"
             data-variant="glass"
+            minW={{ base: '200px', sm: 'auto' }} // Larghezza minima su mobile
+            minH="44px" // Touch target
+            fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
           />
-          <GlassButton onClick={() => qc.invalidateQueries({ queryKey: ['files'] })}>
+          <GlassButton 
+            onClick={() => qc.invalidateQueries({ queryKey: ['files'] })}
+            size={{ base: 'sm', md: 'md' }} // Size responsive
+            minH="44px" // Touch target
+          >
             Refresh
           </GlassButton>
           <Input
@@ -119,17 +131,74 @@ export default function FilesPage(): JSX.Element {
             onChange={onUploadChange}
             width="auto"
             data-variant="glass"
+            minW={{ base: '200px', sm: 'auto' }} // Larghezza minima su mobile
+            minH="44px" // Touch target
+            fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
           />
         </HStack>
       </GlassCard>
 
-      {isLoading && <Text>Caricamento…</Text>}
-      {isError && <Text color="red">Errore nel caricamento.</Text>}
+      {isLoading && <Text fontSize={{ base: 'sm', md: 'md' }}>Caricamento…</Text>}
+      {isError && <Text color="red" fontSize={{ base: 'sm', md: 'md' }}>Errore nel caricamento.</Text>}
 
-      {!isLoading && rows.length === 0 && <Text>Nessun elemento</Text>}
+      {!isLoading && rows.length === 0 && <Text fontSize={{ base: 'sm', md: 'md' }}>Nessun elemento</Text>}
 
+      {/* Mobile: Card layout */}
+      <Box display={{ base: 'block', md: 'none' }}>
+        {rows.map((e) => (
+          <GlassCard key={e.name} mb={3} p={3}>
+            <HStack justify="space-between" align="start" wrap="wrap">
+              <Box flex="1" minW="0">
+                <Text fontWeight="bold" fontSize="sm" mb={1} truncate> {/* truncate invece di noOfLines */}
+                  {e.type === 'dir' ? (
+                    <GlassButton size="xs" onClick={() => goTo(joinPath(path, e.name))} minH="32px">
+                      📁 {e.name}
+                    </GlassButton>
+                  ) : (
+                    <>📄 {e.name}</>
+                  )}
+                </Text>
+                <Text fontSize="xs" color="textMuted" mb={1}>
+                  {e.type === 'file' ? human(e.size) : 'Cartella'}
+                </Text>
+                <Text fontSize="xs" color="textMuted">
+                  {new Date(e.mtime).toLocaleDateString()}
+                </Text>
+              </Box>
+              <HStack gap={1} wrap="wrap">
+                <GlassButton
+                  size="xs"
+                  minH="32px"
+                  onClick={() => {
+                    const from = joinPath(path, e.name)
+                    const nn = prompt('Nuovo nome', e.name)
+                    if (!nn || nn === e.name) return
+                    const to = joinPath(path, nn)
+                    rename.mutate({ from, to })
+                  }}
+                >
+                  Rinomina
+                </GlassButton>
+                <GlassButton
+                  size="xs"
+                  minH="32px"
+                  colorScheme="red"
+                  onClick={() => {
+                    const p = joinPath(path, e.name)
+                    if (confirm(`Eliminare ${p}?`)) remove.mutate(p)
+                  }}
+                >
+                  Elimina
+                </GlassButton>
+              </HStack>
+            </HStack>
+          </GlassCard>
+        ))}
+      </Box>
+
+      {/* Desktop: Table layout */}
       {rows.length > 0 && (
-        <GlassCard inset>
+        <GlassCard inset display={{ base: 'none', md: 'block' }}>
           <Table.Root data-variant="glass">
             <Table.Header>
               <Table.Row>

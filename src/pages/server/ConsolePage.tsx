@@ -116,10 +116,10 @@ export default function ConsolePage(): JSX.Element {
   const clearOutput = () => setOutput('')
 
   return (
-    <Box p={6}>
-      <Heading mb={2}>{t.consoleTitle}</Heading>
+    <Box p={{ base: 4, md: 6 }}> {/* Padding responsive */}
+      <Heading mb={2} fontSize={{ base: 'md', md: 'lg' }}>{t.consoleTitle}</Heading> {/* Font size responsive */}
       <HStack mb={4} gap={3} align="center" wrap="wrap">
-        <Text>Stato server:</Text>
+        <Text fontSize={{ base: 'sm', md: 'md' }}>Stato server:</Text> {/* Font size responsive */}
         <Badge colorPalette={serverRunning ? 'green' : 'red'} variant="solid">
           {serverRunning ? 'Avviato' : 'Spento'}
         </Badge>
@@ -136,22 +136,29 @@ export default function ConsolePage(): JSX.Element {
           boxShadow="md"
           style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
         >
-          <Stack gap={2}>
+          <Stack gap={3}> {/* Aumentato gap per mobile */}
             <GlassButton
-              size="sm"
+              size={{ base: 'sm', md: 'md' }} // Size responsive
               onClick={() => void power(serverRunning ? 'stop' : 'start')}
               disabled={busy}
+              minH="44px" // Touch target minimo
             >
               {serverRunning ? 'Stop' : 'Start'}
             </GlassButton>
             <GlassButton
-              size="sm"
+              size={{ base: 'sm', md: 'md' }} // Size responsive
               onClick={() => void power('restart')}
               disabled={busy || !serverRunning}
+              minH="44px" // Touch target minimo
             >
               Restart
             </GlassButton>
-            <GlassButton size="sm" onClick={clearOutput} disabled={busy}>
+            <GlassButton 
+              size={{ base: 'sm', md: 'md' }} // Size responsive
+              onClick={clearOutput} 
+              disabled={busy}
+              minH="44px" // Touch target minimo
+            >
               Clear
             </GlassButton>
           </Stack>
@@ -168,7 +175,14 @@ export default function ConsolePage(): JSX.Element {
           style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
         >
           <Box as="form" onSubmit={handleSubmit} mb={3} display="flex" gap={2} flexWrap="wrap">
-            <label htmlFor="command" style={{ alignSelf: 'center' }}>
+            <label 
+              htmlFor="command" 
+              style={{ 
+                alignSelf: 'center',
+                fontSize: '14px', // Font size specifico per label
+                minWidth: '100%' // Su mobile va su riga separata
+              }}
+            >
               {t.commandLabel}
             </label>
             <Input
@@ -178,16 +192,31 @@ export default function ConsolePage(): JSX.Element {
               disabled={busy || !serverRunning}
               flex="1"
               minW={{ base: '100%', sm: '280px' }}
+              minH="44px" // Touch target minimo
+              fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
             />
-            <GlassButton type="submit" size="sm" disabled={busy || !serverRunning}>
+            <GlassButton 
+              type="submit" 
+              size={{ base: 'sm', md: 'md' }} // Size responsive
+              disabled={busy || !serverRunning}
+              minH="44px" // Touch target minimo
+              w={{ base: '100%', sm: 'auto' }} // Full width su mobile
+            >
               Invia
             </GlassButton>
           </Box>
 
-          <Heading size="sm" mb={2}>
+          <Heading size={{ base: 'sm', md: 'md' }} mb={2}> {/* Font size responsive */}
             {t.consoleOutputTitle}
           </Heading>
-          <Textarea ref={outputRef} readOnly rows={20} value={output} resize="vertical" />
+          <Textarea 
+            ref={outputRef} 
+            readOnly 
+            rows={15} // Valore fisso, ottimizzato per mobile
+            value={output} 
+            resize="vertical"
+            fontSize={{ base: 'xs', md: 'sm' }} // Font size responsive per output
+          />
         </Box>
       </Stack>
     </Box>

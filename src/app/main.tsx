@@ -18,6 +18,9 @@ const system = createSystem(defaultConfig, {
     },
     'html, body': {
       fontFamily: `'Press Start 2P', cursive`,
+      // Miglioramento font size per mobile
+      fontSize: { base: '12px', md: '14px' },
+      lineHeight: { base: '1.6', md: '1.4' },
     },
   },
   theme: {

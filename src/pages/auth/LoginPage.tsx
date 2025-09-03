@@ -29,14 +29,21 @@ export default function Login(): JSX.Element {
   }
 
   return (
-    <Box p={6} display="flex" justifyContent="center">
-      <GlassCard as="form" onSubmit={handleSubmit} maxW={440} w="100%">
-        <Heading size="lg" mb={4} textAlign="center">
+    <Box p={{ base: 4, md: 6 }} display="flex" justifyContent="center"> {/* Padding responsive */}
+      <GlassCard as="form" onSubmit={handleSubmit} maxW={440} w="100%" p={{ base: 4, md: 6 }}> {/* Padding responsive */}
+        <Heading size={{ base: 'md', md: 'lg' }} mb={4} textAlign="center"> {/* Font size responsive */}
           {t.loginTitle}
         </Heading>
-        <Stack gap={3}>
+        <Stack gap={4}> {/* Aumentato gap per mobile */}
           <Box>
-            <label htmlFor="username" style={{ display: 'block', marginBottom: 4 }}>
+            <label 
+              htmlFor="username" 
+              style={{ 
+                display: 'block', 
+                marginBottom: 8, // Aumentato per mobile
+                fontSize: '14px' // Font size specifico per label
+              }}
+            >
               Utente
             </label>
             <Input
@@ -45,10 +52,19 @@ export default function Login(): JSX.Element {
               onChange={(e) => setUsername(e.target.value)}
               required
               data-variant="glass"
+              minH="44px" // Touch target minimo per mobile
+              fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
             />
           </Box>
           <Box>
-            <label htmlFor="password" style={{ display: 'block', marginBottom: 4 }}>
+            <label 
+              htmlFor="password" 
+              style={{ 
+                display: 'block', 
+                marginBottom: 8, // Aumentato per mobile
+                fontSize: '14px' // Font size specifico per label
+              }}
+            >
               Password
             </label>
             <Input
@@ -58,6 +74,8 @@ export default function Login(): JSX.Element {
               onChange={(e) => setPassword(e.target.value)}
               required
               data-variant="glass"
+              minH="44px" // Touch target minimo per mobile
+              fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
             />
           </Box>
           <GlassCard inset>
@@ -68,6 +86,8 @@ export default function Login(): JSX.Element {
               bg="surface"
               borderColor="borderAccent"
               color="text"
+              minH="48px" // Touch target più grande per il pulsante principale
+              fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
               _hover={{
                 bg: 'surfaceSolid',
                 borderColor: 'brand.primary',
@@ -78,7 +98,7 @@ export default function Login(): JSX.Element {
             </Button>
           </GlassCard>
           {error && (
-            <Text color="accent.danger" textAlign="center">
+            <Text color="accent.danger" textAlign="center" fontSize={{ base: 'sm', md: 'md' }}>
               {error}
             </Text>
           )}
