@@ -3,9 +3,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import AuthProvider from '../contexts/AuthProvider'
-import LanguageProvider from '../contexts/LanguageProvider'
-import Login from '../pages/LoginPage'
+import LanguageProvider from '@/entities/language/LanguageProvider'
+import AuthProvider from '@/entities/user/AuthProvider'
+import Login from '@/pages/auth/LoginPage'
 
 // Minimal translations provider stub through LanguageProvider
 

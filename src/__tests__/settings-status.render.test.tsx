@@ -5,8 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import DashboardPage from '../pages/DashboardPage'
-import SettingsPage from '../pages/SettingsPage'
+import DashboardPage from '@/pages/server/DashboardPage'
+import SettingsPage from '@/pages/server/SettingsPage'
 
 // Removed fake timers
 // vi.useFakeTimers()
