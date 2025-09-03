@@ -4,10 +4,9 @@ import { useContext, useState } from 'react'
 import { Box, Button, Heading, Input, Stack, Text } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 
+import AuthContext from '@/entities/user/AuthContext'
 import { GlassCard } from '@/shared/components/GlassCard'
-
-import AuthContext from '../contexts/AuthContext'
-import useLanguage from '../hooks/useLanguage'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 // removed legacy CSS; page inherits global styles
 

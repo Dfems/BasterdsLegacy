@@ -10,10 +10,9 @@ import {
 
 import { Badge, Box, HStack, Heading, Input, Stack, Text, Textarea } from '@chakra-ui/react'
 
+import AuthContext from '@/entities/user/AuthContext'
 import { GlassButton } from '@/shared/components/GlassButton'
-
-import AuthContext from '../contexts/AuthContext'
-import useLanguage from '../hooks/useLanguage'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 type WsMsg = { type?: string; data?: unknown }
 

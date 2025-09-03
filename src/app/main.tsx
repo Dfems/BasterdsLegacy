@@ -2,11 +2,12 @@ import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRoot } from 'react-dom/client'
 
+import LanguageProvider from '@/entities/language/LanguageProvider.tsx'
+import { ThemeModeProvider } from '@/entities/user/ThemeModeContext.tsx'
+import '@/index.css'
+import '@/shared/styles/colors.css'
+
 import App from './App.tsx'
-import LanguageProvider from './contexts/LanguageProvider.tsx'
-import { ThemeModeProvider } from './contexts/ThemeModeContext.tsx'
-import './index.css'
-import './shared/styles/colors.css'
 
 const system = createSystem(defaultConfig, {
   globalCss: {

@@ -4,10 +4,11 @@ import { useContext, useMemo } from 'react'
 import { Box, Flex, HStack, Link, Menu } from '@chakra-ui/react'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 
-import AuthContext from '@/contexts/AuthContext'
-import useLanguage from '@/hooks/useLanguage'
+import AuthContext from '@/entities/user/AuthContext'
 import { GlassButton } from '@/shared/components/GlassButton'
 import { SimpleSelect } from '@/shared/components/SimpleSelect'
+import useLanguage from '@/shared/hooks/useLanguage'
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/shared/libs/constants/languages'
 
 interface NavbarProps {
   isLoggedIn: boolean
@@ -165,12 +166,8 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
           <HStack gap={2} align="center">
             <SimpleSelect
               value={language}
-              onChange={(v) => setLanguage(v)}
-              options={[
-                { value: 'it', label: 'Italiano' },
-                { value: 'en', label: 'English' },
-                { value: 'es', label: 'Español' },
-              ]}
+              onChange={(v) => setLanguage(v as SupportedLanguage)}
+              options={SUPPORTED_LANGUAGES}
             />
           </HStack>
 

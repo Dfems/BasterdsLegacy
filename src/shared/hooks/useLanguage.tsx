@@ -1,11 +1,12 @@
 import { useContext } from 'react'
 
-import LanguageContext from '../contexts/LanguageContext'
-import type { Translations } from '../types/translationTypes'
+import LanguageContext from '@/entities/language/LanguageContext'
+import type { SupportedLanguage } from '@/shared/libs/constants/languages'
+import type { Translations } from '@/types/translationTypes'
 
 interface UseLanguageReturnType {
-  language: string
-  setLanguage: React.Dispatch<React.SetStateAction<string>>
+  language: SupportedLanguage
+  setLanguage: React.Dispatch<React.SetStateAction<SupportedLanguage>>
   translations: Translations
   t: Translations[string]
 }

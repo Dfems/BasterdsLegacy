@@ -2,7 +2,7 @@ import { useEffect, useState, type JSX } from 'react'
 
 import { Box, Heading, HStack, Kbd, RadioGroup, Stack, Text } from '@chakra-ui/react'
 
-import { useThemeMode, type ThemeMode } from '@/contexts/ThemeModeContext'
+import { useThemeMode, type ThemeMode } from '@/entities/user/ThemeModeContext'
 import { GlassCard } from '@/shared/components/GlassCard'
 
 type Settings = {

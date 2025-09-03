@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import { useState, type JSX, type ReactNode } from 'react'
 
-import type { Translations } from '../types/translationTypes'
+import { DEFAULT_LANGUAGE, type SupportedLanguage } from '@/shared/libs/constants/languages'
+import type { Translations } from '@/types/translationTypes'
+
 import LanguageContext from './LanguageContext'
 
 const translations: Translations = {
@@ -84,8 +86,8 @@ const translations: Translations = {
   },
 }
 
-const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState('es')
+const LanguageProvider = ({ children }: { children: ReactNode }): JSX.Element => {
+  const [language, setLanguage] = useState<SupportedLanguage>(DEFAULT_LANGUAGE)
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, translations }}>

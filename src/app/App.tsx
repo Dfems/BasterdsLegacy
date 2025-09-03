@@ -3,13 +3,14 @@ import { Suspense, type JSX } from 'react'
 
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 
-import ProtectedRoute from './components/ProtectedRoute'
-import AuthProvider from './contexts/AuthProvider'
-import LanguageProvider from './contexts/LanguageProvider'
-import MainLayout from './layouts/MainLayout'
-import HomePage from './pages/HomePage'
-import Login from './pages/LoginPage'
-import AppRoutes from './routes/AppRoutes'
+import LanguageProvider from '@/entities/language/LanguageProvider'
+import AuthProvider from '@/entities/user/AuthProvider'
+import ProtectedRoute from '@/features/auth/ProtectedRoute'
+import HomePage from '@/pages/HomePage'
+import Login from '@/pages/auth/LoginPage'
+import MainLayout from '@/widgets/layout/MainLayout'
+
+import AppRoutes from './routing/AppRoutes'
 
 export default function App(): JSX.Element {
   return (

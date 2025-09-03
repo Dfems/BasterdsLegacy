@@ -3,7 +3,7 @@ import type { JSX, ReactElement } from 'react'
 
 import { Navigate } from 'react-router-dom'
 
-import AuthContext from '../contexts/AuthContext'
+import AuthContext from '@/entities/user/AuthContext'
 
 interface Props {
   children: ReactElement

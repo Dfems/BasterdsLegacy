@@ -3,9 +3,9 @@ import { useContext } from 'react'
 
 import { Outlet } from 'react-router-dom'
 
-import Navbar from '../components/Navbar'
-import AuthContext from '../contexts/AuthContext'
-import useLanguage from '../hooks/useLanguage'
+import AuthContext from '@/entities/user/AuthContext'
+import useLanguage from '@/shared/hooks/useLanguage'
+import Navbar from '@/widgets/navbar/Navbar'
 
 export default function MainLayout(): JSX.Element {
   useLanguage()

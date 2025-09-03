@@ -2,14 +2,14 @@ import { lazy, type JSX } from 'react'
 
 import { Navigate, Route } from 'react-router-dom'
 
-const ConsolePage = lazy(() => import('../pages/ConsolePage'))
-const DashboardPage = lazy(() => import('../pages/DashboardPage'))
-const FilesPage = lazy(() => import('../pages/FilesPage'))
-const BackupsPage = lazy(() => import('../pages/BackupsPage'))
-const WhitelistPage = lazy(() => import('../pages/WhitelistPage'))
-const ModpackPage = lazy(() => import('../pages/ModpackPage'))
-const SettingsPage = lazy(() => import('../pages/SettingsPage'))
-const CreateUserPage = lazy(() => import('../pages/CreateUserPage'))
+const ConsolePage = lazy(() => import('@/pages/server/ConsolePage'))
+const DashboardPage = lazy(() => import('@/pages/server/DashboardPage'))
+const FilesPage = lazy(() => import('@/pages/storage/FilesPage'))
+const BackupsPage = lazy(() => import('@/pages/storage/BackupsPage'))
+const WhitelistPage = lazy(() => import('@/pages/users/WhitelistPage'))
+const ModpackPage = lazy(() => import('@/pages/management/ModpackPage'))
+const SettingsPage = lazy(() => import('@/pages/server/SettingsPage'))
+const CreateUserPage = lazy(() => import('@/pages/users/UserCreatePage'))
 
 // import DashboardPage from '../pages/DashboardPage';
 // import ProfilePage   from '../pages/ProfilePage';

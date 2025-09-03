@@ -4,8 +4,7 @@ import { Box, Link as ChakraLink, Heading, Stack, Text } from '@chakra-ui/react'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
-
-import useLanguage from '../hooks/useLanguage'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 const HomePage = (): JSX.Element => {
   const { t } = useLanguage()
