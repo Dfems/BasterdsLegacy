@@ -59,12 +59,12 @@ const DashboardPage = (): JSX.Element => {
   const stateColor = useMemo(() => {
     switch (data?.state) {
       case 'RUNNING':
-        return 'green.500'
+        return 'accent.success'
       case 'CRASHED':
-        return 'red.500'
+        return 'accent.danger'
       case 'STOPPED':
       default:
-        return 'gray.500'
+        return 'textMuted'
     }
   }, [data?.state])
 
@@ -72,12 +72,12 @@ const DashboardPage = (): JSX.Element => {
     <Box p={6}>
       <Heading mb={4}>Dashboard</Heading>
       {err && (
-        <Text color="red.500" mb={4}>
+        <Text color="accent.danger" mb={4}>
           {err}
         </Text>
       )}
       {note && (
-        <Text color={note.type === 'success' ? 'green.500' : 'red.500'} mb={2}>
+        <Text color={note.type === 'success' ? 'accent.success' : 'accent.danger'} mb={2}>
           {note.text}
         </Text>
       )}
@@ -90,7 +90,7 @@ const DashboardPage = (): JSX.Element => {
         <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
           <Text fontWeight="bold">State</Text>
           <Text color={stateColor}>{data?.state ?? (isFetching ? 'Loading…' : 'Unknown')}</Text>
-          <Text color="gray.500">PID: {data?.pid ?? '-'}</Text>
+          <Text color="textMuted">PID: {data?.pid ?? '-'}</Text>
         </GlassCard>
         <GlassCard h="100%" display="flex" flexDirection="column" justifyContent="space-between">
           <Text fontWeight="bold">CPU</Text>

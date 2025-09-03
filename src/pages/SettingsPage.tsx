@@ -36,7 +36,7 @@ export default function SettingsPage(): JSX.Element {
   return (
     <Box p={6}>
       <Heading mb={4}>Settings</Heading>
-      {err && <Text color="red">{err}</Text>}
+      {err && <Text color="accent.danger">{err}</Text>}
       {!s && !err && <Text>Caricamento…</Text>}
       {s && (
         <GlassCard
@@ -46,32 +46,32 @@ export default function SettingsPage(): JSX.Element {
           gridTemplateColumns={{ base: '1fr', sm: 'max-content 1fr' }}
           mb={6}
         >
-          <Text as="dt" color="gray.500">
+          <Text as="dt" color="textMuted">
             JAVA_BIN
           </Text>
           <Text as="dd">{s.javaBin}</Text>
 
-          <Text as="dt" color="gray.500">
+          <Text as="dt" color="textMuted">
             MC_DIR
           </Text>
           <Text as="dd">{s.mcDir}</Text>
 
-          <Text as="dt" color="gray.500">
+          <Text as="dt" color="textMuted">
             BACKUP_DIR
           </Text>
           <Text as="dd">{s.backupDir}</Text>
 
-          <Text as="dt" color="gray.500">
+          <Text as="dt" color="textMuted">
             RCON
           </Text>
           <Text as="dd">{s.rcon.enabled ? `${s.rcon.host}:${s.rcon.port}` : 'disabled'}</Text>
 
-          <Text as="dt" color="gray.500">
+          <Text as="dt" color="textMuted">
             BACKUP_CRON
           </Text>
           <Text as="dd">{s.backupCron}</Text>
 
-          <Text as="dt" color="gray.500">
+          <Text as="dt" color="textMuted">
             RETENTION
           </Text>
           <Text as="dd">
@@ -118,7 +118,7 @@ export default function SettingsPage(): JSX.Element {
             </RadioGroup.Item>
           </Stack>
         </RadioGroup.Root>
-        <Text mt={2} color="gray.500">
+        <Text mt={2} color="textMuted">
           Attuale: {theme.resolved}
         </Text>
       </GlassCard>

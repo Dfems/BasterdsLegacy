@@ -92,8 +92,8 @@ const CreateUserPage = (): JSX.Element => {
           <Button type="submit" disabled={loading}>
             {loading ? 'Creazione…' : 'Crea utente'}
           </Button>
-          {msg && <Text color="green.400">{msg}</Text>}
-          {err && <Text color="red.400">{err}</Text>}
+          {msg && <Text color="accent.success">{msg}</Text>}
+          {err && <Text color="accent.danger">{err}</Text>}
         </Box>
       )}
     </Box>

@@ -31,7 +31,7 @@ const HomePage = (): JSX.Element => {
             {t.donateBtn}
           </GlassButton>
         </Stack>
-        <Text mt={6} fontSize="sm" color="gray.400">
+        <Text mt={6} fontSize="sm" color="textMuted">
           {t.footer}
         </Text>
       </GlassCard>

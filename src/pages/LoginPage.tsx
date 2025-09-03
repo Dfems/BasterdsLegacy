@@ -62,12 +62,24 @@ export default function Login(): JSX.Element {
             />
           </Box>
           <GlassCard inset>
-            <Button type="submit" width="100%" data-variant="glass">
+            <Button
+              type="submit"
+              width="100%"
+              data-variant="glass"
+              bg="surface"
+              borderColor="borderAccent"
+              color="text"
+              _hover={{
+                bg: 'surfaceSolid',
+                borderColor: 'brand.primary',
+                transform: 'translateY(-1px)',
+              }}
+            >
               Login
             </Button>
           </GlassCard>
           {error && (
-            <Text color="red.400" textAlign="center">
+            <Text color="accent.danger" textAlign="center">
               {error}
             </Text>
           )}
