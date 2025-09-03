@@ -34,9 +34,18 @@ export default function SettingsPage(): JSX.Element {
   }, [])
 
   return (
-    <Box p={{ base: 4, md: 6 }}> {/* Padding responsive */}
-      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>Settings</Heading> {/* Font size responsive */}
-      {err && <Text color="accent.danger" fontSize={{ base: 'sm', md: 'md' }}>{err}</Text>}
+    <Box p={{ base: 4, md: 6 }}>
+      {' '}
+      {/* Padding responsive */}
+      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
+        Settings
+      </Heading>{' '}
+      {/* Font size responsive */}
+      {err && (
+        <Text color="accent.danger" fontSize={{ base: 'sm', md: 'md' }}>
+          {err}
+        </Text>
+      )}
       {!s && !err && <Text fontSize={{ base: 'sm', md: 'md' }}>Caricamento…</Text>}
       {s && (
         <GlassCard
@@ -47,10 +56,14 @@ export default function SettingsPage(): JSX.Element {
           mb={6}
           p={{ base: 3, md: 4 }} // Padding responsive
         >
-          <Text as="dt" color="textMuted" fontSize={{ base: 'sm', md: 'md' }}> {/* Font size responsive */}
+          <Text as="dt" color="textMuted" fontSize={{ base: 'sm', md: 'md' }}>
+            {' '}
+            {/* Font size responsive */}
             JAVA_BIN
           </Text>
-          <Text as="dd" fontSize={{ base: 'sm', md: 'md' }} wordBreak="break-all"> {/* Responsive e word break per mobile */}
+          <Text as="dd" fontSize={{ base: 'sm', md: 'md' }} wordBreak="break-all">
+            {' '}
+            {/* Responsive e word break per mobile */}
             {s.javaBin}
           </Text>
 
@@ -90,23 +103,35 @@ export default function SettingsPage(): JSX.Element {
           </Text>
         </GlassCard>
       )}
-
-      <GlassCard inset p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-        <Heading size={{ base: 'sm', md: 'md' }} mb={2}> {/* Font size responsive */}
+      <GlassCard inset p={{ base: 3, md: 4 }}>
+        {' '}
+        {/* Padding responsive */}
+        <Heading size={{ base: 'sm', md: 'md' }} mb={2}>
+          {' '}
+          {/* Font size responsive */}
           SFTP OS‑level
         </Heading>
-        <Text mb={2} fontSize={{ base: 'sm', md: 'md' }}>Usa OpenSSH di sistema con utente dedicato, come descritto nel README.</Text>
-        <HStack gap={2} wrap="wrap"> {/* Wrap per mobile */}
+        <Text mb={2} fontSize={{ base: 'sm', md: 'md' }}>
+          Usa OpenSSH di sistema con utente dedicato, come descritto nel README.
+        </Text>
+        <HStack gap={2} wrap="wrap">
+          {' '}
+          {/* Wrap per mobile */}
           <Kbd fontSize={{ base: 'xs', md: 'sm' }}>ssh</Kbd> {/* Font size responsive */}
           <Text fontSize={{ base: 'sm', md: 'md' }}>user@server</Text>
         </HStack>
       </GlassCard>
-
-      <GlassCard inset mt={6} p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-        <Heading size={{ base: 'sm', md: 'md' }} mb={3}> {/* Font size responsive */}
+      <GlassCard inset mt={6} p={{ base: 3, md: 4 }}>
+        {' '}
+        {/* Padding responsive */}
+        <Heading size={{ base: 'sm', md: 'md' }} mb={3}>
+          {' '}
+          {/* Font size responsive */}
           Tema
         </Heading>
-        <Text mb={2} fontSize={{ base: 'sm', md: 'md' }}>Scegli la modalità colore (salvata in locale e applicata subito).</Text>
+        <Text mb={2} fontSize={{ base: 'sm', md: 'md' }}>
+          Scegli la modalità colore (salvata in locale e applicata subito).
+        </Text>
         <RadioGroup.Root
           value={theme.mode}
           onValueChange={(details) => {
@@ -117,7 +142,10 @@ export default function SettingsPage(): JSX.Element {
           <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
             <RadioGroup.Item value="system">
               <RadioGroup.ItemControl />
-              <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>Sistema</RadioGroup.ItemText> {/* Font size responsive */}
+              <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
+                Sistema
+              </RadioGroup.ItemText>{' '}
+              {/* Font size responsive */}
             </RadioGroup.Item>
             <RadioGroup.Item value="dark">
               <RadioGroup.ItemControl />

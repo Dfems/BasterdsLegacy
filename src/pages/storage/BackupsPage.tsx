@@ -45,19 +45,27 @@ export default function BackupsPage(): JSX.Element {
   const rows = useMemo(() => data ?? [], [data])
 
   return (
-    <Box p={{ base: 4, md: 6 }}> {/* Padding responsive */}
-      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>Backups</Heading> {/* Font size responsive */}
-
-      <GlassCard mb={4} p={{ base: 3, md: 4 }}> {/* Padding responsive */}
-        <HStack gap={3} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}> {/* Centrato su mobile */}
-          <GlassButton 
+    <Box p={{ base: 4, md: 6 }}>
+      {' '}
+      {/* Padding responsive */}
+      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
+        Backups
+      </Heading>{' '}
+      {/* Font size responsive */}
+      <GlassCard mb={4} p={{ base: 3, md: 4 }}>
+        {' '}
+        {/* Padding responsive */}
+        <HStack gap={3} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
+          {' '}
+          {/* Centrato su mobile */}
+          <GlassButton
             onClick={() => create.mutate('full')}
             size={{ base: 'sm', md: 'md' }} // Size responsive
             minH="44px" // Touch target
           >
             Crea backup completo
           </GlassButton>
-          <GlassButton 
+          <GlassButton
             onClick={() => create.mutate('world')}
             size={{ base: 'sm', md: 'md' }} // Size responsive
             minH="44px" // Touch target
@@ -66,11 +74,7 @@ export default function BackupsPage(): JSX.Element {
           </GlassButton>
         </HStack>
       </GlassCard>
-
-      {!isLoading && rows.length === 0 && (
-        <div style={{ fontSize: '14px' }}>Nessun backup</div>
-      )}
-
+      {!isLoading && rows.length === 0 && <div style={{ fontSize: '14px' }}>Nessun backup</div>}
       {/* Mobile: Card layout */}
       <Box display={{ base: 'block', md: 'none' }}>
         {rows.map((b) => (
@@ -87,18 +91,13 @@ export default function BackupsPage(): JSX.Element {
                   {new Date(b.createdAt).toLocaleDateString()}
                 </Text>
               </Box>
-              <GlassButton
-                size="xs"
-                minH="32px"
-                onClick={() => restore.mutate(b.id)}
-              >
+              <GlassButton size="xs" minH="32px" onClick={() => restore.mutate(b.id)}>
                 Ripristina
               </GlassButton>
             </HStack>
           </GlassCard>
         ))}
       </Box>
-
       {/* Desktop: Table layout */}
       {rows.length > 0 && (
         <GlassCard inset display={{ base: 'none', md: 'block' }}>
