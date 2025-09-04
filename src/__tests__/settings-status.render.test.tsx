@@ -8,6 +8,37 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import DashboardPage from '@/pages/server/DashboardPage'
 import SettingsPage from '@/pages/server/SettingsPage'
 
+// Mock del hook useLanguage per i test
+vi.mock('@/shared/hooks/useLanguage', () => ({
+  default: () => ({
+    dashboard: {
+      title: 'Dashboard',
+      state: 'State',
+      cpu: 'CPU',
+      memory: 'Memory',
+      uptime: 'Uptime',
+      actions: 'Actions',
+      start: 'Start',
+      stop: 'Stop',
+      restart: 'Restart',
+      running: 'Running',
+      stopped: 'Stopped',
+      crashed: 'Crashed',
+      unknown: 'Unknown',
+      operationStarted: 'Operation {action} started',
+      operationError: 'Error {action}: {error}',
+    },
+    common: {
+      loading: 'Loading...',
+      error: 'Error',
+      success: 'Success',
+    },
+    settings: {
+      title: 'Settings',
+    },
+  }),
+}))
+
 // Removed fake timers
 // vi.useFakeTimers()
 

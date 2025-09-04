@@ -3,9 +3,25 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import LanguageProvider from '@/entities/language/LanguageProvider'
 import AuthProvider from '@/entities/user/AuthProvider'
 import Login from '@/pages/auth/LoginPage'
+
+// Mock del hook useLanguage per i test
+vi.mock('@/shared/hooks/useLanguage', () => ({
+  default: () => ({
+    auth: {
+      loginTitle: 'Login',
+      passwordLabel: 'Password:',
+      passwordIncorrect: 'Invalid credentials',
+      loginButton: 'Login',
+    },
+    common: {
+      username: 'Utente',
+      password: 'Password',
+      login: 'Login',
+    },
+  }),
+}))
 
 // Minimal translations provider stub through LanguageProvider
 
@@ -16,9 +32,7 @@ const setup = () =>
     <ChakraProvider value={system}>
       <MemoryRouter>
         <AuthProvider>
-          <LanguageProvider>
-            <Login />
-          </LanguageProvider>
+          <Login />
         </AuthProvider>
       </MemoryRouter>
     </ChakraProvider>

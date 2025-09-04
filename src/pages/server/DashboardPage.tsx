@@ -24,7 +24,7 @@ const fmtUptime = (ms: number): string => {
 }
 
 const DashboardPage = (): JSX.Element => {
-  const { dashboard } = useLanguage()
+  const { dashboard, common } = useLanguage()
   const qc = useQueryClient()
   const [note, setNote] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const { data, error, isFetching } = useQuery({
@@ -135,7 +135,7 @@ const DashboardPage = (): JSX.Element => {
             {data?.state
               ? getStateText(data.state)
               : isFetching
-                ? dashboard.loading || 'Loading…'
+                ? common.loading
                 : dashboard.unknown}
           </Text>
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
