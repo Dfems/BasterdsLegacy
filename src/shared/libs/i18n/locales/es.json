@@ -67,7 +67,19 @@
     "commandLabel": "Comando del Servidor:",
     "consoleTitle": "Consola del Servidor",
     "backToHome": "Volver al Inicio",
-    "consoleLoginMessage": "Inicia sesión para acceder a la consola."
+    "consoleLoginMessage": "Inicia sesión para acceder a la consola.",
+    "serverStatus": "Estado del servidor:",
+    "running": "Ejecutándose",
+    "stopped": "Detenido",
+    "start": "Iniciar",
+    "stop": "Detener",
+    "restart": "Reiniciar",
+    "clear": "Limpiar",
+    "send": "Enviar",
+    "startingMessage": "Iniciando...",
+    "stoppingMessage": "Deteniendo...",
+    "restartingMessage": "Reiniciando...",
+    "powerError": "Error de energía: {error}"
   },
   "dashboard": {
     "title": "Panel",
@@ -102,7 +114,8 @@
     "type": "Tipo",
     "size": "Tamaño",
     "modified": "Modificado",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "upload": "Subir archivo"
   },
   "backups": {
     "title": "Copias de Seguridad",
@@ -123,7 +136,23 @@
     "worldSettings": "Ajustes del Mundo",
     "difficulty": "Dificultad",
     "gamemode": "Modo de Juego",
-    "maxPlayers": "Jugadores Máximos"
+    "maxPlayers": "Jugadores Máximos",
+    "loading": "Cargando…",
+    "errorLoad": "Error al cargar ajustes",
+    "sftp": {
+      "title": "SFTP a nivel OS",
+      "description": "Usa OpenSSH del sistema con usuario dedicado, como se describe en el README.",
+      "ssh": "ssh",
+      "user": "usuario@servidor"
+    },
+    "theme": {
+      "title": "Tema",
+      "description": "Elige el modo de color (guardado localmente y aplicado inmediatamente).",
+      "system": "Sistema",
+      "dark": "Oscuro",
+      "light": "Claro",
+      "current": "Actual: {theme}"
+    }
   },
   "modpack": {
     "title": "Modpack",
@@ -132,6 +161,45 @@
     "uninstall": "Desinstalar",
     "version": "Versión",
     "description": "Descripción",
-    "noModpacks": "No hay modpacks disponibles"
+    "noModpacks": "No hay modpacks disponibles",
+    "mode": "Modo",
+    "automatic": "Automático",
+    "manual": "Manual (JAR personalizado)",
+    "loader": "Cargador",
+    "mcVersion": "Versión de Minecraft",
+    "jarFileName": "Nombre del archivo JAR",
+    "jarPlaceholder": "Nombre del archivo JAR (ej. forge-installer.jar)",
+    "jarHelp": "El JAR debe estar ya presente en el directorio del servidor",
+    "installing": "Instalando…",
+    "installAuto": "Descargará automáticamente el instalador para {loader} {version}",
+    "notes": "Notas",
+    "versionUnsupported": "⚠️ Versión {version} no compatible con {loader}",
+    "versionInfo": "Versión {loader}: {version}",
+    "errorVersions": "Error al cargar versiones: {error}"
+  },
+  "whitelist": {
+    "title": "Lista Blanca",
+    "username": "Usuario",
+    "usernamePlaceholder": "Usuario",
+    "addUser": "Agregar",
+    "removeUser": "Eliminar",
+    "loading": "Cargando…",
+    "error": "Error",
+    "noPlayers": "No hay jugadores en la lista blanca"
+  },
+  "users": {
+    "title": "Usuarios",
+    "createTitle": "Crear Nuevo Usuario",
+    "showForm": "Mostrar formulario de creación (flag sí)",
+    "email": "Correo",
+    "password": "Contraseña",
+    "role": "Rol",
+    "roleUser": "usuario",
+    "roleViewer": "observador",
+    "create": "Crear usuario",
+    "creating": "Creando…",
+    "created": "Usuario creado",
+    "yes": "sí",
+    "no": "no"
   }
 }

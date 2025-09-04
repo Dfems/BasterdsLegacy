@@ -5,12 +5,14 @@ import { Box, Heading, HStack, Input, Text, Textarea, VStack } from '@chakra-ui/
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
 import { SimpleSelect } from '@/shared/components/SimpleSelect'
+import useLanguage from '@/shared/hooks/useLanguage'
 import { useModpackVersions } from '@/shared/hooks/useModpackVersions'
 
 type InstallMode = 'automatic' | 'manual'
 type LoaderType = 'Fabric' | 'Forge' | 'Quilt' | 'NeoForge'
 
 export default function ModpackPage(): JSX.Element {
+  const { modpack, common } = useLanguage()
   const [installMode, setInstallMode] = useState<InstallMode>('automatic')
   const [loader, setLoader] = useState<LoaderType>('Fabric')
   const [mcVersion, setMcVersion] = useState('1.21.1')
@@ -70,28 +72,41 @@ export default function ModpackPage(): JSX.Element {
   }
 
   return (
-    <Box p={6}>
-      <Heading mb={4}>Modpack</Heading>
-
+    <Box p={{ base: 4, md: 6 }}>
+      {' '}
+      {/* Padding responsive */}
+      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
+        {modpack.title}
+      </Heading>{' '}
+      {/* Font size responsive */}
       {versionsError && (
-        <GlassCard mb={4} bg="red.900" borderColor="red.600">
-          <Text color="red.200">
-            Errore nel caricamento delle versioni: {(versionsError as Error).message}
+        <GlassCard mb={4} bg="red.900" borderColor="red.600" p={{ base: 3, md: 4 }}>
+          {' '}
+          {/* Padding responsive */}
+          <Text color="red.200" fontSize={{ base: 'sm', md: 'md' }}>
+            {' '}
+            {/* Font size responsive */}
+            {modpack.errorVersions.replace('{error}', (versionsError as Error).message)}
           </Text>
         </GlassCard>
       )}
-
-      <GlassCard mb={4}>
+      <GlassCard mb={4} p={{ base: 3, md: 4 }}>
+        {' '}
+        {/* Padding responsive */}
         <VStack gap={4} align="stretch">
           {/* Modalità di installazione */}
           <HStack gap={3} wrap="wrap">
-            <Text minWidth="fit-content">Modalità:</Text>
+            <Text minWidth="fit-content" fontSize={{ base: 'sm', md: 'md' }}>
+              {' '}
+              {/* Font size responsive */}
+              {modpack.mode}:
+            </Text>
             <SimpleSelect
               value={installMode}
               onChange={(v) => setInstallMode(v as InstallMode)}
               options={[
-                { value: 'automatic', label: 'Automatica' },
-                { value: 'manual', label: 'Manuale (JAR personalizzato)' },
+                { value: 'automatic', label: modpack.automatic },
+                { value: 'manual', label: modpack.manual },
               ]}
             />
           </HStack>
@@ -118,14 +133,20 @@ export default function ModpackPage(): JSX.Element {
               </HStack>
 
               {!isVersionSupported && (
-                <Text fontSize="sm" color="orange.400">
-                  ⚠️ Versione {mcVersion} non supportata da {loader}
+                <Text fontSize={{ base: 'sm', md: 'md' }} color="orange.400">
+                  {' '}
+                  {/* Font size responsive */}
+                  {modpack.versionUnsupported
+                    .replace('{version}', mcVersion)
+                    .replace('{loader}', loader)}
                 </Text>
               )}
 
               {versionData && isVersionSupported && (
-                <Text fontSize="sm" color="gray.400">
-                  Versione {loader}: {versionData.loaders[loader]?.versions[mcVersion]}
+                <Text fontSize={{ base: 'sm', md: 'md' }} color="gray.400">
+                  {modpack.versionInfo
+                    .replace('{loader}', loader)
+                    .replace('{version}', versionData.loaders[loader]?.versions[mcVersion] || '')}
                 </Text>
               )}
             </VStack>
@@ -133,36 +154,55 @@ export default function ModpackPage(): JSX.Element {
 
           {/* Configurazione per modalità manuale */}
           {installMode === 'manual' && (
-            <HStack gap={3} wrap="wrap">
+            <VStack gap={3} align="stretch">
               <Input
                 value={jarFileName}
                 onChange={(e) => setJarFileName(e.target.value)}
-                placeholder="Nome del file JAR (es. forge-installer.jar)"
-                flex="1"
+                placeholder={modpack.jarPlaceholder}
+                data-variant="glass"
+                minH="44px" // Touch target
+                fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
               />
-              <Text fontSize="sm" color="gray.500">
-                Il JAR deve essere già presente nella directory del server
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="gray.500">
+                {modpack.jarHelp}
               </Text>
-            </HStack>
+            </VStack>
           )}
 
           {/* Pulsante di installazione */}
-          <HStack>
-            <GlassButton onClick={runInstall} disabled={isInstallDisabled()}>
-              {busy ? 'Installazione…' : versionsLoading ? 'Caricamento...' : 'Installa'}
+          <HStack wrap="wrap">
+            <GlassButton
+              onClick={runInstall}
+              disabled={isInstallDisabled()}
+              size={{ base: 'sm', md: 'md' }} // Size responsive
+              minH="44px" // Touch target
+            >
+              {busy ? modpack.installing : versionsLoading ? common.loading : modpack.install}
             </GlassButton>
             {installMode === 'automatic' && !versionsLoading && (
-              <Text fontSize="sm" color="gray.500">
-                Scaricherà automaticamente l'installer per {loader} {mcVersion}
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="gray.500">
+                {modpack.installAuto.replace('{loader}', loader).replace('{version}', mcVersion)}
               </Text>
             )}
           </HStack>
         </VStack>
       </GlassCard>
-
-      <GlassCard inset>
-        <Text mb={2}>Note</Text>
-        <Textarea value={notes} readOnly rows={12} width="100%" />
+      <GlassCard inset p={{ base: 3, md: 4 }}>
+        {' '}
+        {/* Padding responsive */}
+        <Text mb={2} fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">
+          {' '}
+          {/* Font size responsive */}
+          {modpack.notes}
+        </Text>
+        <Textarea
+          value={notes}
+          readOnly
+          rows={12}
+          width="100%"
+          data-variant="glass"
+          fontSize={{ base: 'xs', md: 'sm' }} // Font size responsive per note
+        />
       </GlassCard>
     </Box>
   )

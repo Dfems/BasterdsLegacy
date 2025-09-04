@@ -67,7 +67,19 @@
     "commandLabel": "Server Command:",
     "consoleTitle": "Server Console:",
     "backToHome": "Back to Home",
-    "consoleLoginMessage": "Log in to access the console."
+    "consoleLoginMessage": "Log in to access the console.",
+    "serverStatus": "Server status:",
+    "running": "Running",
+    "stopped": "Stopped",
+    "start": "Start",
+    "stop": "Stop",
+    "restart": "Restart",
+    "clear": "Clear",
+    "send": "Send",
+    "startingMessage": "Starting...",
+    "stoppingMessage": "Stopping...",
+    "restartingMessage": "Restarting...",
+    "powerError": "Power error: {error}"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -102,7 +114,8 @@
     "type": "Type",
     "size": "Size",
     "modified": "Modified",
-    "actions": "Actions"
+    "actions": "Actions",
+    "upload": "Upload file"
   },
   "backups": {
     "title": "Backups",
@@ -123,7 +136,23 @@
     "worldSettings": "World Settings",
     "difficulty": "Difficulty",
     "gamemode": "Game Mode",
-    "maxPlayers": "Max Players"
+    "maxPlayers": "Max Players",
+    "loading": "Loading…",
+    "errorLoad": "Error loading settings",
+    "sftp": {
+      "title": "SFTP OS-level",
+      "description": "Use system OpenSSH with dedicated user, as described in README.",
+      "ssh": "ssh",
+      "user": "user@server"
+    },
+    "theme": {
+      "title": "Theme",
+      "description": "Choose color mode (saved locally and applied immediately).",
+      "system": "System",
+      "dark": "Dark",
+      "light": "Light",
+      "current": "Current: {theme}"
+    }
   },
   "modpack": {
     "title": "Modpack",
@@ -132,6 +161,45 @@
     "uninstall": "Uninstall",
     "version": "Version",
     "description": "Description",
-    "noModpacks": "No modpacks available"
+    "noModpacks": "No modpacks available",
+    "mode": "Mode",
+    "automatic": "Automatic",
+    "manual": "Manual (Custom JAR)",
+    "loader": "Loader",
+    "mcVersion": "Minecraft Version",
+    "jarFileName": "JAR file name",
+    "jarPlaceholder": "JAR file name (e.g. forge-installer.jar)",
+    "jarHelp": "The JAR must already be present in the server directory",
+    "installing": "Installing…",
+    "installAuto": "Will automatically download the installer for {loader} {version}",
+    "notes": "Notes",
+    "versionUnsupported": "⚠️ Version {version} not supported by {loader}",
+    "versionInfo": "Version {loader}: {version}",
+    "errorVersions": "Error loading versions: {error}"
+  },
+  "whitelist": {
+    "title": "Whitelist",
+    "username": "Username",
+    "usernamePlaceholder": "Username",
+    "addUser": "Add",
+    "removeUser": "Remove",
+    "loading": "Loading…",
+    "error": "Error",
+    "noPlayers": "No players in whitelist"
+  },
+  "users": {
+    "title": "Users",
+    "createTitle": "Create New User",
+    "showForm": "Show creation form (flag yes)",
+    "email": "Email",
+    "password": "Password",
+    "role": "Role",
+    "roleUser": "user",
+    "roleViewer": "viewer",
+    "create": "Create user",
+    "creating": "Creating…",
+    "created": "User created",
+    "yes": "yes",
+    "no": "no"
   }
 }

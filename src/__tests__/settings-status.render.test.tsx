@@ -35,6 +35,22 @@ vi.mock('@/shared/hooks/useLanguage', () => ({
     },
     settings: {
       title: 'Settings',
+      loading: 'Loading...',
+      errorLoad: 'Error loading settings',
+      sftp: {
+        title: 'SFTP OS-level',
+        description: 'Use system OpenSSH with dedicated user',
+        ssh: 'ssh',
+        user: 'user@server',
+      },
+      theme: {
+        title: 'Theme',
+        description: 'Choose color mode',
+        system: 'System',
+        dark: 'Dark',
+        light: 'Light',
+        current: 'Current: {theme}',
+      },
     },
   }),
 }))

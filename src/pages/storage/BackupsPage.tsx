@@ -5,10 +5,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 type Backup = { id: string; size: number; createdAt: number }
 
 export default function BackupsPage(): JSX.Element {
+  const { backups } = useLanguage()
   const qc = useQueryClient()
   const { data, isLoading } = useQuery<Backup[]>({
     queryKey: ['backups'],
@@ -49,7 +51,7 @@ export default function BackupsPage(): JSX.Element {
       {' '}
       {/* Padding responsive */}
       <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
-        Backups
+        {backups.title}
       </Heading>{' '}
       {/* Font size responsive */}
       <GlassCard mb={4} p={{ base: 3, md: 4 }}>
@@ -74,7 +76,10 @@ export default function BackupsPage(): JSX.Element {
           </GlassButton>
         </HStack>
       </GlassCard>
-      {!isLoading && rows.length === 0 && <div style={{ fontSize: '14px' }}>Nessun backup</div>}
+      {!isLoading && rows.length === 0 && (
+        <Text fontSize={{ base: 'sm', md: 'md' }}>{backups.noBackups}</Text>
+      )}{' '}
+      {/* Font size responsive */}
       {/* Mobile: Card layout */}
       <Box display={{ base: 'block', md: 'none' }}>
         {rows.map((b) => (
@@ -92,7 +97,7 @@ export default function BackupsPage(): JSX.Element {
                 </Text>
               </Box>
               <GlassButton size="xs" minH="32px" onClick={() => restore.mutate(b.id)}>
-                Ripristina
+                {backups.restore}
               </GlassButton>
             </HStack>
           </GlassCard>
@@ -120,7 +125,7 @@ export default function BackupsPage(): JSX.Element {
                   <Table.Cell textAlign="end">{(b.size / (1024 * 1024)).toFixed(1)} MB</Table.Cell>
                   <Table.Cell bg="transparent" boxShadow="none">
                     <GlassButton size="xs" onClick={() => restore.mutate(b.id)}>
-                      Ripristina
+                      {backups.restore}
                     </GlassButton>
                   </Table.Cell>
                 </Table.Row>

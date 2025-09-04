@@ -5,8 +5,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 export default function WhitelistPage(): JSX.Element {
+  const { whitelist } = useLanguage()
   const qc = useQueryClient()
   const [name, setName] = useState('')
   const { data, isLoading, isError } = useQuery<{ players: string[] }>({
@@ -34,39 +36,69 @@ export default function WhitelistPage(): JSX.Element {
   const players = useMemo(() => data?.players ?? [], [data])
 
   return (
-    <Box p={6}>
-      <Heading mb={4}>Whitelist</Heading>
-
-      <GlassCard mb={4}>
-        <HStack gap={3} wrap="wrap">
+    <Box p={{ base: 4, md: 6 }}>
+      {' '}
+      {/* Padding responsive */}
+      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
+        {whitelist.title}
+      </Heading>{' '}
+      {/* Font size responsive */}
+      <GlassCard mb={4} p={{ base: 3, md: 4 }}>
+        {' '}
+        {/* Padding responsive */}
+        <HStack gap={3} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
+          {' '}
+          {/* Centrato su mobile */}
           <Input
-            placeholder="Username"
+            placeholder={whitelist.usernamePlaceholder}
             value={name}
             onChange={(e) => setName(e.target.value)}
             width="auto"
+            data-variant="glass"
+            minW={{ base: '200px', sm: 'auto' }} // Larghezza minima su mobile
+            minH="44px" // Touch target
+            fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
           />
           <GlassButton
             onClick={() => name && mutate.mutate({ action: 'add', player: name })}
             disabled={!name}
+            size={{ base: 'sm', md: 'md' }} // Size responsive
+            minH="44px" // Touch target
           >
-            Aggiungi
+            {whitelist.addUser}
           </GlassButton>
         </HStack>
       </GlassCard>
-
-      {isLoading && <Text>Caricamento…</Text>}
-      {isError && <Text color="red">Errore</Text>}
-
-      <GlassCard as="ul" p={2} style={{ listStyle: 'none', padding: 0 }}>
+      {isLoading && <Text fontSize={{ base: 'sm', md: 'md' }}>{whitelist.loading}</Text>}{' '}
+      {/* Font size responsive */}
+      {isError && (
+        <Text color="red" fontSize={{ base: 'sm', md: 'md' }}>
+          {whitelist.error}
+        </Text>
+      )}
+      {!isLoading && players.length === 0 && (
+        <Text fontSize={{ base: 'sm', md: 'md' }}>{whitelist.noPlayers}</Text>
+      )}
+      <GlassCard as="ul" p={{ base: 2, md: 3 }} style={{ listStyle: 'none', padding: 0 }}>
+        {' '}
+        {/* Padding responsive */}
         {players.map((p) => (
-          <HStack as="li" key={p} justify="space-between" mb={2}>
-            <span>{p}</span>
+          <HStack
+            as="li"
+            key={p}
+            justify="space-between"
+            mb={2}
+            p={{ base: 2, md: 3 }} // Padding responsive
+            wrap="wrap" // Wrap per mobile
+          >
+            <Text fontSize={{ base: 'sm', md: 'md' }}>{p}</Text> {/* Font size responsive */}
             <GlassButton
-              size="xs"
+              size={{ base: 'xs', md: 'sm' }} // Size responsive
               colorScheme="red"
               onClick={() => mutate.mutate({ action: 'remove', player: p })}
+              minH="32px" // Touch target minimo
             >
-              Rimuovi
+              {whitelist.removeUser}
             </GlassButton>
           </HStack>
         ))}

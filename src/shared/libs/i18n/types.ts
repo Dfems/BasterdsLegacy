@@ -71,6 +71,18 @@ export type TranslationKey = {
     consoleTitle: string
     backToHome: string
     consoleLoginMessage: string
+    serverStatus: string
+    running: string
+    stopped: string
+    start: string
+    stop: string
+    restart: string
+    clear: string
+    send: string
+    startingMessage: string
+    stoppingMessage: string
+    restartingMessage: string
+    powerError: string
   }
   dashboard: {
     title: string
@@ -106,6 +118,7 @@ export type TranslationKey = {
     size: string
     modified: string
     actions: string
+    upload: string
   }
   backups: {
     title: string
@@ -127,6 +140,22 @@ export type TranslationKey = {
     difficulty: string
     gamemode: string
     maxPlayers: string
+    loading: string
+    errorLoad: string
+    sftp: {
+      title: string
+      description: string
+      ssh: string
+      user: string
+    }
+    theme: {
+      title: string
+      description: string
+      system: string
+      dark: string
+      light: string
+      current: string
+    }
   }
   modpack: {
     title: string
@@ -136,6 +165,45 @@ export type TranslationKey = {
     version: string
     description: string
     noModpacks: string
+    mode: string
+    automatic: string
+    manual: string
+    loader: string
+    mcVersion: string
+    jarFileName: string
+    jarPlaceholder: string
+    jarHelp: string
+    installing: string
+    installAuto: string
+    notes: string
+    versionUnsupported: string
+    versionInfo: string
+    errorVersions: string
+  }
+  whitelist: {
+    title: string
+    username: string
+    usernamePlaceholder: string
+    addUser: string
+    removeUser: string
+    loading: string
+    error: string
+    noPlayers: string
+  }
+  users: {
+    title: string
+    createTitle: string
+    showForm: string
+    email: string
+    password: string
+    role: string
+    roleUser: string
+    roleViewer: string
+    create: string
+    creating: string
+    created: string
+    yes: string
+    no: string
   }
 }
 

@@ -59,6 +59,8 @@ const useLanguage = () => {
     backups: t.backups,
     settings: t.settings,
     modpack: t.modpack,
+    whitelist: t.whitelist,
+    users: t.users,
   }
 }
 
