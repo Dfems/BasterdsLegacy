@@ -2,9 +2,9 @@ import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRoot } from 'react-dom/client'
 
-import LanguageProvider from '@/entities/language/LanguageProvider.tsx'
 import { ThemeModeProvider } from '@/entities/user/ThemeModeContext.tsx'
 import '@/index.css'
+import { I18nProvider } from '@/shared/libs/i18n'
 import '@/shared/styles/colors.css'
 
 import App from './App.tsx'
@@ -91,11 +91,11 @@ const queryClient = new QueryClient()
 createRoot(document.getElementById('root')!).render(
   <ChakraProvider value={system}>
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
+      <I18nProvider>
         <ThemeModeProvider>
           <App />
         </ThemeModeProvider>
-      </LanguageProvider>
+      </I18nProvider>
     </QueryClientProvider>
   </ChakraProvider>
 )

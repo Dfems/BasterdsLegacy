@@ -11,7 +11,7 @@ import useLanguage from '@/shared/hooks/useLanguage'
 // removed legacy CSS; page inherits global styles
 
 export default function Login(): JSX.Element {
-  const { t } = useLanguage()
+  const { common, auth } = useLanguage()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +38,7 @@ export default function Login(): JSX.Element {
         <Heading size={{ base: 'md', md: 'lg' }} mb={4} textAlign="center">
           {' '}
           {/* Font size responsive */}
-          {t.loginTitle}
+          {auth.loginTitle}
         </Heading>
         <Stack gap={4}>
           {' '}
@@ -52,7 +52,7 @@ export default function Login(): JSX.Element {
                 fontSize: '14px', // Font size specifico per label
               }}
             >
-              Utente
+              {common.username}
             </label>
             <Input
               id="username"
@@ -73,7 +73,7 @@ export default function Login(): JSX.Element {
                 fontSize: '14px', // Font size specifico per label
               }}
             >
-              Password
+              {common.password}
             </label>
             <Input
               id="password"
@@ -102,7 +102,7 @@ export default function Login(): JSX.Element {
                 transform: 'translateY(-1px)',
               }}
             >
-              Login
+              {auth.loginButton}
             </Button>
           </GlassCard>
           {error && (

@@ -6,6 +6,30 @@ import { beforeEach, afterEach, describe, expect, it, vi, type MockedFunction } 
 
 import ModpackPage from '@/pages/management/ModpackPage'
 
+// Mock useLanguage
+vi.mock('@/shared/hooks/useLanguage', () => ({
+  default: () => ({
+    modpack: {
+      title: 'Modpack',
+      mode: 'Modalità',
+      automatic: 'Automatica',
+      manual: 'Manuale (JAR personalizzato)',
+      install: 'Installa',
+      installing: 'Installazione…',
+      installAuto: "Scaricherà automaticamente l'installer per {loader} {version}",
+      notes: 'Note',
+      versionInfo: 'Versione {loader}: {version}',
+      errorVersions: 'Errore nel caricamento delle versioni: {error}',
+      versionUnsupported: '⚠️ Versione {version} non supportata da {loader}',
+      jarPlaceholder: 'Nome del file JAR (es. forge-installer.jar)',
+      jarHelp: 'Il JAR deve essere già presente nella directory del server',
+    },
+    common: {
+      loading: 'Caricamento...',
+    },
+  }),
+}))
+
 // Mock fetch
 global.fetch = vi.fn() as MockedFunction<typeof fetch>
 

@@ -4,6 +4,7 @@ import { Box, Heading, HStack, Kbd, RadioGroup, Stack, Text } from '@chakra-ui/r
 
 import { useThemeMode, type ThemeMode } from '@/entities/user/ThemeModeContext'
 import { GlassCard } from '@/shared/components/GlassCard'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 type Settings = {
   javaBin: string
@@ -16,6 +17,7 @@ type Settings = {
 }
 
 export default function SettingsPage(): JSX.Element {
+  const { settings } = useLanguage()
   const theme = useThemeMode()
   const [s, setS] = useState<Settings | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -38,15 +40,15 @@ export default function SettingsPage(): JSX.Element {
       {' '}
       {/* Padding responsive */}
       <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
-        Settings
+        {settings.title}
       </Heading>{' '}
       {/* Font size responsive */}
       {err && (
         <Text color="accent.danger" fontSize={{ base: 'sm', md: 'md' }}>
-          {err}
+          {settings.errorLoad}: {err}
         </Text>
       )}
-      {!s && !err && <Text fontSize={{ base: 'sm', md: 'md' }}>Caricamento…</Text>}
+      {!s && !err && <Text fontSize={{ base: 'sm', md: 'md' }}>{settings.loading}</Text>}
       {s && (
         <GlassCard
           as="dl"
@@ -109,16 +111,17 @@ export default function SettingsPage(): JSX.Element {
         <Heading size={{ base: 'sm', md: 'md' }} mb={2}>
           {' '}
           {/* Font size responsive */}
-          SFTP OS‑level
+          {settings.sftp.title}
         </Heading>
         <Text mb={2} fontSize={{ base: 'sm', md: 'md' }}>
-          Usa OpenSSH di sistema con utente dedicato, come descritto nel README.
+          {settings.sftp.description}
         </Text>
         <HStack gap={2} wrap="wrap">
           {' '}
           {/* Wrap per mobile */}
-          <Kbd fontSize={{ base: 'xs', md: 'sm' }}>ssh</Kbd> {/* Font size responsive */}
-          <Text fontSize={{ base: 'sm', md: 'md' }}>user@server</Text>
+          <Kbd fontSize={{ base: 'xs', md: 'sm' }}>{settings.sftp.ssh}</Kbd>{' '}
+          {/* Font size responsive */}
+          <Text fontSize={{ base: 'sm', md: 'md' }}>{settings.sftp.user}</Text>
         </HStack>
       </GlassCard>
       <GlassCard inset mt={6} p={{ base: 3, md: 4 }}>
@@ -127,10 +130,10 @@ export default function SettingsPage(): JSX.Element {
         <Heading size={{ base: 'sm', md: 'md' }} mb={3}>
           {' '}
           {/* Font size responsive */}
-          Tema
+          {settings.theme.title}
         </Heading>
         <Text mb={2} fontSize={{ base: 'sm', md: 'md' }}>
-          Scegli la modalità colore (salvata in locale e applicata subito).
+          {settings.theme.description}
         </Text>
         <RadioGroup.Root
           value={theme.mode}
@@ -143,22 +146,26 @@ export default function SettingsPage(): JSX.Element {
             <RadioGroup.Item value="system">
               <RadioGroup.ItemControl />
               <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
-                Sistema
+                {settings.theme.system}
               </RadioGroup.ItemText>{' '}
               {/* Font size responsive */}
             </RadioGroup.Item>
             <RadioGroup.Item value="dark">
               <RadioGroup.ItemControl />
-              <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>Dark</RadioGroup.ItemText>
+              <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
+                {settings.theme.dark}
+              </RadioGroup.ItemText>
             </RadioGroup.Item>
             <RadioGroup.Item value="light">
               <RadioGroup.ItemControl />
-              <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>Light</RadioGroup.ItemText>
+              <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
+                {settings.theme.light}
+              </RadioGroup.ItemText>
             </RadioGroup.Item>
           </Stack>
         </RadioGroup.Root>
-        <Text mt={2} color="textMuted">
-          Attuale: {theme.resolved}
+        <Text mt={2} color="textMuted" fontSize={{ base: 'sm', md: 'md' }}>
+          {settings.theme.current.replace('{theme}', theme.resolved)}
         </Text>
       </GlassCard>
     </Box>

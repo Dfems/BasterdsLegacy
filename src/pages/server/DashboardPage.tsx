@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 type Status = {
   state: 'RUNNING' | 'STOPPED' | 'CRASHED'
@@ -23,6 +24,7 @@ const fmtUptime = (ms: number): string => {
 }
 
 const DashboardPage = (): JSX.Element => {
+  const { dashboard, common } = useLanguage()
   const qc = useQueryClient()
   const [note, setNote] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const { data, error, isFetching } = useQuery({
@@ -48,11 +50,16 @@ const DashboardPage = (): JSX.Element => {
       return (await r.json()) as { ok: true }
     },
     onSuccess: (_data, action) => {
-      setNote({ type: 'success', text: `Operazione ${action} avviata` })
+      setNote({ type: 'success', text: dashboard.operationStarted.replace('{action}', action) })
       void qc.invalidateQueries({ queryKey: ['status'] })
     },
     onError: (error, action) => {
-      setNote({ type: 'error', text: `Errore ${action}: ${error.message}` })
+      setNote({
+        type: 'error',
+        text: dashboard.operationError
+          .replace('{action}', action)
+          .replace('{error}', error.message),
+      })
     },
   })
 
@@ -68,12 +75,25 @@ const DashboardPage = (): JSX.Element => {
     }
   }, [data?.state])
 
+  const getStateText = (state?: string) => {
+    switch (state) {
+      case 'RUNNING':
+        return dashboard.running
+      case 'STOPPED':
+        return dashboard.stopped
+      case 'CRASHED':
+        return dashboard.crashed
+      default:
+        return dashboard.unknown
+    }
+  }
+
   return (
     <Box p={{ base: 4, md: 6 }}>
       {' '}
       {/* Padding responsive */}
       <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
-        Dashboard
+        {dashboard.title}
       </Heading>{' '}
       {/* Font size responsive */}
       {err && (
@@ -108,11 +128,15 @@ const DashboardPage = (): JSX.Element => {
           {' '}
           {/* Padding responsive */}
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            State
+            {dashboard.state}
           </Text>{' '}
           {/* Font size responsive */}
           <Text color={stateColor} fontSize={{ base: 'sm', md: 'md' }}>
-            {data?.state ?? (isFetching ? 'Loading…' : 'Unknown')}
+            {data?.state
+              ? getStateText(data.state)
+              : isFetching
+                ? common.loading
+                : dashboard.unknown}
           </Text>
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
             PID: {data?.pid ?? '-'}
@@ -129,7 +153,7 @@ const DashboardPage = (): JSX.Element => {
           {' '}
           {/* Padding responsive */}
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            CPU
+            {dashboard.cpu}
           </Text>{' '}
           {/* Font size responsive */}
           <Text fontSize={{ base: 'sm', md: 'md' }}>
@@ -147,7 +171,7 @@ const DashboardPage = (): JSX.Element => {
           {' '}
           {/* Padding responsive */}
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            Memory
+            {dashboard.memory}
           </Text>{' '}
           {/* Font size responsive */}
           <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${data.memMB} MB` : '-'}</Text>{' '}
@@ -163,7 +187,7 @@ const DashboardPage = (): JSX.Element => {
           {' '}
           {/* Padding responsive */}
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            Uptime
+            {dashboard.uptime}
           </Text>{' '}
           {/* Font size responsive */}
           <Text fontSize={{ base: 'sm', md: 'md' }}>
@@ -186,7 +210,7 @@ const DashboardPage = (): JSX.Element => {
             <Text fontWeight="bold" mb={2} fontSize={{ base: 'sm', md: 'md' }}>
               {' '}
               {/* Font size responsive */}
-              Azioni
+              {dashboard.actions}
             </Text>
             <HStack gap={2} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
               {' '}
@@ -199,7 +223,7 @@ const DashboardPage = (): JSX.Element => {
                 w={{ base: '100%', sm: '130px' }} // Full width su mobile
                 minH="44px" // Touch target minimo
               >
-                Start
+                {dashboard.start}
               </GlassButton>
               <GlassButton
                 size={{ base: 'sm', md: 'md' }} // Size responsive
@@ -209,7 +233,7 @@ const DashboardPage = (): JSX.Element => {
                 w={{ base: '100%', sm: '130px' }} // Full width su mobile
                 minH="44px" // Touch target minimo
               >
-                Stop
+                {dashboard.stop}
               </GlassButton>
               <GlassButton
                 size={{ base: 'sm', md: 'md' }} // Size responsive
@@ -219,7 +243,7 @@ const DashboardPage = (): JSX.Element => {
                 w={{ base: '100%', sm: '130px' }} // Full width su mobile
                 minH="44px" // Touch target minimo
               >
-                Restart
+                {dashboard.restart}
               </GlassButton>
             </HStack>
           </GlassCard>

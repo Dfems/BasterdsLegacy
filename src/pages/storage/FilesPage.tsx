@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 type Entry = {
   name: string
@@ -31,6 +32,7 @@ const human = (n: number) => {
 }
 
 export default function FilesPage(): JSX.Element {
+  const { files } = useLanguage()
   const qc = useQueryClient()
   const [path, setPath] = useState<string>('/')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -100,7 +102,7 @@ export default function FilesPage(): JSX.Element {
       {' '}
       {/* Padding responsive */}
       <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
-        Files
+        {files.title}
       </Heading>{' '}
       {/* Font size responsive */}
       <GlassCard mb={4} p={{ base: 3, md: 4 }}>
@@ -115,7 +117,7 @@ export default function FilesPage(): JSX.Element {
             size={{ base: 'sm', md: 'md' }} // Size responsive
             minH="44px" // Touch target
           >
-            Su
+            {files.up}
           </GlassButton>
           <Input
             value={path}
@@ -131,7 +133,7 @@ export default function FilesPage(): JSX.Element {
             size={{ base: 'sm', md: 'md' }} // Size responsive
             minH="44px" // Touch target
           >
-            Refresh
+            {files.refresh}
           </GlassButton>
           <Input
             type="file"
@@ -145,14 +147,14 @@ export default function FilesPage(): JSX.Element {
           />
         </HStack>
       </GlassCard>
-      {isLoading && <Text fontSize={{ base: 'sm', md: 'md' }}>Caricamento…</Text>}
+      {isLoading && <Text fontSize={{ base: 'sm', md: 'md' }}>{files.loading}</Text>}
       {isError && (
         <Text color="red" fontSize={{ base: 'sm', md: 'md' }}>
-          Errore nel caricamento.
+          {files.loadError}
         </Text>
       )}
       {!isLoading && rows.length === 0 && (
-        <Text fontSize={{ base: 'sm', md: 'md' }}>Nessun elemento</Text>
+        <Text fontSize={{ base: 'sm', md: 'md' }}>{files.noItems}</Text>
       )}
       {/* Mobile: Card layout */}
       <Box display={{ base: 'block', md: 'none' }}>
@@ -172,7 +174,7 @@ export default function FilesPage(): JSX.Element {
                   )}
                 </Text>
                 <Text fontSize="xs" color="textMuted" mb={1}>
-                  {e.type === 'file' ? human(e.size) : 'Cartella'}
+                  {e.type === 'file' ? human(e.size) : files.folder}
                 </Text>
                 <Text fontSize="xs" color="textMuted">
                   {new Date(e.mtime).toLocaleDateString()}
@@ -184,13 +186,13 @@ export default function FilesPage(): JSX.Element {
                   minH="32px"
                   onClick={() => {
                     const from = joinPath(path, e.name)
-                    const nn = prompt('Nuovo nome', e.name)
+                    const nn = prompt(files.newName, e.name)
                     if (!nn || nn === e.name) return
                     const to = joinPath(path, nn)
                     rename.mutate({ from, to })
                   }}
                 >
-                  Rinomina
+                  {files.rename}
                 </GlassButton>
                 <GlassButton
                   size="xs"
@@ -198,10 +200,10 @@ export default function FilesPage(): JSX.Element {
                   colorScheme="red"
                   onClick={() => {
                     const p = joinPath(path, e.name)
-                    if (confirm(`Eliminare ${p}?`)) remove.mutate(p)
+                    if (confirm(files.confirmDelete.replace('{path}', p))) remove.mutate(p)
                   }}
                 >
-                  Elimina
+                  {files.delete}
                 </GlassButton>
               </HStack>
             </HStack>
@@ -214,13 +216,13 @@ export default function FilesPage(): JSX.Element {
           <Table.Root data-variant="glass">
             <Table.Header>
               <Table.Row>
-                <Table.ColumnHeader color="brand.primary">Nome</Table.ColumnHeader>
-                <Table.ColumnHeader color="brand.primary">Tipo</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.primary">{files.name}</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.primary">{files.type}</Table.ColumnHeader>
                 <Table.ColumnHeader textAlign="end" color="brand.primary">
-                  Dimensione
+                  {files.size}
                 </Table.ColumnHeader>
-                <Table.ColumnHeader color="brand.primary">Modificato</Table.ColumnHeader>
-                <Table.ColumnHeader color="brand.primary">Azioni</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.primary">{files.modified}</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.primary">{files.actions}</Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -250,23 +252,23 @@ export default function FilesPage(): JSX.Element {
                         size="xs"
                         onClick={() => {
                           const from = joinPath(path, e.name)
-                          const nn = prompt('Nuovo nome', e.name)
+                          const nn = prompt(files.newName, e.name)
                           if (!nn || nn === e.name) return
                           const to = joinPath(path, nn)
                           rename.mutate({ from, to })
                         }}
                       >
-                        Rinomina
+                        {files.rename}
                       </GlassButton>
                       <GlassButton
                         size="xs"
                         colorScheme="red"
                         onClick={() => {
                           const p = joinPath(path, e.name)
-                          if (confirm(`Eliminare ${p}?`)) remove.mutate(p)
+                          if (confirm(files.confirmDelete.replace('{path}', p))) remove.mutate(p)
                         }}
                       >
-                        Elimina
+                        {files.delete}
                       </GlassButton>
                     </HStack>
                   </Table.Cell>

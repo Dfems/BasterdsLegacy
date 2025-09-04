@@ -17,7 +17,7 @@ import useLanguage from '@/shared/hooks/useLanguage'
 type WsMsg = { type?: string; data?: unknown }
 
 export default function ConsolePage(): JSX.Element {
-  const { t } = useLanguage()
+  const { t, server } = useLanguage()
   const { token } = useContext(AuthContext)
 
   const [command, setCommand] = useState('')
@@ -100,17 +100,23 @@ export default function ConsolePage(): JSX.Element {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action }),
         })
-        if (action === 'start') setOutput((o) => o + 'Avvio in corso...\n')
-        if (action === 'stop') setOutput((o) => o + 'Arresto in corso...\n')
-        if (action === 'restart') setOutput((o) => o + 'Riavvio in corso...\n')
+        if (action === 'start') setOutput((o) => o + server.startingMessage + '\n')
+        if (action === 'stop') setOutput((o) => o + server.stoppingMessage + '\n')
+        if (action === 'restart') setOutput((o) => o + server.restartingMessage + '\n')
         await fetchStatus()
       } catch (e) {
-        setOutput((o) => o + `Errore power: ${(e as Error).message}\n`)
+        setOutput((o) => o + server.powerError.replace('{error}', (e as Error).message) + '\n')
       } finally {
         setBusy(false)
       }
     },
-    [fetchStatus]
+    [
+      fetchStatus,
+      server.startingMessage,
+      server.stoppingMessage,
+      server.restartingMessage,
+      server.powerError,
+    ]
   )
 
   const clearOutput = () => setOutput('')
@@ -124,9 +130,10 @@ export default function ConsolePage(): JSX.Element {
       </Heading>{' '}
       {/* Font size responsive */}
       <HStack mb={4} gap={3} align="center" wrap="wrap">
-        <Text fontSize={{ base: 'sm', md: 'md' }}>Stato server:</Text> {/* Font size responsive */}
+        <Text fontSize={{ base: 'sm', md: 'md' }}>{server.serverStatus}</Text>{' '}
+        {/* Font size responsive */}
         <Badge colorPalette={serverRunning ? 'green' : 'red'} variant="solid">
-          {serverRunning ? 'Avviato' : 'Spento'}
+          {serverRunning ? server.running : server.stopped}
         </Badge>
       </HStack>
       <Stack direction={{ base: 'column', md: 'row' }} gap={4} align="stretch">
@@ -149,7 +156,7 @@ export default function ConsolePage(): JSX.Element {
               disabled={busy}
               minH="44px" // Touch target minimo
             >
-              {serverRunning ? 'Stop' : 'Start'}
+              {serverRunning ? server.stop : server.start}
             </GlassButton>
             <GlassButton
               size={{ base: 'sm', md: 'md' }} // Size responsive
@@ -157,7 +164,7 @@ export default function ConsolePage(): JSX.Element {
               disabled={busy || !serverRunning}
               minH="44px" // Touch target minimo
             >
-              Restart
+              {server.restart}
             </GlassButton>
             <GlassButton
               size={{ base: 'sm', md: 'md' }} // Size responsive
@@ -165,7 +172,7 @@ export default function ConsolePage(): JSX.Element {
               disabled={busy}
               minH="44px" // Touch target minimo
             >
-              Clear
+              {server.clear}
             </GlassButton>
           </Stack>
         </Box>
@@ -208,7 +215,7 @@ export default function ConsolePage(): JSX.Element {
               minH="44px" // Touch target minimo
               w={{ base: '100%', sm: 'auto' }} // Full width su mobile
             >
-              Invia
+              {server.send}
             </GlassButton>
           </Box>
 
