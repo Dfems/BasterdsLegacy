@@ -73,7 +73,8 @@ describe('Logs Module', () => {
       appendLog(logEvent)
 
       await new Promise((resolve) => setTimeout(resolve, 10))
-      expect(fsp.mkdir).toHaveBeenCalledBefore(fsp.appendFile as any)
+      expect(fsp.mkdir).toHaveBeenCalledWith(expect.any(String), { recursive: true })
+      expect(fsp.appendFile).toHaveBeenCalledWith(expect.any(String), expect.any(String))
     })
 
     it('handles multiple concurrent log appends', async () => {
