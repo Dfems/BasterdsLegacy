@@ -17,24 +17,24 @@ interface NavbarProps {
 
 export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Element {
   useContext(AuthContext)
-  const { language, setLanguage, t } = useLanguage()
+  const { navigation, common, auth, language, setLanguage } = useLanguage()
   const location = useLocation()
 
   const mobileItems = useMemo(
     () =>
       isLoggedIn
         ? [
-            { to: '/app/console', label: 'Console', icon: '🖥️' },
-            { to: '/app/files', label: 'Files', icon: '📂' },
-            { to: '/app/backups', label: 'Backups', icon: '💾' },
-            { to: '/app/dashboard', label: 'Dash', icon: '📊' },
-            { to: '/app/settings', label: 'Settings', icon: '⚙️' },
+            { to: '/app/console', label: navigation.console, icon: '🖥️' },
+            { to: '/app/files', label: navigation.files, icon: '📂' },
+            { to: '/app/backups', label: navigation.backups, icon: '💾' },
+            { to: '/app/dashboard', label: navigation.dashboard, icon: '📊' },
+            { to: '/app/settings', label: navigation.settings, icon: '⚙️' },
           ]
         : [
-            { to: '/', label: t.appName, icon: '🏠' },
-            { to: '/login', label: t.loginTitle, icon: '🔐' },
+            { to: '/', label: common.appName, icon: '🏠' },
+            { to: '/login', label: auth.loginTitle, icon: '🔐' },
           ],
-    [isLoggedIn, t.appName, t.loginTitle]
+    [isLoggedIn, navigation, common.appName, auth.loginTitle]
   )
 
   return (
@@ -62,7 +62,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
       >
         <Flex gap={2} align="center" wrap="wrap">
           <Link asChild fontWeight={800} _hover={{ textDecoration: 'none', color: '#bbf7d0' }}>
-            <RouterLink to="/">{t.appName}</RouterLink>
+            <RouterLink to="/">{common.appName}</RouterLink>
           </Link>
           {/* <NavItem to="/">Home</NavItem> */}
 
@@ -71,7 +71,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
             <HStack gap={2} align="center" display={{ base: 'none', md: 'flex' }}>
               <Menu.Root data-variant="glass">
                 <Menu.Trigger asChild>
-                  <GlassButton size="sm">Server ▾</GlassButton>
+                  <GlassButton size="sm">{navigation.server} ▾</GlassButton>
                 </Menu.Trigger>
                 <Menu.Positioner>
                   <Menu.Content boxShadow="lg" color="var(--chakra-colors-text)">
@@ -80,7 +80,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                         to="/app/console"
                         style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
                       >
-                        Console
+                        {navigation.console}
                       </RouterLink>
                     </Menu.Item>
                     <Menu.Item value="dashboard" asChild>
@@ -88,7 +88,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                         to="/app/dashboard"
                         style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
                       >
-                        Dashboard
+                        {navigation.dashboard}
                       </RouterLink>
                     </Menu.Item>
                     <Menu.Item value="settings" asChild>
@@ -96,7 +96,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                         to="/app/settings"
                         style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
                       >
-                        Settings
+                        {navigation.settings}
                       </RouterLink>
                     </Menu.Item>
                   </Menu.Content>
@@ -105,7 +105,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
 
               <Menu.Root data-variant="glass">
                 <Menu.Trigger asChild>
-                  <GlassButton size="sm">Storage ▾</GlassButton>
+                  <GlassButton size="sm">{navigation.storage} ▾</GlassButton>
                 </Menu.Trigger>
                 <Menu.Positioner>
                   <Menu.Content boxShadow="lg" color="var(--chakra-colors-text)">
@@ -114,7 +114,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                         to="/app/files"
                         style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
                       >
-                        Files
+                        {navigation.files}
                       </RouterLink>
                     </Menu.Item>
                     <Menu.Item value="backups" asChild>
@@ -122,7 +122,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                         to="/app/backups"
                         style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
                       >
-                        Backups
+                        {navigation.backups}
                       </RouterLink>
                     </Menu.Item>
                   </Menu.Content>
@@ -131,7 +131,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
 
               <Menu.Root data-variant="glass">
                 <Menu.Trigger asChild>
-                  <GlassButton size="sm">Gameplay ▾</GlassButton>
+                  <GlassButton size="sm">{navigation.gameplay} ▾</GlassButton>
                 </Menu.Trigger>
                 <Menu.Positioner>
                   <Menu.Content boxShadow="lg" color="var(--chakra-colors-text)">
@@ -140,7 +140,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                         to="/app/whitelist"
                         style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
                       >
-                        Whitelist
+                        {navigation.whitelist}
                       </RouterLink>
                     </Menu.Item>
                     <Menu.Item value="modpack" asChild>
@@ -148,7 +148,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                         to="/app/modpack"
                         style={{ padding: '8px 12px', borderRadius: 6, display: 'block' }}
                       >
-                        Modpack
+                        {navigation.modpack}
                       </RouterLink>
                     </Menu.Item>
                   </Menu.Content>
@@ -173,7 +173,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
 
           {isLoggedIn ? (
             <GlassButton size="sm" onClick={onLogout} type="button">
-              Disconnect
+              {common.logout}
             </GlassButton>
           ) : (
             <Link
@@ -181,7 +181,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
               color="var(--chakra-colors-link)"
               _hover={{ textDecoration: 'none', color: 'var(--chakra-colors-link)' }}
             >
-              <RouterLink to="/login">{t.loginTitle}</RouterLink>
+              <RouterLink to="/login">{auth.loginTitle}</RouterLink>
             </Link>
           )}
         </HStack>

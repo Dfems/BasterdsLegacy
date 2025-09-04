@@ -1,0 +1,168 @@
+import { useContext } from 'react'
+
+import { I18nContext } from './context'
+import type { TranslationKey, UseTranslationReturnType } from './types'
+
+/**
+ * Hook per accedere alle traduzioni
+ * Fornisce accesso type-safe alle traduzioni con lazy loading
+ */
+export const useTranslation = (): UseTranslationReturnType => {
+  const context = useContext(I18nContext)
+
+  if (!context) {
+    throw new Error("useTranslation deve essere usato all'interno di I18nProvider")
+  }
+
+  const { language, setLanguage, translations, isLoading } = context
+
+  // Ottieni le traduzioni per la lingua corrente
+  const currentTranslations = translations[language]
+
+  // Fallback a inglese se la lingua corrente non è caricata
+  const fallbackTranslations = translations.en
+
+  // Se non abbiamo traduzioni, crea un oggetto vuoto con la struttura corretta
+  const emptyTranslations: TranslationKey = {
+    common: {
+      appName: '',
+      login: '',
+      logout: '',
+      username: '',
+      password: '',
+      name: '',
+      email: '',
+      cancel: '',
+      submit: '',
+      save: '',
+      delete: '',
+      edit: '',
+      add: '',
+      remove: '',
+      search: '',
+      loading: '',
+      error: '',
+      success: '',
+      confirm: '',
+      refresh: '',
+      upload: '',
+      download: '',
+    },
+    navigation: {
+      home: '',
+      dashboard: '',
+      console: '',
+      settings: '',
+      files: '',
+      backups: '',
+      whitelist: '',
+      modpack: '',
+      users: '',
+      server: '',
+      storage: '',
+      gameplay: '',
+    },
+    home: {
+      title: '',
+      welcomePart: '',
+      instructions: '',
+      configBtn: '',
+      launcherBtn: '',
+      donateBtn: '',
+      footer: '',
+    },
+    auth: {
+      loginTitle: '',
+      passwordLabel: '',
+      passwordIncorrect: '',
+      usernameLabel: '',
+      loginButton: '',
+    },
+    modal: {
+      title: '',
+      nameLabel: '',
+      namePlaceholder: '',
+      usernameLabel: '',
+      usernamePlaceholder: '',
+      submitBtn: '',
+      cancelBtn: '',
+      error: '',
+    },
+    server: { commandLabel: '', consoleTitle: '', backToHome: '', consoleLoginMessage: '' },
+    dashboard: {
+      title: '',
+      state: '',
+      cpu: '',
+      memory: '',
+      uptime: '',
+      actions: '',
+      start: '',
+      stop: '',
+      restart: '',
+      running: '',
+      stopped: '',
+      crashed: '',
+      unknown: '',
+      operationStarted: '',
+      operationError: '',
+    },
+    files: {
+      title: '',
+      up: '',
+      refresh: '',
+      loading: '',
+      loadError: '',
+      noItems: '',
+      folder: '',
+      rename: '',
+      delete: '',
+      newName: '',
+      confirmDelete: '',
+      name: '',
+      type: '',
+      size: '',
+      modified: '',
+      actions: '',
+    },
+    backups: {
+      title: '',
+      create: '',
+      restore: '',
+      download: '',
+      delete: '',
+      confirmDelete: '',
+      creating: '',
+      restoring: '',
+      noBackups: '',
+    },
+    settings: {
+      title: '',
+      save: '',
+      reset: '',
+      serverProperties: '',
+      worldSettings: '',
+      difficulty: '',
+      gamemode: '',
+      maxPlayers: '',
+    },
+    modpack: {
+      title: '',
+      upload: '',
+      install: '',
+      uninstall: '',
+      version: '',
+      description: '',
+      noModpacks: '',
+    },
+  }
+
+  // Usa le traduzioni correnti, poi fallback, poi struttura vuota
+  const t = currentTranslations || fallbackTranslations || emptyTranslations
+
+  return {
+    t,
+    language,
+    setLanguage,
+    isLoading,
+  }
+}
