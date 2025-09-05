@@ -9,10 +9,19 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "npm run build && node dist/app.js",
-    "dev:ts": "tsx src/app.ts",
+    "dev": "npm run setup:db && npm run build && node dist/app.js",
+    "dev:ts": "npm run setup:db && tsx src/app.ts",
+    "dev:mock": "tsx src/app.ts",
     "start": "node dist/app.js",
-    "type-check": "tsc -p tsconfig.json --noEmit"
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "setup:db": "tsx scripts/setup-db.ts",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset",
+    "create:owner": "tsx scripts/create-owner.ts",
+    "create:user": "tsx scripts/create-user.ts",
+    "remove:owner": "tsx scripts/remove-owner.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",
