@@ -4,8 +4,20 @@ import path from 'node:path'
 
 import { CONFIG } from '../lib/config.js'
 import { processManager } from '../minecraft/process.js'
+import { checkServerJarStatus } from '../minecraft/serverJar.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
+  // Nuovo endpoint per verificare stato JAR del server
+  fastify.get(
+    '/api/server/jar-status',
+    {
+      preHandler: fastify.authorize('user'),
+    },
+    async () => {
+      return await checkServerJarStatus()
+    }
+  )
+
   fastify.delete(
     '/api/server',
     {

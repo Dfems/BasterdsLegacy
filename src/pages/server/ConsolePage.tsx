@@ -12,13 +12,16 @@ import { Badge, Box, HStack, Heading, Input, Stack, Text, Textarea } from '@chak
 
 import AuthContext from '@/entities/user/AuthContext'
 import { GlassButton } from '@/shared/components/GlassButton'
+import { GlassCard } from '@/shared/components/GlassCard'
 import useLanguage from '@/shared/hooks/useLanguage'
+import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 type WsMsg = { type?: string; data?: unknown }
 
 export default function ConsolePage(): JSX.Element {
   const { t, server } = useLanguage()
   const { token } = useContext(AuthContext)
+  const { data: jarStatus, isLoading: jarLoading } = useServerJarStatus()
 
   const [command, setCommand] = useState('')
   const [output, setOutput] = useState('')
@@ -95,6 +98,15 @@ export default function ConsolePage(): JSX.Element {
     async (action: 'start' | 'stop' | 'restart') => {
       setBusy(true)
       try {
+        // Controllo aggiuntivo: non permettere start se non c'è JAR
+        if (action === 'start' && (!jarStatus?.canStart || !jarStatus?.hasJar)) {
+          setOutput(
+            (o) =>
+              o + 'Errore: Nessun JAR del server trovato. Installa un modpack prima di avviare.\n'
+          )
+          return
+        }
+
         await fetch('/api/power', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -116,6 +128,8 @@ export default function ConsolePage(): JSX.Element {
       server.stoppingMessage,
       server.restartingMessage,
       server.powerError,
+      jarStatus?.canStart,
+      jarStatus?.hasJar,
     ]
   )
 
@@ -129,6 +143,7 @@ export default function ConsolePage(): JSX.Element {
         {t.consoleTitle}
       </Heading>{' '}
       {/* Font size responsive */}
+      {/* Stato Server */}
       <HStack mb={4} gap={3} align="center" wrap="wrap">
         <Text fontSize={{ base: 'sm', md: 'md' }}>{server.serverStatus}</Text>{' '}
         {/* Font size responsive */}
@@ -136,6 +151,36 @@ export default function ConsolePage(): JSX.Element {
           {serverRunning ? server.running : server.stopped}
         </Badge>
       </HStack>
+      {/* Stato JAR/Modpack */}
+      {!jarLoading && jarStatus && (
+        <GlassCard mb={4} p={{ base: 3, md: 4 }}>
+          <HStack gap={3} align="center" wrap="wrap">
+            <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">
+              Stato Modpack:
+            </Text>
+            <Badge colorPalette={jarStatus.hasJar ? 'green' : 'orange'} variant="solid">
+              {jarStatus.hasJar ? 'Installato' : 'Non trovato'}
+            </Badge>
+            {jarStatus.hasJar && jarStatus.jarName && (
+              <>
+                <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.400">
+                  {jarStatus.jarName}
+                </Text>
+                {jarStatus.jarType && (
+                  <Badge colorPalette="blue" variant="outline">
+                    {jarStatus.jarType.toUpperCase()}
+                  </Badge>
+                )}
+              </>
+            )}
+          </HStack>
+          {!jarStatus.hasJar && (
+            <Text fontSize={{ base: 'xs', md: 'sm' }} color="orange.300" mt={2}>
+              💡 Vai alla pagina Modpack per installare un server prima di avviarlo
+            </Text>
+          )}
+        </GlassCard>
+      )}
       <Stack direction={{ base: 'column', md: 'row' }} gap={4} align="stretch">
         <Box
           p={4}
@@ -153,7 +198,7 @@ export default function ConsolePage(): JSX.Element {
             <GlassButton
               size={{ base: 'sm', md: 'md' }} // Size responsive
               onClick={() => void power(serverRunning ? 'stop' : 'start')}
-              disabled={busy}
+              disabled={busy || (!serverRunning && !jarStatus?.canStart)}
               minH="44px" // Touch target minimo
             >
               {serverRunning ? server.stop : server.start}
