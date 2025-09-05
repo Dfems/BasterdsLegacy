@@ -11,7 +11,6 @@
     "build": "tsc -p tsconfig.json",
     "dev": "node --loader ts-node/esm src/app.ts",
     "start": "node dist/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "type-check": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
