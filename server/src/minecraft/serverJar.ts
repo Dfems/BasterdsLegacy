@@ -66,7 +66,7 @@ export const checkServerJarStatus = async (): Promise<ServerJarStatus> => {
 
     // Se non trova JAR comuni, prende il primo disponibile
     if (!serverJar && jarFiles.length > 0) {
-      serverJar = jarFiles[0]
+      serverJar = jarFiles[0] ?? null
     }
 
     // Determina il tipo di server dal nome del file
