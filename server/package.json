@@ -11,8 +11,6 @@
     "build": "tsc -p tsconfig.json",
     "dev": "node --loader ts-node/esm src/app.ts",
     "start": "node dist/app.js",
-    "test": "vitest --run",
-    "test:watch": "vitest",
     "type-check": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -46,11 +44,9 @@
     "@types/pidusage": "^2.0.5",
     "@types/tar-stream": "^3.1.4",
     "@types/ws": "^8.18.1",
-    "@vitest/coverage-v8": "^3.2.4",
     "prisma": "^6.15.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2",
-    "vitest": "^3.2.4"
+    "typescript": "^5.9.2"
   },
   "engines": {
     "node": ">=20"
