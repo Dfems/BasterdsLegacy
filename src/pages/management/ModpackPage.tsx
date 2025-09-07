@@ -1,8 +1,7 @@
-import { useContext, useMemo, useState, type JSX } from 'react'
+import { useMemo, useState, type JSX } from 'react'
 
 import { Badge, Box, Heading, HStack, Input, Text, Textarea, VStack } from '@chakra-ui/react'
 
-import AuthContext from '@/entities/user/AuthContext'
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
 import { SimpleSelect } from '@/shared/components/SimpleSelect'
@@ -16,7 +15,6 @@ type LoaderType = 'Fabric' | 'Forge' | 'Quilt' | 'NeoForge'
 
 export default function ModpackPage(): JSX.Element {
   const { modpack, common } = useLanguage()
-  const { token } = useContext(AuthContext)
   const [installMode, setInstallMode] = useState<InstallMode>('automatic')
   const [loader, setLoader] = useState<LoaderType>('Fabric')
   const [mcVersion, setMcVersion] = useState('1.21.1')
@@ -30,7 +28,8 @@ export default function ModpackPage(): JSX.Element {
   } = useModpackVersions()
 
   const { data: jarStatus } = useServerJarStatus()
-  const { progress, connectWebSocket, resetProgress } = useModpackInstallProgress(setBusy)
+  const { progress, connectWebSocket, sendInstallMessage, resetProgress } =
+    useModpackInstallProgress(setBusy)
 
   // Opzioni dinamiche per le versioni Minecraft
   const mcVersionOptions = useMemo(() => {
@@ -49,37 +48,22 @@ export default function ModpackPage(): JSX.Element {
     setBusy(true)
     resetProgress()
 
-    // Connetti al WebSocket per il progresso real-time
-    connectWebSocket()
-
-    // Aspetta un momento per permettere la connessione WebSocket
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     try {
       const payload =
         installMode === 'automatic'
           ? { loader, mcVersion, mode: 'automatic' }
           : { jarFileName, mode: 'manual' }
 
-      // Usa il modpack real-time via WebSocket invece dell'API tradizionale
-      // Il WebSocket gestirà tutto il progresso
-      const ws = new WebSocket(
-        `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/modpack-install?token=${encodeURIComponent(token || '')}`
-      )
+      // Connetti al WebSocket per il progresso real-time
+      connectWebSocket()
 
-      ws.onopen = () => {
-        ws.send(JSON.stringify({ type: 'install', data: payload }))
-      }
+      // Aspetta un momento per permettere la connessione WebSocket
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      ws.onerror = () => {
-        resetProgress()
-        setBusy(false)
-      }
-
-      // Il pulsante rimane disabilitato finché non viene completata l'installazione
-      // setBusy(false) viene chiamato solo tramite il progress hook quando l'installazione finisce
+      // Invia il messaggio di installazione tramite l'hook WebSocket
+      sendInstallMessage(payload)
     } catch {
-      // Se c'è un errore qui, aggiungilo al progresso
+      // Se c'è un errore qui, resetta e riattiva il pulsante
       resetProgress()
       setBusy(false)
     }

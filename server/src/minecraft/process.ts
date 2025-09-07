@@ -106,7 +106,7 @@ class ProcessManager extends EventEmitter {
           // Usa argomenti predefiniti se il file non esiste
         }
 
-        const args = [...jvmArgs, '-jar', jarStatus.jarName, 'nogui']
+        const args = [...jvmArgs, '-jar', jarStatus.jarName, '--nogui']
         const proc = spawn(CONFIG.JAVA_BIN, args, { cwd: CONFIG.MC_DIR, stdio: 'pipe' })
         this.proc = proc
         this._state = 'RUNNING'

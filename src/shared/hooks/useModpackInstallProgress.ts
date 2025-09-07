@@ -18,6 +18,12 @@ export const useModpackInstallProgress = (setBusy?: (busy: boolean) => void) => 
     error: null,
   })
   const wsRef = useRef<WebSocket | null>(null)
+  const setBusyRef = useRef(setBusy)
+
+  // Aggiorna la ref quando cambia la callback
+  useEffect(() => {
+    setBusyRef.current = setBusy
+  }, [setBusy])
 
   const connectWebSocket = () => {
     if (!token || wsRef.current) return
@@ -28,6 +34,14 @@ export const useModpackInstallProgress = (setBusy?: (busy: boolean) => void) => 
     )
 
     wsRef.current = ws
+
+    ws.onopen = () => {
+      setProgress((prev) => ({
+        ...prev,
+        installing: true,
+        progress: [...prev.progress, 'Connessione WebSocket stabilita'],
+      }))
+    }
 
     ws.onmessage = (ev) => {
       try {
@@ -49,7 +63,7 @@ export const useModpackInstallProgress = (setBusy?: (busy: boolean) => void) => 
             completed: true,
             progress: [...prev.progress, msg.data],
           }))
-          setBusy?.(false) // Riattiva il pulsante quando completato
+          setBusyRef.current?.(false) // Riattiva il pulsante quando completato
         } else if (msg.type === 'error') {
           setProgress((prev) => ({
             ...prev,
@@ -57,7 +71,7 @@ export const useModpackInstallProgress = (setBusy?: (busy: boolean) => void) => 
             error: msg.data,
             progress: [...prev.progress, `Errore: ${msg.data}`],
           }))
-          setBusy?.(false) // Riattiva il pulsante in caso di errore
+          setBusyRef.current?.(false) // Riattiva il pulsante in caso di errore
         }
       } catch {
         // ignore malformed messages
@@ -66,7 +80,7 @@ export const useModpackInstallProgress = (setBusy?: (busy: boolean) => void) => 
 
     ws.onclose = () => {
       wsRef.current = null
-      setBusy?.(false) // Riattiva il pulsante se la connessione si chiude
+      setBusyRef.current?.(false) // Riattiva il pulsante se la connessione si chiude
     }
 
     ws.onerror = () => {
@@ -74,8 +88,22 @@ export const useModpackInstallProgress = (setBusy?: (busy: boolean) => void) => 
         ...prev,
         installing: false,
         error: 'Errore di connessione WebSocket',
+        progress: [...prev.progress, 'Errore di connessione WebSocket'],
       }))
-      setBusy?.(false) // Riattiva il pulsante in caso di errore
+      setBusyRef.current?.(false) // Riattiva il pulsante in caso di errore
+    }
+  }
+
+  const sendInstallMessage = (payload: unknown) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'install', data: payload }))
+    } else {
+      setProgress((prev) => ({
+        ...prev,
+        error: 'WebSocket non connesso',
+        progress: [...prev.progress, 'Errore: WebSocket non connesso'],
+      }))
+      setBusyRef.current?.(false)
     }
   }
 
@@ -98,6 +126,7 @@ export const useModpackInstallProgress = (setBusy?: (busy: boolean) => void) => 
   return {
     progress,
     connectWebSocket,
+    sendInstallMessage,
     resetProgress,
   }
 }

@@ -13,6 +13,7 @@ import { Badge, Box, HStack, Heading, Input, Stack, Text, Textarea } from '@chak
 import AuthContext from '@/entities/user/AuthContext'
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { useConsoleContext } from '@/shared/contexts/ConsoleContext'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
@@ -22,9 +23,9 @@ export default function ConsolePage(): JSX.Element {
   const { t, server } = useLanguage()
   const { token } = useContext(AuthContext)
   const { data: jarStatus, isLoading: jarLoading } = useServerJarStatus()
+  const { output, setOutput, clearOutput } = useConsoleContext()
 
   const [command, setCommand] = useState('')
-  const [output, setOutput] = useState('')
   const [busy, setBusy] = useState(false)
   const [serverRunning, setServerRunning] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
@@ -77,14 +78,14 @@ export default function ConsolePage(): JSX.Element {
       wsRef.current?.close()
       wsRef.current = null
     }
-  }, [token, fetchStatus])
+  }, [token, fetchStatus, setOutput])
 
   const sendCmd = useCallback((cmd: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
     const payload = JSON.stringify({ type: 'cmd', data: cmd })
     wsRef.current.send(payload)
     setOutput((o) => o + `> ${cmd}\n`)
-  }, [])
+  }, [setOutput])
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -130,10 +131,11 @@ export default function ConsolePage(): JSX.Element {
       server.powerError,
       jarStatus?.canStart,
       jarStatus?.hasJar,
+      setOutput,
     ]
   )
 
-  const clearOutput = () => setOutput('')
+  const clearConsoleOutput = () => clearOutput()
 
   return (
     <Box p={{ base: 4, md: 6 }}>
@@ -213,7 +215,7 @@ export default function ConsolePage(): JSX.Element {
             </GlassButton>
             <GlassButton
               size={{ base: 'sm', md: 'md' }} // Size responsive
-              onClick={clearOutput}
+              onClick={clearConsoleOutput}
               disabled={busy}
               minH="44px" // Touch target minimo
             >
