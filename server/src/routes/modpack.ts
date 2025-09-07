@@ -1,8 +1,50 @@
 import type { FastifyInstance, FastifyPluginCallback } from 'fastify'
+import type { RawData, WebSocket } from 'ws'
 
-import { installModpack, getSupportedVersions, type InstallRequest } from '../minecraft/modpack.js'
+import type { JwtPayload } from '../lib/auth.js'
+import {
+  installModpack,
+  installModpackWithProgress,
+  getSupportedVersions,
+  type InstallRequest,
+} from '../minecraft/modpack.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
+  // WebSocket per installazione modpack real-time
+  fastify.get('/ws/modpack-install', { websocket: true }, async (socket: WebSocket, req) => {
+    // Protezione JWT lato query: ?token=...
+    try {
+      const token = (req.query as Record<string, string | undefined>)?.token
+      if (!token) {
+        socket.close(1008, 'Token required')
+        return
+      }
+      const payload = await fastify.jwt.verify<JwtPayload>(token)
+      ;(req as any).user = payload
+    } catch {
+      socket.close(1008, 'Unauthorized')
+      return
+    }
+
+    // Ascolta per richieste di installazione
+    socket.on('message', async (raw: RawData) => {
+      try {
+        const msg = JSON.parse(String(raw)) as { type?: string; data?: InstallRequest }
+        if (msg.type === 'install' && msg.data) {
+          // Installa con progresso real-time
+          await installModpackWithProgress(msg.data, socket)
+        }
+      } catch (error) {
+        socket.send(
+          JSON.stringify({
+            type: 'error',
+            data: (error as Error).message,
+          })
+        )
+      }
+    })
+  })
+
   // Endpoint per ottenere le versioni supportate
   fastify.get(
     '/api/modpack/versions',

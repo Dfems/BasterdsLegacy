@@ -1,23 +1,24 @@
 import { useMemo, useState, type JSX } from 'react'
 
-import { Box, Heading, HStack, Input, Text, Textarea, VStack } from '@chakra-ui/react'
+import { Badge, Box, Heading, HStack, Input, Text, Textarea, VStack } from '@chakra-ui/react'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
 import { SimpleSelect } from '@/shared/components/SimpleSelect'
 import useLanguage from '@/shared/hooks/useLanguage'
+import { useModpackInstallProgress } from '@/shared/hooks/useModpackInstallProgress'
 import { useModpackVersions } from '@/shared/hooks/useModpackVersions'
+import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 type InstallMode = 'automatic' | 'manual'
-type LoaderType = 'Fabric' | 'Forge' | 'Quilt' | 'NeoForge'
+type LoaderType = 'Vanilla' | 'Fabric' | 'Forge' | 'Quilt' | 'NeoForge'
 
 export default function ModpackPage(): JSX.Element {
   const { modpack, common } = useLanguage()
   const [installMode, setInstallMode] = useState<InstallMode>('automatic')
-  const [loader, setLoader] = useState<LoaderType>('Fabric')
+  const [loader, setLoader] = useState<LoaderType>('Vanilla')
   const [mcVersion, setMcVersion] = useState('1.21.1')
   const [jarFileName, setJarFileName] = useState('')
-  const [notes, setNotes] = useState<string>('')
   const [busy, setBusy] = useState(false)
 
   const {
@@ -25,6 +26,10 @@ export default function ModpackPage(): JSX.Element {
     isLoading: versionsLoading,
     error: versionsError,
   } = useModpackVersions()
+
+  const { data: jarStatus } = useServerJarStatus()
+  const { progress, connectWebSocket, sendInstallMessage, resetProgress } =
+    useModpackInstallProgress(setBusy)
 
   // Opzioni dinamiche per le versioni Minecraft
   const mcVersionOptions = useMemo(() => {
@@ -41,24 +46,25 @@ export default function ModpackPage(): JSX.Element {
 
   const runInstall = async () => {
     setBusy(true)
-    setNotes('')
+    resetProgress()
+
     try {
       const payload =
         installMode === 'automatic'
           ? { loader, mcVersion, mode: 'automatic' }
           : { jarFileName, mode: 'manual' }
 
-      const r = await fetch('/api/modpack/install', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = (await r.json()) as { ok?: boolean; notes?: string[]; error?: string }
-      if (!r.ok) throw new Error(data.error || 'Install failed')
-      setNotes((data.notes ?? []).join('\n'))
-    } catch (e) {
-      setNotes(`Errore: ${(e as Error).message}`)
-    } finally {
+      // Connetti al WebSocket per il progresso real-time
+      connectWebSocket()
+
+      // Aspetta un momento per permettere la connessione WebSocket
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Invia il messaggio di installazione tramite l'hook WebSocket
+      sendInstallMessage(payload)
+    } catch {
+      // Se c'è un errore qui, resetta e riattiva il pulsante
+      resetProgress()
       setBusy(false)
     }
   }
@@ -79,6 +85,31 @@ export default function ModpackPage(): JSX.Element {
         {modpack.title}
       </Heading>{' '}
       {/* Font size responsive */}
+      {/* Stato Modpack Esistente */}
+      {jarStatus && (
+        <GlassCard mb={4} p={{ base: 3, md: 4 }}>
+          <HStack gap={3} align="center" wrap="wrap">
+            <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">
+              Stato Attuale:
+            </Text>
+            <Badge colorPalette={jarStatus.hasJar ? 'green' : 'orange'} variant="solid">
+              {jarStatus.hasJar ? 'Modpack Installato' : 'Nessun Modpack'}
+            </Badge>
+            {jarStatus.hasJar && jarStatus.jarName && (
+              <>
+                <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.400">
+                  {jarStatus.jarName}
+                </Text>
+                {jarStatus.jarType && (
+                  <Badge colorPalette="blue" variant="outline">
+                    {jarStatus.jarType.toUpperCase()}
+                  </Badge>
+                )}
+              </>
+            )}
+          </HStack>
+        </GlassCard>
+      )}
       {versionsError && (
         <GlassCard mb={4} bg="red.900" borderColor="red.600" p={{ base: 3, md: 4 }}>
           {' '}
@@ -119,6 +150,7 @@ export default function ModpackPage(): JSX.Element {
                   value={loader}
                   onChange={(v) => setLoader(v as LoaderType)}
                   options={[
+                    { value: 'Vanilla', label: 'Vanilla' },
                     { value: 'Fabric', label: 'Fabric' },
                     { value: 'Forge', label: 'Forge' },
                     { value: 'Quilt', label: 'Quilt' },
@@ -196,13 +228,28 @@ export default function ModpackPage(): JSX.Element {
           {modpack.notes}
         </Text>
         <Textarea
-          value={notes}
+          value={progress.progress.join('\n')}
           readOnly
           rows={12}
           width="100%"
           data-variant="glass"
           fontSize={{ base: 'xs', md: 'sm' }} // Font size responsive per note
         />
+        {progress.installing && (
+          <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="blue.400">
+            ⏳ Installazione in corso...
+          </Text>
+        )}
+        {progress.completed && (
+          <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="green.400">
+            ✅ Installazione completata!
+          </Text>
+        )}
+        {progress.error && (
+          <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="red.400">
+            ❌ {progress.error}
+          </Text>
+        )}
       </GlassCard>
     </Box>
   )

@@ -8,7 +8,7 @@ import { CONFIG } from '../lib/config.js'
 
 export type InstallRequest = {
   mode: 'automatic' | 'manual'
-  loader?: 'Forge' | 'Fabric' | 'Quilt' | 'NeoForge'
+  loader?: 'Vanilla' | 'Forge' | 'Fabric' | 'Quilt' | 'NeoForge'
   mcVersion?: string
   jarFileName?: string
   manifest?: unknown
@@ -16,6 +16,26 @@ export type InstallRequest = {
 
 const EULA = 'eula.txt'
 const JVM_ARGS = 'user_jvm_args.txt'
+const INSTALLATION_INFO = '.installation_info.json'
+
+// Funzioni per gestire le informazioni sull'installazione
+const saveInstallationInfo = async (info: { mode: string; loader?: string }): Promise<void> => {
+  const file = path.join(CONFIG.MC_DIR, INSTALLATION_INFO)
+  await fsp.writeFile(file, JSON.stringify(info, null, 2), 'utf8')
+}
+
+export const loadInstallationInfo = async (): Promise<{
+  mode?: string
+  loader?: string
+} | null> => {
+  try {
+    const file = path.join(CONFIG.MC_DIR, INSTALLATION_INFO)
+    const content = await fsp.readFile(file, 'utf8')
+    return JSON.parse(content)
+  } catch {
+    return null
+  }
+}
 
 export const ensureEula = async (): Promise<void> => {
   const file = path.join(CONFIG.MC_DIR, EULA)
@@ -75,7 +95,36 @@ const runJavaJar = async (jarPath: string, args: string[], cwd: string): Promise
   })
 }
 
-// Installazione di Fabric
+// Installazione di Vanilla Minecraft
+const installVanilla = async (mcVersion: string, notes: string[]): Promise<void> => {
+  try {
+    const serverJar = path.join(CONFIG.MC_DIR, 'server.jar')
+    // URL del server vanilla per la versione specifica
+    const versionManifest = await fetch(
+      'https://launchermeta.mojang.com/mc/game/version_manifest.json'
+    )
+    const manifest = await versionManifest.json()
+
+    const versionInfo = manifest.versions.find((v: any) => v.id === mcVersion)
+    if (!versionInfo) {
+      throw new Error(`Versione Minecraft ${mcVersion} non trovata`)
+    }
+
+    const versionDetail = await fetch(versionInfo.url)
+    const versionData = await versionDetail.json()
+
+    if (!versionData.downloads?.server?.url) {
+      throw new Error(`Server JAR non disponibile per la versione ${mcVersion}`)
+    }
+
+    const serverUrl = versionData.downloads.server.url
+    await downloadToFile(serverUrl, serverJar)
+    notes.push(`Scaricato server.jar per Minecraft ${mcVersion}`)
+  } catch (e) {
+    notes.push(`Errore installazione Vanilla: ${(e as Error).message}`)
+    throw e
+  }
+}
 const installFabric = async (mcVersion: string, notes: string[]): Promise<void> => {
   const installerJar = path.join(CONFIG.MC_DIR, 'fabric-installer.jar')
   const url = 'https://maven.fabricmc.net/net/fabricmc/fabric-installer/latest/fabric-installer.jar'
@@ -237,6 +286,21 @@ export const getSupportedVersions = async (): Promise<{
   ]
 
   const loaders = {
+    Vanilla: {
+      label: 'Vanilla',
+      versions: {
+        '1.21.1': '1.21.1',
+        '1.21': '1.21',
+        '1.20.6': '1.20.6',
+        '1.20.4': '1.20.4',
+        '1.20.1': '1.20.1',
+        '1.19.4': '1.19.4',
+        '1.19.2': '1.19.2',
+        '1.18.2': '1.18.2',
+        '1.17.1': '1.17.1',
+        '1.16.5': '1.16.5',
+      },
+    },
     Fabric: {
       label: 'Fabric',
       versions: {
@@ -296,7 +360,9 @@ export const installModpack = async (
     await writeJvmArgs()
     await fsp.mkdir(CONFIG.MC_DIR, { recursive: true })
 
-    if (req.loader === 'Fabric') {
+    if (req.loader === 'Vanilla') {
+      await installVanilla(req.mcVersion, notes)
+    } else if (req.loader === 'Fabric') {
       await installFabric(req.mcVersion, notes)
     } else if (req.loader === 'Forge') {
       await installForge(req.mcVersion, notes)
@@ -316,5 +382,266 @@ export const installModpack = async (
   }
 
   notes.push('EULA e JVM args configurati.')
+
+  // Salva le informazioni dell'installazione per la detection del tipo
+  if (req.mode === 'automatic' && req.loader) {
+    await saveInstallationInfo({ mode: req.mode, loader: req.loader })
+  }
+
   return { ok: true, notes }
+}
+
+// Versione con WebSocket per progresso real-time
+export const installModpackWithProgress = async (
+  req: InstallRequest,
+  ws: any // WebSocket type
+): Promise<void> => {
+  const sendProgress = (message: string) => {
+    try {
+      ws.send(JSON.stringify({ type: 'progress', data: message }))
+    } catch {
+      // ignore if websocket is closed
+    }
+  }
+
+  const sendComplete = (message: string) => {
+    try {
+      ws.send(JSON.stringify({ type: 'complete', data: message }))
+    } catch {
+      // ignore if websocket is closed
+    }
+  }
+
+  const sendError = (message: string) => {
+    try {
+      ws.send(JSON.stringify({ type: 'error', data: message }))
+    } catch {
+      // ignore if websocket is closed
+    }
+  }
+
+  try {
+    if (req.mode === 'automatic') {
+      if (!req.loader || !req.mcVersion) {
+        throw new Error('Loader e versione MC sono richiesti per modalità automatica')
+      }
+      sendProgress(`Modalità automatica: loader=${req.loader} mc=${req.mcVersion}`)
+
+      sendProgress('Preparazione directory server...')
+      await ensureEula()
+      await writeJvmArgs()
+      await fsp.mkdir(CONFIG.MC_DIR, { recursive: true })
+
+      if (req.loader === 'Vanilla') {
+        await installVanillaWithProgress(req.mcVersion, sendProgress)
+      } else if (req.loader === 'Fabric') {
+        await installFabricWithProgress(req.mcVersion, sendProgress)
+      } else if (req.loader === 'Forge') {
+        await installForgeWithProgress(req.mcVersion, sendProgress)
+      } else if (req.loader === 'NeoForge') {
+        await installNeoForgeWithProgress(req.mcVersion, sendProgress)
+      } else if (req.loader === 'Quilt') {
+        await installQuiltWithProgress(req.mcVersion, sendProgress)
+      }
+    } else if (req.mode === 'manual') {
+      if (!req.jarFileName) {
+        throw new Error('Nome del file JAR è richiesto per modalità manuale')
+      }
+      sendProgress(`Modalità manuale: jar=${req.jarFileName}`)
+
+      sendProgress('Preparazione directory server...')
+      await ensureEula()
+      await writeJvmArgs()
+      await installFromCustomJarWithProgress(req.jarFileName, sendProgress)
+    }
+
+    sendProgress('EULA e JVM args configurati.')
+
+    // Salva le informazioni dell'installazione per la detection del tipo
+    if (req.mode === 'automatic' && req.loader) {
+      await saveInstallationInfo({ mode: req.mode, loader: req.loader })
+    }
+
+    sendComplete('✅ Installazione modpack completata con successo!')
+  } catch (error) {
+    sendError((error as Error).message)
+  }
+}
+
+// Versioni con progresso per le funzioni di installazione
+const installVanillaWithProgress = async (
+  mcVersion: string,
+  sendProgress: (msg: string) => void
+): Promise<void> => {
+  try {
+    const serverJar = path.join(CONFIG.MC_DIR, 'server.jar')
+
+    sendProgress('Ricerca versione Vanilla...')
+    const versionManifest = await fetch(
+      'https://launchermeta.mojang.com/mc/game/version_manifest.json'
+    )
+    const manifest = await versionManifest.json()
+
+    const versionInfo = manifest.versions.find((v: any) => v.id === mcVersion)
+    if (!versionInfo) {
+      throw new Error(`Versione Minecraft ${mcVersion} non trovata`)
+    }
+
+    sendProgress('Download informazioni versione...')
+    const versionDetail = await fetch(versionInfo.url)
+    const versionData = await versionDetail.json()
+
+    if (!versionData.downloads?.server?.url) {
+      throw new Error(`Server JAR non disponibile per la versione ${mcVersion}`)
+    }
+
+    sendProgress('Download server vanilla...')
+    const serverUrl = versionData.downloads.server.url
+    await downloadToFile(serverUrl, serverJar)
+    sendProgress(`Scaricato server.jar per Minecraft ${mcVersion}`)
+  } catch (e) {
+    sendProgress(`Errore installazione Vanilla: ${(e as Error).message}`)
+    throw e
+  }
+}
+
+const installFabricWithProgress = async (
+  mcVersion: string,
+  sendProgress: (msg: string) => void
+): Promise<void> => {
+  const installerJar = path.join(CONFIG.MC_DIR, 'fabric-installer.jar')
+  const url = 'https://maven.fabricmc.net/net/fabricmc/fabric-installer/latest/fabric-installer.jar'
+  try {
+    sendProgress('Download Fabric installer...')
+    await downloadToFile(url, installerJar)
+    sendProgress('Scaricato fabric-installer.jar')
+
+    sendProgress('Installazione Fabric server...')
+    await runJavaJar(
+      installerJar,
+      ['server', '-mcversion', mcVersion, '-downloadMinecraft'],
+      CONFIG.MC_DIR
+    )
+    sendProgress('Fabric server installato')
+  } catch (e) {
+    sendProgress(`Errore installazione Fabric: ${(e as Error).message}`)
+    throw e
+  }
+}
+
+const installForgeWithProgress = async (
+  mcVersion: string,
+  sendProgress: (msg: string) => void
+): Promise<void> => {
+  try {
+    sendProgress('Ricerca versione Forge...')
+    const forgeVersion = await getLatestForgeVersion(mcVersion)
+    if (!forgeVersion) {
+      throw new Error(`Versione Forge non trovata per MC ${mcVersion}`)
+    }
+    const fileName = `forge-${mcVersion}-${forgeVersion}-installer.jar`
+    const installerJar = path.join(CONFIG.MC_DIR, fileName)
+    const url = `https://maven.minecraftforge.net/net/minecraftforge/forge/${mcVersion}-${forgeVersion}/forge-${mcVersion}-${forgeVersion}-installer.jar`
+
+    sendProgress('Download Forge installer...')
+    await downloadToFile(url, installerJar)
+    sendProgress(`Scaricato ${fileName}`)
+
+    sendProgress('Installazione Forge server...')
+    await runJavaJar(installerJar, ['--installServer'], CONFIG.MC_DIR)
+    sendProgress('Forge server installato')
+  } catch (e) {
+    sendProgress(`Errore installazione Forge: ${(e as Error).message}`)
+    throw e
+  }
+}
+
+const installNeoForgeWithProgress = async (
+  mcVersion: string,
+  sendProgress: (msg: string) => void
+): Promise<void> => {
+  try {
+    sendProgress('Ricerca versione NeoForge...')
+    const neoForgeVersion = await getLatestNeoForgeVersion(mcVersion)
+    if (!neoForgeVersion) {
+      throw new Error(`Versione NeoForge non trovata per MC ${mcVersion}`)
+    }
+    const fileName = `neoforge-${neoForgeVersion}-installer.jar`
+    const installerJar = path.join(CONFIG.MC_DIR, fileName)
+    const url = `https://maven.neoforged.net/net/neoforged/neoforge/${neoForgeVersion}/neoforge-${neoForgeVersion}-installer.jar`
+
+    sendProgress('Download NeoForge installer...')
+    await downloadToFile(url, installerJar)
+    sendProgress(`Scaricato ${fileName}`)
+
+    sendProgress('Installazione NeoForge server...')
+    await runJavaJar(installerJar, ['--installServer'], CONFIG.MC_DIR)
+    sendProgress('NeoForge server installato')
+  } catch (e) {
+    sendProgress(`Errore installazione NeoForge: ${(e as Error).message}`)
+    throw e
+  }
+}
+
+const installQuiltWithProgress = async (
+  mcVersion: string,
+  sendProgress: (msg: string) => void
+): Promise<void> => {
+  try {
+    const installerJar = path.join(CONFIG.MC_DIR, 'quilt-installer.jar')
+    const url =
+      'https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/latest/quilt-installer.jar'
+
+    sendProgress('Download Quilt installer...')
+    await downloadToFile(url, installerJar)
+    sendProgress('Scaricato quilt-installer.jar')
+
+    sendProgress('Installazione Quilt server...')
+    await runJavaJar(
+      installerJar,
+      ['install', 'server', mcVersion, '--download-server'],
+      CONFIG.MC_DIR
+    )
+    sendProgress('Quilt server installato')
+  } catch (e) {
+    sendProgress(`Errore installazione Quilt: ${(e as Error).message}`)
+    throw e
+  }
+}
+
+const installFromCustomJarWithProgress = async (
+  jarFileName: string,
+  sendProgress: (msg: string) => void
+): Promise<void> => {
+  const jarPath = path.join(CONFIG.MC_DIR, jarFileName)
+  try {
+    sendProgress('Verifica JAR personalizzato...')
+    await fsp.access(jarPath)
+    sendProgress(`Trovato JAR personalizzato: ${jarFileName}`)
+
+    const commonArgs = ['--installServer', 'install server', 'server']
+    let installed = false
+
+    for (const args of commonArgs) {
+      try {
+        sendProgress(`Tentativo installazione con argomenti: ${args}`)
+        await runJavaJar(jarPath, args.split(' '), CONFIG.MC_DIR)
+        sendProgress(`Installato usando argomenti: ${args}`)
+        installed = true
+        break
+      } catch (e) {
+        sendProgress(`Tentativo con argomenti '${args}' fallito`)
+      }
+    }
+
+    if (!installed) {
+      throw new Error('Nessun metodo di installazione standard ha funzionato')
+    }
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw new Error(`File ${jarFileName} non trovato nella directory del server`)
+    }
+    sendProgress(`Errore installazione JAR personalizzato: ${(e as Error).message}`)
+    throw e
+  }
 }
