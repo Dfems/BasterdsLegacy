@@ -139,6 +139,8 @@ export type TranslationKey = {
     enableRcon: string
     rconEnabled: string
     rconEnableError: string
+    restartRequired: string
+    restartServer: string
   }
   files: {
     title: string

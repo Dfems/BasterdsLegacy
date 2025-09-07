@@ -45,6 +45,7 @@ const DashboardPage = (): JSX.Element => {
   const { dashboard, common } = useLanguage()
   const qc = useQueryClient()
   const [note, setNote] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [requiresRestart, setRequiresRestart] = useState(false)
   const { data, error, isFetching } = useQuery({
     queryKey: ['status'],
     queryFn: async (): Promise<Status> => {
@@ -69,6 +70,10 @@ const DashboardPage = (): JSX.Element => {
     },
     onSuccess: (_data, action) => {
       setNote({ type: 'success', text: dashboard.operationStarted.replace('{action}', action) })
+      // Reset requiresRestart flag when server is restarted
+      if (action === 'restart') {
+        setRequiresRestart(false)
+      }
       void qc.invalidateQueries({ queryKey: ['status'] })
     },
     onError: (error, action) => {
@@ -82,7 +87,7 @@ const DashboardPage = (): JSX.Element => {
   })
 
   const enableRconMutation = useMutation<
-    { success: boolean; rconPassword?: string; note?: string },
+    { success: boolean; rconPassword?: string; note?: string; requiresRestart?: boolean },
     Error
   >({
     mutationFn: async () => {
@@ -95,9 +100,18 @@ const DashboardPage = (): JSX.Element => {
     },
     onSuccess: (data) => {
       if (data.success) {
+        let message = dashboard.rconEnabled
+        if (data.rconPassword) {
+          message += ` Password: ${data.rconPassword}.`
+        }
+        if (data.requiresRestart) {
+          message += ` ${dashboard.restartRequired}`
+          setRequiresRestart(true)
+        }
+        
         setNote({
           type: 'success',
-          text: `${dashboard.rconEnabled}${data.rconPassword ? ` Password: ${data.rconPassword}` : ''}. ${data.note || ''}`,
+          text: message,
         })
         void qc.invalidateQueries({ queryKey: ['status'] })
       }
@@ -369,6 +383,19 @@ const DashboardPage = (): JSX.Element => {
             <Text fontWeight="bold" mb={2} fontSize={{ base: 'sm', md: 'md' }}>
               {dashboard.actions}
             </Text>
+            
+            {/* Messaggio di riavvio necessario se presente */}
+            {requiresRestart && (
+              <Text 
+                color="orange.400" 
+                fontSize={{ base: 'xs', md: 'sm' }} 
+                mb={2}
+                fontWeight="semibold"
+              >
+                {dashboard.restartRequired}
+              </Text>
+            )}
+            
             <HStack gap={2} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
               <GlassButton
                 size={{ base: 'sm', md: 'md' }}
@@ -397,8 +424,9 @@ const DashboardPage = (): JSX.Element => {
                 loading={powerMutation.isPending}
                 w={{ base: '100%', sm: '130px' }}
                 minH="44px"
+                colorPalette={requiresRestart ? 'orange' : undefined}
               >
-                {dashboard.restart}
+                {requiresRestart ? dashboard.restartServer : dashboard.restart}
               </GlassButton>
             </HStack>
           </GlassCard>

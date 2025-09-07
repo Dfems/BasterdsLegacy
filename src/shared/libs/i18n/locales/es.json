@@ -135,7 +135,9 @@
     "rconRequired": "Requiere RCON",
     "enableRcon": "Activar RCON",
     "rconEnabled": "RCON activado con éxito.",
-    "rconEnableError": "Error al activar RCON: {error}"
+    "rconEnableError": "Error al activar RCON: {error}",
+    "restartRequired": "Reinicio necesario para aplicar cambios RCON",
+    "restartServer": "Reiniciar Servidor"
   },
   "files": {
     "title": "Archivos",

@@ -52,7 +52,8 @@ const writeServerProperties = (properties: Record<string, string>): void => {
       const trimmed = line.trim()
       if (trimmed && !trimmed.startsWith('#')) {
         const [key] = trimmed.split('=')
-        if (key && properties[key.trim()]) {
+        if (key && properties.hasOwnProperty(key.trim())) {
+          // Usa hasOwnProperty per controllare anche valori false/0/""
           updatedLines.push(`${key.trim()}=${properties[key.trim()]}`)
           processedKeys.add(key.trim())
         } else {
@@ -115,6 +116,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           message: 'RCON enabled in server.properties',
           rconPassword: rconPassword,
           rconPort: CONFIG.RCON_PORT,
+          requiresRestart: true,
           note: 'Server restart required for changes to take effect',
         }
       } catch (error) {
