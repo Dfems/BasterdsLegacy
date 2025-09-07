@@ -112,7 +112,15 @@
     "crashed": "Falló",
     "unknown": "Desconocido",
     "operationStarted": "Operación {action} iniciada",
-    "operationError": "Error {action}: {error}"
+    "operationError": "Error {action}: {error}",
+    "systemMemory": "RAM del Sistema",
+    "diskStorage": "Almacenamiento",
+    "tps": "TPS del Servidor",
+    "playersOnline": "Jugadores En Línea",
+    "processMemory": "Memoria del Proceso",
+    "used": "Usado",
+    "free": "Libre",
+    "total": "Total"
   },
   "files": {
     "title": "Archivos",

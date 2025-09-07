@@ -116,6 +116,14 @@ export type TranslationKey = {
     unknown: string
     operationStarted: string
     operationError: string
+    systemMemory: string
+    diskStorage: string
+    tps: string
+    playersOnline: string
+    processMemory: string
+    used: string
+    free: string
+    total: string
   }
   files: {
     title: string

@@ -112,7 +112,15 @@
     "crashed": "Crashed",
     "unknown": "Unknown",
     "operationStarted": "Operation {action} started",
-    "operationError": "Error {action}: {error}"
+    "operationError": "Error {action}: {error}",
+    "systemMemory": "System RAM",
+    "diskStorage": "Disk Storage",
+    "tps": "Server TPS",
+    "playersOnline": "Players Online",
+    "processMemory": "Process Memory",
+    "used": "Used",
+    "free": "Free",
+    "total": "Total"
   },
   "files": {
     "title": "Files",
