@@ -19,13 +19,17 @@ export type LogEvent = { ts: number; line: string }
 const isWindows = os.platform() === 'win32'
 
 // Funzione per ottenere l'utilizzo del disco
-const getDiskUsage = async (dirPath: string): Promise<{ usedGB: number; totalGB: number; freeGB: number }> => {
+const getDiskUsage = async (
+  dirPath: string
+): Promise<{ usedGB: number; totalGB: number; freeGB: number }> => {
   try {
     if (isWindows) {
       // Su Windows usa WMIC
       const exec = promisify(require('node:child_process').exec)
       const drive = path.parse(path.resolve(dirPath)).root.slice(0, 2)
-      const { stdout } = await exec(`wmic LogicalDisk where Caption="${drive}" get Size,FreeSpace /format:csv`)
+      const { stdout } = await exec(
+        `wmic LogicalDisk where Caption="${drive}" get Size,FreeSpace /format:csv`
+      )
       const lines = stdout.split('\n').filter((line: string) => line.includes(','))
       if (lines.length > 0) {
         const [, , freeSpace, size] = lines[0].split(',')
@@ -33,9 +37,9 @@ const getDiskUsage = async (dirPath: string): Promise<{ usedGB: number; totalGB:
         const freeBytes = parseInt(freeSpace)
         const usedBytes = totalBytes - freeBytes
         return {
-          totalGB: Math.round(totalBytes / (1024 ** 3) * 10) / 10,
-          freeGB: Math.round(freeBytes / (1024 ** 3) * 10) / 10,
-          usedGB: Math.round(usedBytes / (1024 ** 3) * 10) / 10
+          totalGB: Math.round((totalBytes / 1024 ** 3) * 10) / 10,
+          freeGB: Math.round((freeBytes / 1024 ** 3) * 10) / 10,
+          usedGB: Math.round((usedBytes / 1024 ** 3) * 10) / 10,
         }
       }
     } else {
@@ -71,11 +75,11 @@ const getSystemMemory = (): { totalGB: number; freeGB: number; usedGB: number } 
   const totalBytes = os.totalmem()
   const freeBytes = os.freemem()
   const usedBytes = totalBytes - freeBytes
-  
+
   return {
-    totalGB: Math.round(totalBytes / (1024 ** 3) * 10) / 10,
-    freeGB: Math.round(freeBytes / (1024 ** 3) * 10) / 10,
-    usedGB: Math.round(usedBytes / (1024 ** 3) * 10) / 10
+    totalGB: Math.round((totalBytes / 1024 ** 3) * 10) / 10,
+    freeGB: Math.round((freeBytes / 1024 ** 3) * 10) / 10,
+    usedGB: Math.round((usedBytes / 1024 ** 3) * 10) / 10,
   }
 }
 
@@ -86,7 +90,7 @@ const getServerTPS = async (isRunning: boolean): Promise<number> => {
   if (!isRunning) {
     return 0 // Server non in esecuzione
   }
-  
+
   // Simula TPS realistici con una leggera variazione
   const baseTPS = 20.0
   const variation = (Math.random() - 0.5) * 0.5 // Variazione ±0.25
@@ -258,15 +262,15 @@ class ProcessManager extends EventEmitter {
     const pid = this.proc?.pid
     const uptimeMs = this.startedAt ? Date.now() - this.startedAt : 0
     const isRunning = this._state === 'RUNNING'
-    
+
     // Ottieni informazioni di sistema aggiuntive
     const [diskUsage, systemMemory, tps, playerCount] = await Promise.all([
       getDiskUsage(CONFIG.MC_DIR),
       Promise.resolve(getSystemMemory()),
       getServerTPS(isRunning),
-      getPlayerCount()
+      getPlayerCount(),
     ])
-    
+
     const base = {
       state: this._state,
       pid: pid ?? null,
@@ -278,15 +282,15 @@ class ProcessManager extends EventEmitter {
       tps,
       players: playerCount,
     }
-    
+
     if (!pid) return { ...base, cpu: 0, memMB: 0 }
-    
+
     try {
       const stat = await pidusage(pid)
-      return { 
-        ...base, 
-        cpu: stat.cpu / 100, 
-        memMB: Math.round(stat.memory / (1024 * 1024)) 
+      return {
+        ...base,
+        cpu: stat.cpu / 100,
+        memMB: Math.round(stat.memory / (1024 * 1024)),
       }
     } catch {
       return { ...base, cpu: 0, memMB: 0 }

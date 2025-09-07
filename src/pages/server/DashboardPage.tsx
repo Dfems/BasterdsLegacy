@@ -156,7 +156,7 @@ const DashboardPage = (): JSX.Element => {
             PID: {data?.pid ?? '-'}
           </Text>
         </GlassCard>
-        
+
         <GlassCard
           h="100%"
           display="flex"
@@ -171,7 +171,7 @@ const DashboardPage = (): JSX.Element => {
             {data ? `${(data.cpu * 100).toFixed(1)}%` : '-'}
           </Text>
         </GlassCard>
-        
+
         <GlassCard
           h="100%"
           display="flex"
@@ -184,7 +184,7 @@ const DashboardPage = (): JSX.Element => {
           </Text>
           <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${data.memMB} MB` : '-'}</Text>
         </GlassCard>
-        
+
         <GlassCard
           h="100%"
           display="flex"
@@ -195,9 +195,7 @@ const DashboardPage = (): JSX.Element => {
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
             {dashboard.uptime}
           </Text>
-          <Text fontSize={{ base: 'sm', md: 'md' }}>
-            {data ? fmtUptime(data.uptimeMs) : '-'}
-          </Text>
+          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? fmtUptime(data.uptimeMs) : '-'}</Text>
         </GlassCard>
 
         {/* Nuove cards per le metriche del sistema */}
@@ -212,12 +210,14 @@ const DashboardPage = (): JSX.Element => {
             {dashboard.systemMemory}
           </Text>
           <Text fontSize={{ base: 'sm', md: 'md' }}>
-            {data?.systemMemory ? `${data.systemMemory.usedGB}/${data.systemMemory.totalGB} GB` : '-'}
+            {data?.systemMemory
+              ? `${data.systemMemory.usedGB}/${data.systemMemory.totalGB} GB`
+              : '-'}
           </Text>
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.systemMemory ? 
-              `${Math.round((data.systemMemory.usedGB / data.systemMemory.totalGB) * 100)}% utilizzata` : 
-              ''}
+            {data?.systemMemory
+              ? `${Math.round((data.systemMemory.usedGB / data.systemMemory.totalGB) * 100)}% utilizzata`
+              : ''}
           </Text>
         </GlassCard>
 
@@ -232,12 +232,14 @@ const DashboardPage = (): JSX.Element => {
             {dashboard.diskStorage}
           </Text>
           <Text fontSize={{ base: 'sm', md: 'md' }}>
-            {data?.disk && data.disk.totalGB > 0 ? `${data.disk.usedGB}/${data.disk.totalGB} GB` : 'Non disponibile'}
+            {data?.disk && data.disk.totalGB > 0
+              ? `${data.disk.usedGB}/${data.disk.totalGB} GB`
+              : 'Non disponibile'}
           </Text>
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.disk && data.disk.totalGB > 0 ? 
-              `${Math.round((data.disk.usedGB / data.disk.totalGB) * 100)}% utilizzato` : 
-              'Controllo spazio...'}
+            {data?.disk && data.disk.totalGB > 0
+              ? `${Math.round((data.disk.usedGB / data.disk.totalGB) * 100)}% utilizzato`
+              : 'Controllo spazio...'}
           </Text>
         </GlassCard>
 
@@ -251,23 +253,30 @@ const DashboardPage = (): JSX.Element => {
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
             {dashboard.tps}
           </Text>
-          <Text 
+          <Text
             fontSize={{ base: 'sm', md: 'md' }}
             color={
-              data?.state !== 'RUNNING' ? 'textMuted' :
-              data?.tps && data.tps >= 19.5 ? 'accent.success' : 
-              data?.tps && data.tps >= 18 ? 'yellow.400' : 
-              'accent.danger'
+              data?.state !== 'RUNNING'
+                ? 'textMuted'
+                : data?.tps && data.tps >= 19.5
+                  ? 'accent.success'
+                  : data?.tps && data.tps >= 18
+                    ? 'yellow.400'
+                    : 'accent.danger'
             }
           >
             {data?.tps ? `${data.tps.toFixed(1)}` : '-'}
           </Text>
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.state === 'RUNNING' ? 
-              (data?.tps && data.tps >= 19.5 ? 'Perfetto' : 
-               data?.tps && data.tps >= 18 ? 'Buono' : 
-               data?.tps && data.tps >= 15 ? 'Accettabile' : 'Lento') : 
-              'Non disponibile'}
+            {data?.state === 'RUNNING'
+              ? data?.tps && data.tps >= 19.5
+                ? 'Perfetto'
+                : data?.tps && data.tps >= 18
+                  ? 'Buono'
+                  : data?.tps && data.tps >= 15
+                    ? 'Accettabile'
+                    : 'Lento'
+              : 'Non disponibile'}
           </Text>
         </GlassCard>
 
