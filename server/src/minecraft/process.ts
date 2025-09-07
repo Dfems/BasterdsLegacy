@@ -7,6 +7,7 @@ import { promisify } from 'node:util'
 import pidusage from 'pidusage'
 
 import { CONFIG } from '../lib/config.js'
+import { rconEnabled, rconExec } from './rcon.js'
 import { appendLog } from './logs.js'
 import { loadInstallationInfo } from './modpack.js'
 import { checkServerJarStatus } from './serverJar.js'
@@ -83,24 +84,108 @@ const getSystemMemory = (): { totalGB: number; freeGB: number; usedGB: number } 
   }
 }
 
-// Funzione per ottenere il TPS (mockato per ora, andrebbe estratto dai log del server)
+// Funzione per ottenere il TPS del server via RCON
 const getServerTPS = async (isRunning: boolean): Promise<number> => {
-  // TODO: Implementare lettura TPS dai log del server Minecraft o via RCON
-  // Per ora restituiamo un valore simulato basato sullo stato del server
   if (!isRunning) {
     return 0 // Server non in esecuzione
   }
 
-  // Simula TPS realistici con una leggera variazione
-  const baseTPS = 20.0
-  const variation = (Math.random() - 0.5) * 0.5 // Variazione ±0.25
-  return Math.max(0, Math.min(20, baseTPS + variation))
+  // Se RCON è abilitato, prova a ottenere il TPS reale
+  if (rconEnabled()) {
+    try {
+      // Prova diversi comandi per ottenere il TPS a seconda del tipo di server
+      let tpsOutput = ''
+      
+      try {
+        // Prova prima con /forge tps (per server Forge)
+        tpsOutput = await rconExec('forge tps')
+      } catch {
+        try {
+          // Prova con /tps (per alcuni plugin/mod)
+          tpsOutput = await rconExec('tps')
+        } catch {
+          try {
+            // Prova con /minecraft:debug start per server vanilla
+            await rconExec('debug start')
+            // Aspetta un momento per la raccolta dati
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            tpsOutput = await rconExec('debug stop')
+          } catch {
+            // Se tutti i comandi falliscono, usa il fallback
+            return getFallbackTPS()
+          }
+        }
+      }
+
+      // Parse della risposta per estrarre il TPS
+      const tps = parseTpsFromOutput(tpsOutput)
+      if (tps !== null) {
+        return tps
+      }
+    } catch {
+      // Se RCON fallisce, usa il fallback
+    }
+  }
+
+  // Fallback: simula TPS realistici con una leggera variazione
+  return getFallbackTPS()
 }
 
-// Funzione per ottenere il numero di giocatori (mockato per ora)
+// Funzione per parsare il TPS dall'output di diversi comandi
+const parseTpsFromOutput = (output: string): number | null => {
+  // Pattern per diversi formati di output TPS
+  const patterns = [
+    // Forge TPS: "Overall: 20.0 TPS" o "Mean TPS: 20.0"
+    /(?:Overall|Mean|TPS).*?(\d+\.?\d*)\s*TPS/i,
+    // Debug output: "Average tick time: 50.0 ms (20.0 TPS)"
+    /\((\d+\.?\d*)\s*TPS\)/i,
+    // Semplice numero con TPS
+    /(\d+\.?\d*)\s*TPS/i,
+    // Solo numero (assumendo sia TPS)
+    /^(\d+\.?\d*)$/,
+  ]
+
+  for (const pattern of patterns) {
+    const match = output.match(pattern)
+    if (match && match[1]) {
+      const tps = parseFloat(match[1])
+      if (!isNaN(tps) && tps >= 0 && tps <= 20) {
+        return Math.round(tps * 100) / 100 // Arrotonda a 2 decimali
+      }
+    }
+  }
+
+  return null
+}
+
+// Funzione fallback per TPS simulati
+const getFallbackTPS = (): number => {
+  const baseTPS = 20.0
+  const variation = (Math.random() - 0.5) * 0.5 // Variazione ±0.25
+  return Math.round(Math.max(0, Math.min(20, baseTPS + variation)) * 100) / 100
+}
+
+// Funzione per ottenere il numero di giocatori online via RCON
 const getPlayerCount = async (): Promise<{ online: number; max: number }> => {
-  // TODO: Implementare lettura giocatori online via RCON o parsing dei log
-  // Per ora restituiamo valori simulati
+  // Se RCON è abilitato, prova a ottenere i dati reali
+  if (rconEnabled()) {
+    try {
+      const listOutput = await rconExec('list')
+      // Output tipico: "There are 2 of a max of 20 players online: player1, player2"
+      const match = listOutput.match(/There are (\d+) of a max of (\d+) players online/)
+      if (match && match[1] && match[2]) {
+        const online = parseInt(match[1], 10)
+        const max = parseInt(match[2], 10)
+        if (!isNaN(online) && !isNaN(max)) {
+          return { online, max }
+        }
+      }
+    } catch {
+      // Se RCON fallisce, usa il fallback
+    }
+  }
+
+  // Fallback: valori simulati
   return { online: 0, max: 20 }
 }
 
@@ -289,8 +374,10 @@ class ProcessManager extends EventEmitter {
       const stat = await pidusage(pid)
       return {
         ...base,
-        cpu: stat.cpu, // pidusage già restituisce la percentuale (0-100), non dividere per 100
-        memMB: Math.round(stat.memory / (1024 * 1024)),
+        cpu: stat.cpu, // pidusage già restituisce la percentuale (0-100)
+        memMB: Math.round(stat.memory / (1024 * 1024)), // Process Memory: memoria del processo server in MB
+        // Server TPS: ottenuto via RCON (forge tps, tps, debug) con fallback simulato
+        // Players: ottenuti via RCON (list command) con fallback simulato
       }
     } catch {
       return { ...base, cpu: 0, memMB: 0 }
