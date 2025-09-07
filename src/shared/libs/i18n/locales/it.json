@@ -43,8 +43,24 @@
     "instructions": "Segui le istruzioni per connetterti al nostro server:",
     "configBtn": "Scarica Configurazione",
     "launcherBtn": "Scarica Launcher",
-    "donateBtn": "Abbonamenti",
-    "footer": "© Dfems 2025. Tutti i diritti riservati."
+    "donateBtn": "☕ Supporta su Ko-fi",
+    "footer": "© Dfems 2025. Tutti i diritti riservati.",
+    "loggedIn": {
+      "welcomeBack": "Bentornato, amministratore!",
+      "serverOverview": "Panoramica Server",
+      "quickActions": "Azioni Rapide",
+      "systemInfo": "Informazioni Sistema",
+      "downloadSection": "Download & Supporto",
+      "cpu": "CPU",
+      "memory": "Memoria",
+      "uptime": "Uptime",
+      "goToDashboard": "📊 Vai al Dashboard",
+      "goToConsole": "💻 Apri Console",
+      "goToFiles": "📁 Gestisci File",
+      "serverRunning": "Server Attivo",
+      "serverStopped": "Server Spento",
+      "lastRestart": "Ultimo riavvio"
+    }
   },
   "auth": {
     "loginTitle": "Login",
