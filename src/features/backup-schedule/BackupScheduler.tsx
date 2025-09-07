@@ -1,4 +1,4 @@
-import { useState, useEffect, type JSX } from 'react'
+import { useEffect, useState, type JSX } from 'react'
 
 import { Box, Heading, HStack, Input, RadioGroup, Stack, Text, VStack } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -174,23 +174,26 @@ export const BackupScheduler = (): JSX.Element => {
               {backups.schedule.status}:
             </Text>
             <Text
-              color={scheduleData?.config.enabled ? 'green.500' : 'red.500'}
+              color={scheduleData?.config?.enabled ? 'green.500' : 'red.500'}
               fontSize={{ base: 'sm', md: 'md' }}
             >
-              {scheduleData?.config.enabled ? backups.schedule.enabled : backups.schedule.disabled}
+              {scheduleData?.config?.enabled ? backups.schedule.enabled : backups.schedule.disabled}
             </Text>
           </HStack>
 
-          {scheduleData?.config.enabled && (
+          {scheduleData?.config?.enabled && (
             <>
               <HStack justify="space-between" wrap="wrap">
                 <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
                   {backups.schedule.frequency}:
                 </Text>
                 <Text fontSize={{ base: 'sm', md: 'md' }}>
-                  {backups.schedule.frequency_options[
-                    scheduleData.config.frequency as keyof typeof backups.schedule.frequency_options
-                  ] || scheduleData.config.frequency}
+                  {scheduleData?.config?.frequency
+                    ? backups.schedule.frequency_options[
+                        scheduleData.config
+                          .frequency as keyof typeof backups.schedule.frequency_options
+                      ] || scheduleData.config.frequency
+                    : '-'}
                 </Text>
               </HStack>
 
@@ -199,11 +202,12 @@ export const BackupScheduler = (): JSX.Element => {
                   {backups.schedule.mode}:
                 </Text>
                 <Text fontSize={{ base: 'sm', md: 'md' }}>
-                  {backups.schedule.mode_options[scheduleData.config.mode]}
+                  {scheduleData?.config?.mode
+                    ? backups.schedule.mode_options[scheduleData.config.mode]
+                    : '-'}
                 </Text>
               </HStack>
-
-              {scheduleData.nextRun && (
+              {scheduleData?.nextRun && (
                 <HStack justify="space-between" wrap="wrap">
                   <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
                     {backups.schedule.nextRun}:
