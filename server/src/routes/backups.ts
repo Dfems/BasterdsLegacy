@@ -3,6 +3,13 @@ import cron from 'node-cron'
 
 import { CONFIG } from '../lib/config.js'
 import { applyRetention, createBackup, listBackups, restoreBackup } from '../minecraft/backups.js'
+import { 
+  getCurrentSchedule, 
+  updateScheduler, 
+  validateScheduleConfig, 
+  BACKUP_PRESETS,
+  type BackupScheduleConfig 
+} from '../minecraft/auto-backup.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
   fastify.get(
@@ -88,6 +95,125 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'
         console.error('Backup restore failed:', errorMsg)
         return reply.status(500).send({ error: errorMsg })
+      }
+    }
+  )
+
+  // GET /api/backups/schedule - Ottiene configurazione backup automatico
+  fastify.get(
+    '/api/backups/schedule',
+    {
+      preHandler: fastify.authorize('viewer'),
+      config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
+    },
+    async (_req, reply) => {
+      try {
+        const schedule = getCurrentSchedule()
+        return {
+          ...schedule,
+          presets: Object.keys(BACKUP_PRESETS),
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        console.error('Failed to get backup schedule:', errorMsg)
+        return reply.status(500).send({ error: 'Failed to get backup schedule' })
+      }
+    }
+  )
+
+  // PUT /api/backups/schedule - Aggiorna configurazione backup automatico
+  fastify.put(
+    '/api/backups/schedule',
+    {
+      preHandler: fastify.authorize('user'),
+      config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+    },
+    async (req, reply) => {
+      try {
+        const body = (await req.body) as Record<string, unknown>
+
+        // Supporta preset predefiniti
+        if (body.preset && typeof body.preset === 'string') {
+          const preset = BACKUP_PRESETS[body.preset as keyof typeof BACKUP_PRESETS]
+          if (!preset) {
+            return reply.status(400).send({ 
+              error: `Invalid preset. Available presets: ${Object.keys(BACKUP_PRESETS).join(', ')}` 
+            })
+          }
+          
+          // Applica preset
+          updateScheduler(preset as BackupScheduleConfig)
+
+          try {
+            await (
+              await import('../lib/audit.js')
+            ).auditLog({ 
+              type: 'backup', 
+              op: 'schedule_update', 
+              details: { preset: body.preset }, 
+              userId: req.user?.sub 
+            })
+          } catch {
+            console.warn('Failed to log backup schedule update audit')
+          }
+
+          return { ok: true, config: getCurrentSchedule() }
+        }
+
+        // Validazione configurazione custom
+        const validation = validateScheduleConfig(body)
+        if (!validation.valid) {
+          return reply.status(400).send({ 
+            error: 'Invalid configuration', 
+            details: validation.errors 
+          })
+        }
+
+        // Applica configurazione custom
+        updateScheduler(body as BackupScheduleConfig)
+
+        try {
+          await (
+            await import('../lib/audit.js')
+          ).auditLog({ 
+            type: 'backup', 
+            op: 'schedule_update', 
+            details: { custom: true }, 
+            userId: req.user?.sub 
+          })
+        } catch {
+          console.warn('Failed to log backup schedule update audit')
+        }
+
+        return { ok: true, config: getCurrentSchedule() }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        console.error('Failed to update backup schedule:', errorMsg)
+        return reply.status(500).send({ error: errorMsg })
+      }
+    }
+  )
+
+  // GET /api/backups/presets - Lista preset disponibili  
+  fastify.get(
+    '/api/backups/presets',
+    {
+      preHandler: fastify.authorize('viewer'),
+      config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
+    },
+    async (_req, reply) => {
+      try {
+        return {
+          presets: Object.entries(BACKUP_PRESETS).map(([key, config]) => ({
+            id: key,
+            name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            ...config,
+          }))
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        console.error('Failed to get backup presets:', errorMsg)
+        return reply.status(500).send({ error: 'Failed to get backup presets' })
       }
     }
   )

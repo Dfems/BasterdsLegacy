@@ -16,6 +16,10 @@ export const CONFIG = {
   BACKUP_CRON: env('BACKUP_CRON', '0 3 * * *'),
   RETENTION_DAYS: Number(env('RETENTION_DAYS', '7')),
   RETENTION_WEEKS: Number(env('RETENTION_WEEKS', '4')),
+  // Configurazione backup automatici
+  AUTO_BACKUP_ENABLED: env('AUTO_BACKUP_ENABLED', 'false') === 'true',
+  AUTO_BACKUP_CRON: env('AUTO_BACKUP_CRON', '0 3 * * *'),
+  AUTO_BACKUP_MODE: env('AUTO_BACKUP_MODE', 'world') as 'full' | 'world',
 } as const
 
 export type AppConfig = typeof CONFIG
