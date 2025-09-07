@@ -142,7 +142,75 @@
     "confirmDelete": "Delete backup?",
     "creating": "Creating backup...",
     "restoring": "Restoring...",
-    "noBackups": "No backups available"
+    "noBackups": "No backups available",
+    "schedule": {
+      "title": "Automatic Backups",
+      "enabled": "Automatic backups enabled",
+      "disabled": "Automatic backups disabled",
+      "frequency": "Frequency",
+      "mode": "Backup mode",
+      "time": "Time",
+      "day": "Day",
+      "status": "Status",
+      "nextRun": "Next backup",
+      "lastRun": "Last backup",
+      "configuration": "Configuration",
+      "presets": "Presets",
+      "custom": "Custom",
+      "enable": "Enable",
+      "disable": "Disable",
+      "save": "Save configuration",
+      "preset": {
+        "disabled": "Disabled",
+        "daily_3am": "Daily at 03:00",
+        "daily_2am": "Daily at 02:00",
+        "every_2_days": "Every 2 days",
+        "every_3_days": "Every 3 days",
+        "weekly_monday": "Weekly (Monday)",
+        "weekly_sunday": "Weekly (Sunday)",
+        "triple_daily": "3 times a day"
+      },
+      "frequency_options": {
+        "daily": "Daily",
+        "every_2_days": "Every 2 days",
+        "every_3_days": "Every 3 days",
+        "weekly": "Weekly",
+        "custom": "Custom"
+      },
+      "mode_options": {
+        "full": "Full backup",
+        "world": "World only"
+      },
+      "day_options": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "help": {
+        "frequency": "Choose how often to run automatic backups",
+        "mode": "Full backup includes entire server, World only includes world files",
+        "time": "Backup execution time (24h format)",
+        "day": "Day of the week for weekly backups",
+        "custom": "Use custom cron pattern (e.g. '0 3 * * *' for daily at 3:00)"
+      },
+      "validation": {
+        "timeRequired": "Time required",
+        "timeInvalid": "Invalid time (use HH:MM format)",
+        "dayRequired": "Day required for weekly backups",
+        "cronRequired": "Cron pattern required for custom configuration",
+        "cronInvalid": "Invalid cron pattern"
+      },
+      "messages": {
+        "loading": "Loading configuration...",
+        "updateSuccess": "Backup configuration updated successfully",
+        "updateError": "Error updating configuration",
+        "loadError": "Error loading configuration"
+      }
+    }
   },
   "settings": {
     "title": "Settings",

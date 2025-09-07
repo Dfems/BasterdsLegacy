@@ -146,6 +146,74 @@ export type TranslationKey = {
     creating: string
     restoring: string
     noBackups: string
+    schedule: {
+      title: string
+      enabled: string
+      disabled: string
+      frequency: string
+      mode: string
+      time: string
+      day: string
+      status: string
+      nextRun: string
+      lastRun: string
+      configuration: string
+      presets: string
+      custom: string
+      enable: string
+      disable: string
+      save: string
+      preset: {
+        disabled: string
+        daily_3am: string
+        daily_2am: string
+        every_2_days: string
+        every_3_days: string
+        weekly_monday: string
+        weekly_sunday: string
+        triple_daily: string
+      }
+      frequency_options: {
+        daily: string
+        every_2_days: string
+        every_3_days: string
+        weekly: string
+        custom: string
+      }
+      mode_options: {
+        full: string
+        world: string
+      }
+      day_options: {
+        0: string
+        1: string
+        2: string
+        3: string
+        4: string
+        5: string
+        6: string
+      }
+      help: {
+        frequency: string
+        mode: string
+        time: string
+        day: string
+        custom: string
+      }
+      validation: {
+        timeRequired: string
+        timeInvalid: string
+        dayRequired: string
+        cronRequired: string
+        cronInvalid: string
+      }
+      messages: {
+        loading: string
+        updateSuccess: string
+        updateError: string
+        loadError: string
+      }
+    }
   }
   settings: {
     title: string
