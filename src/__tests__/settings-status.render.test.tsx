@@ -56,6 +56,29 @@ vi.mock('@/shared/hooks/useLanguage', () => ({
   }),
 }))
 
+// Mock useUiSettings hook
+vi.mock('@/shared/hooks', () => ({
+  useUiSettings: () => ({
+    settings: { backgroundImage: null },
+    loading: false,
+    error: null,
+    updateBackgroundImage: vi.fn(),
+    uploadBackgroundImage: vi.fn(),
+    getBackgroundImageUrl: vi.fn(),
+    refetch: vi.fn(),
+    isOwner: false,
+  }),
+}))
+
+// Mock useThemeMode hook
+vi.mock('@/entities/user/ThemeModeContext', () => ({
+  useThemeMode: () => ({
+    mode: 'system',
+    setMode: vi.fn(),
+    resolved: 'dark',
+  }),
+}))
+
 // Removed fake timers
 // vi.useFakeTimers()
 
