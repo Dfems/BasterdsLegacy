@@ -1,4 +1,4 @@
-import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+import { exec, spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import fsp from 'node:fs/promises'
 import os from 'node:os'
@@ -19,6 +19,8 @@ export type LogEvent = { ts: number; line: string }
 // Rileva automaticamente il sistema operativo
 const isWindows = os.platform() === 'win32'
 
+const execAsync = promisify(exec)
+
 // Funzione per ottenere l'utilizzo del disco
 const getDiskUsage = async (
   dirPath: string
@@ -26,16 +28,18 @@ const getDiskUsage = async (
   try {
     if (isWindows) {
       // Su Windows usa WMIC
-      const exec = promisify(require('node:child_process').exec)
       const drive = path.parse(path.resolve(dirPath)).root.slice(0, 2)
-      const { stdout } = await exec(
+      const { stdout } = await execAsync(
         `wmic LogicalDisk where Caption="${drive}" get Size,FreeSpace /format:csv`
       )
       const lines = stdout.split('\n').filter((line: string) => line.includes(','))
-      if (lines.length > 0) {
-        const [, , freeSpace, size] = lines[0].split(',')
-        const totalBytes = parseInt(size)
-        const freeBytes = parseInt(freeSpace)
+      if (lines.length > 0 && lines[0]) {
+        const columns = lines[0].split(',')
+        const freeSpace = columns[2]
+        const size = columns[3]
+        if (!freeSpace || !size) return { totalGB: 0, usedGB: 0, freeGB: 0 }
+        const totalBytes = parseInt(size, 10)
+        const freeBytes = parseInt(freeSpace, 10)
         const usedBytes = totalBytes - freeBytes
         return {
           totalGB: Math.round((totalBytes / 1024 ** 3) * 10) / 10,
@@ -45,20 +49,19 @@ const getDiskUsage = async (
       }
     } else {
       // Su Linux usa df
-      const exec = promisify(require('node:child_process').exec)
-      const { stdout } = await exec(`df -BG "${path.resolve(dirPath)}" | tail -1`)
+      const { stdout } = await execAsync(`df -BG "${path.resolve(dirPath)}" | tail -1`)
       const parts = stdout.trim().split(/\s+/)
-      if (parts.length >= 4) {
-        const totalGB = parseInt(parts[1].replace('G', ''))
-        const usedGB = parseInt(parts[2].replace('G', ''))
-        const freeGB = parseInt(parts[3].replace('G', ''))
+      if (parts.length >= 4 && parts[1] && parts[2] && parts[3]) {
+        const totalGB = parseInt(parts[1].replace('G', ''), 10)
+        const usedGB = parseInt(parts[2].replace('G', ''), 10)
+        const freeGB = parseInt(parts[3].replace('G', ''), 10)
         return { totalGB, usedGB, freeGB }
       }
     }
-  } catch (error) {
+  } catch {
     // Fallback: prova a usare statfs se disponibile o restituisci dati simulati
     try {
-      const stats = await fsp.stat(path.resolve(dirPath))
+      await fsp.stat(path.resolve(dirPath))
       // Simula dati realistici se non riusciamo ad ottenere le info reali
       const totalGB = 100 // Simula 100GB di spazio totale
       const usedGB = Math.round(Math.random() * 60 + 10) // 10-70GB usati
@@ -361,7 +364,47 @@ class ProcessManager extends EventEmitter {
 
   stop = async (): Promise<void> => {
     if (!this.proc) return
-    this.proc.kill()
+    // Arresto gentile: il server Minecraft salva i mondi solo se riceve il comando 'stop'
+    const proc = this.proc
+    return await new Promise<void>((resolve) => {
+      let exited = false
+      const timeoutMs = 15000 // 15s timeout prima di forzare
+
+      const clearAll = () => {
+        if (killTimer) clearTimeout(killTimer)
+        proc.off('exit', onExit)
+      }
+
+      const onExit = () => {
+        exited = true
+        clearAll()
+        resolve()
+      }
+
+      proc.once('exit', onExit)
+
+      try {
+        // Invia comando stop (con newline)
+        proc.stdin.write('stop\n')
+      } catch {
+        // Se fallisce procedi a kill immediato
+        try {
+          proc.kill()
+        } catch {}
+      }
+
+      // Timer di sicurezza: se non esce entro timeout, forza kill
+      const killTimer =
+        setTimeout(() => {
+          if (exited) return
+          try {
+            const evt: LogEvent = { ts: Date.now(), line: '[SYSTEM] Stop timeout, killing process' }
+            appendLog(evt)
+            this.emit('log', evt.line)
+            proc.kill('SIGKILL')
+          } catch {}
+        }, timeoutMs).unref?.() ?? undefined
+    })
   }
 
   restart = async (): Promise<void> => {
