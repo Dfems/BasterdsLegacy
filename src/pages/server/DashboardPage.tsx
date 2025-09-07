@@ -167,9 +167,7 @@ const DashboardPage = (): JSX.Element => {
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
             {dashboard.cpu}
           </Text>
-          <Text fontSize={{ base: 'sm', md: 'md' }}>
-            {data ? `${data.cpu.toFixed(1)}%` : '-'}
-          </Text>
+          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${data.cpu.toFixed(1)}%` : '-'}</Text>
         </GlassCard>
 
         <GlassCard
