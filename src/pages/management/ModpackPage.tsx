@@ -30,7 +30,7 @@ export default function ModpackPage(): JSX.Element {
   } = useModpackVersions()
 
   const { data: jarStatus } = useServerJarStatus()
-  const { progress, connectWebSocket, resetProgress } = useModpackInstallProgress()
+  const { progress, connectWebSocket, resetProgress } = useModpackInstallProgress(setBusy)
 
   // Opzioni dinamiche per le versioni Minecraft
   const mcVersionOptions = useMemo(() => {
@@ -73,11 +73,14 @@ export default function ModpackPage(): JSX.Element {
 
       ws.onerror = () => {
         resetProgress()
+        setBusy(false)
       }
+
+      // Il pulsante rimane disabilitato finché non viene completata l'installazione
+      // setBusy(false) viene chiamato solo tramite il progress hook quando l'installazione finisce
     } catch {
       // Se c'è un errore qui, aggiungilo al progresso
       resetProgress()
-    } finally {
       setBusy(false)
     }
   }

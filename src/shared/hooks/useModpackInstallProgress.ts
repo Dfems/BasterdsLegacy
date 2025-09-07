@@ -9,7 +9,7 @@ export type ModpackInstallProgress = {
   error: string | null
 }
 
-export const useModpackInstallProgress = () => {
+export const useModpackInstallProgress = (setBusy?: (busy: boolean) => void) => {
   const { token } = useContext(AuthContext)
   const [progress, setProgress] = useState<ModpackInstallProgress>({
     installing: false,
@@ -49,6 +49,7 @@ export const useModpackInstallProgress = () => {
             completed: true,
             progress: [...prev.progress, msg.data],
           }))
+          setBusy?.(false) // Riattiva il pulsante quando completato
         } else if (msg.type === 'error') {
           setProgress((prev) => ({
             ...prev,
@@ -56,6 +57,7 @@ export const useModpackInstallProgress = () => {
             error: msg.data,
             progress: [...prev.progress, `Errore: ${msg.data}`],
           }))
+          setBusy?.(false) // Riattiva il pulsante in caso di errore
         }
       } catch {
         // ignore malformed messages
@@ -64,6 +66,7 @@ export const useModpackInstallProgress = () => {
 
     ws.onclose = () => {
       wsRef.current = null
+      setBusy?.(false) // Riattiva il pulsante se la connessione si chiude
     }
 
     ws.onerror = () => {
@@ -72,6 +75,7 @@ export const useModpackInstallProgress = () => {
         installing: false,
         error: 'Errore di connessione WebSocket',
       }))
+      setBusy?.(false) // Riattiva il pulsante in caso di errore
     }
   }
 

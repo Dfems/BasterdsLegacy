@@ -20,27 +20,142 @@ cp .env.example .env
 
 ### 3. Avvio server di sviluppo
 
-**Avvio standard con Prisma (raccomandato):**
+**Avvio completo con Prisma (raccomandato):**
 ```bash
 npm run dev
 ```
-> Esegue automaticamente setup database, compila TypeScript e avvia il server
+> ✅ Setup automatico database + compila TypeScript + avvia server
 
-**Avvio diretto TypeScript con Prisma:**
+**Avvio veloce con TypeScript diretto:**
 ```bash
 npm run dev:ts
 ```
-> Usa tsx per esecuzione diretta senza compilazione
+> ⚡ Setup database + tsx (più veloce per sviluppo iterativo)
 
-**Avvio con mock database (fallback):**
+**Avvio con mock database (offline):**
 ```bash
 npm run dev:mock
 ```
-> Usa il database mock quando Prisma non è disponibile
+> 🔄 Fallback automatico quando Prisma non è disponibile
 
 Il server sarà disponibile su `http://localhost:3000`
 
-## 📋 Script disponibili
+## 🎯 Flusso Prisma Lineare
+
+### ✅ Setup Completamente Automatico
+
+**Il sistema Prisma è ora completamente lineare e automatizzato:**
+
+1. **Avvio**: `npm run dev` o `npm run dev:ts`
+2. **Database**: Creato automaticamente (`./prisma/dev.db`)
+3. **Schema**: Applicato automaticamente con `prisma db push`
+4. **Client**: Generato automaticamente con `prisma generate`
+5. **Migrazioni**: Gestite automaticamente al bisogno
+
+### 🔧 Zero Configurazione Manuale
+
+- ✅ **Nessun comando manuale** di setup database
+- ✅ **Nessuna migrazione manuale** da eseguire
+- ✅ **Nessun restart** richiesto per cambi schema
+- ✅ **Fallback automatico** a mock se Prisma non disponibile
+
+### 📋 Quando Usare Cosa
+
+| Comando | Quando Usare | Database | Note |
+|---------|--------------|----------|------|
+| `npm run dev` | **Prima volta / Build completo** | Prisma | Più lento ma sicuro |
+| `npm run dev:ts` | **Sviluppo quotidiano** | Prisma | Veloce, raccomandato |
+| `npm run dev:mock` | **Offline / CI** | Mock | Credenziali: admin@test.com/password |
+
+### 🛠️ Controllo Manuale (Opzionale)
+
+Se vuoi controllo manuale (non necessario):
+```bash
+npm run setup:db      # Setup manuale database
+npm run db:push       # Applica schema manualmente
+npm run db:generate   # Genera client manualmente
+```
+
+## 🖥️ Supporto Script di Avvio
+
+### Avvio Server Intelligente
+
+Il sistema ora supporta **script di avvio personalizzati** con fallback automatico:
+
+#### 🔹 Linux/macOS
+```bash
+# Posiziona script nella directory del server
+./server/runtime/run.sh
+```
+
+#### 🔹 Windows  
+```batch
+REM Posiziona script nella directory del server
+./server/runtime/run.bat
+```
+
+### 📋 Priorità di Avvio
+
+1. **run.sh** (Linux/macOS) o **run.bat** (Windows) se presente
+2. **Fallback automatico** al JAR del server se script non trovato
+3. **Rilevamento automatico** del sistema operativo
+
+### ✨ Funzionalità Script
+
+- ✅ **Esecuzione automatica** dello script corretto per piattaforma
+- ✅ **Permessi automatici** (Linux: `chmod +x run.sh`)
+- ✅ **Output in tempo reale** nella console
+- ✅ **Fallback JAR** se script non presente
+
+### 🔧 Esempio Script
+
+**run.sh (Linux/macOS):**
+```bash
+#!/bin/bash
+echo "=== Avvio Server Personalizzato ==="
+
+# Configurazione JVM ottimizzata
+JVM_ARGS="-Xmx4G -Xms2G -XX:+UseG1GC"
+
+# Trova automaticamente il JAR
+if [ -f "server.jar" ]; then
+    SERVER_JAR="server.jar"
+elif [ -f "fabric-server-launch.jar" ]; then
+    SERVER_JAR="fabric-server-launch.jar"
+else
+    echo "Errore: Nessun JAR trovato!"
+    exit 1
+fi
+
+echo "Avvio: $SERVER_JAR"
+java $JVM_ARGS -jar "$SERVER_JAR" nogui
+```
+
+**run.bat (Windows):**
+```batch
+@echo off
+echo === Avvio Server Personalizzato ===
+
+REM Configurazione JVM ottimizzata
+set JVM_ARGS=-Xmx4G -Xms2G -XX:+UseG1GC
+
+REM Trova automaticamente il JAR
+if exist "server.jar" (
+    set SERVER_JAR=server.jar
+) else if exist "fabric-server-launch.jar" (
+    set SERVER_JAR=fabric-server-launch.jar
+) else (
+    echo Errore: Nessun JAR trovato!
+    pause
+    exit /b 1
+)
+
+echo Avvio: %SERVER_JAR%
+java %JVM_ARGS% -jar "%SERVER_JAR%" nogui
+pause
+```
+
+> **💡 Script di esempio** sono disponibili in `server/runtime/` come template
 
 ### 🚀 Sviluppo
 - `npm run dev` - **Avvio completo**: setup DB + compila + esegue
