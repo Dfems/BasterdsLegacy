@@ -84,14 +84,16 @@ const getSystemMemory = (): { totalGB: number; freeGB: number; usedGB: number } 
   }
 }
 
-// Funzione per ottenere il TPS del server via RCON
-const getServerTPS = async (isRunning: boolean): Promise<number> => {
+// Funzione per ottenere il tick time del server in millisecondi via RCON
+const getServerTickTime = async (isRunning: boolean): Promise<{ tickTimeMs: number; rconAvailable: boolean }> => {
   if (!isRunning) {
-    return 0 // Server non in esecuzione
+    return { tickTimeMs: 0, rconAvailable: rconEnabled() } // Server non in esecuzione
   }
 
+  const rconAvailable = rconEnabled()
+
   // Se RCON è abilitato, prova a ottenere il TPS reale
-  if (rconEnabled()) {
+  if (rconAvailable) {
     try {
       // Prova diversi comandi per ottenere il TPS a seconda del tipo di server
       let tpsOutput = ''
@@ -112,45 +114,61 @@ const getServerTPS = async (isRunning: boolean): Promise<number> => {
             tpsOutput = await rconExec('debug stop')
           } catch {
             // Se tutti i comandi falliscono, usa il fallback
-            return getFallbackTPS()
+            return { tickTimeMs: getFallbackTickTime(), rconAvailable }
           }
         }
       }
 
-      // Parse della risposta per estrarre il TPS
-      const tps = parseTpsFromOutput(tpsOutput)
-      if (tps !== null) {
-        return tps
+      // Parse della risposta per estrarre il tick time
+      const tickTimeMs = parseTickTimeFromOutput(tpsOutput)
+      if (tickTimeMs !== null) {
+        return { tickTimeMs, rconAvailable }
       }
     } catch {
       // Se RCON fallisce, usa il fallback
     }
   }
 
-  // Fallback: simula TPS realistici con una leggera variazione
-  return getFallbackTPS()
+  // Fallback: simula tick time realistici con una leggera variazione
+  return { tickTimeMs: getFallbackTickTime(), rconAvailable }
 }
 
-// Funzione per parsare il TPS dall'output di diversi comandi
-const parseTpsFromOutput = (output: string): number | null => {
-  // Pattern per diversi formati di output TPS
+// Funzione per parsare il tick time dall'output di diversi comandi
+const parseTickTimeFromOutput = (output: string): number | null => {
+  // Pattern per diversi formati di output tick time e TPS
   const patterns = [
-    // Forge TPS: "Overall: 20.0 TPS" o "Mean TPS: 20.0"
+    // Tick time diretto: "Average tick time: 50.0 ms" o "Avg tick: 0.221 ms"
+    /(?:Average tick time|Avg tick):\s*(\d+\.?\d*)\s*ms/i,
+    // Debug output con tick time: "Average tick time: 50.0 ms (20.0 TPS)"
+    /Average tick time:\s*(\d+\.?\d*)\s*ms/i,
+    // Forge TPS con conversione: "Overall: 20.0 TPS" o "Mean TPS: 20.0"
     /(?:Overall|Mean|TPS).*?(\d+\.?\d*)\s*TPS/i,
-    // Debug output: "Average tick time: 50.0 ms (20.0 TPS)"
+    // Debug output con TPS tra parentesi: "(20.0 TPS)" - converti a tick time
     /\((\d+\.?\d*)\s*TPS\)/i,
-    // Semplice numero con TPS
+    // Semplice numero con TPS - converti a tick time
     /(\d+\.?\d*)\s*TPS/i,
-    // Solo numero (assumendo sia TPS)
+    // Solo numero (assumendo sia TPS) - converti a tick time
     /^(\d+\.?\d*)$/,
   ]
 
-  for (const pattern of patterns) {
+  for (let i = 0; i < patterns.length; i++) {
+    const pattern = patterns[i]
     const match = output.match(pattern)
     if (match && match[1]) {
-      const tps = parseFloat(match[1])
-      if (!isNaN(tps) && tps >= 0 && tps <= 20) {
-        return Math.round(tps * 100) / 100 // Arrotonda a 2 decimali
+      const value = parseFloat(match[1])
+      if (!isNaN(value)) {
+        // I primi due pattern sono già in millisecondi
+        if (i <= 1) {
+          if (value >= 0 && value <= 1000) { // Tick time ragionevole
+            return Math.round(value * 100) / 100 // Arrotonda a 2 decimali
+          }
+        } else {
+          // Pattern successivi sono TPS, converti a tick time (ms)
+          if (value >= 0 && value <= 20) { // TPS ragionevole
+            const tickTimeMs = value > 0 ? 1000 / value : 1000
+            return Math.round(tickTimeMs * 100) / 100 // Arrotonda a 2 decimali
+          }
+        }
       }
     }
   }
@@ -158,17 +176,21 @@ const parseTpsFromOutput = (output: string): number | null => {
   return null
 }
 
-// Funzione fallback per TPS simulati
-const getFallbackTPS = (): number => {
+// Funzione fallback per tick time simulati
+const getFallbackTickTime = (): number => {
   const baseTPS = 20.0
-  const variation = (Math.random() - 0.5) * 0.5 // Variazione ±0.25
-  return Math.round(Math.max(0, Math.min(20, baseTPS + variation)) * 100) / 100
+  const variation = (Math.random() - 0.5) * 0.5 // Variazione ±0.25 TPS
+  const tps = Math.max(0, Math.min(20, baseTPS + variation))
+  const tickTimeMs = tps > 0 ? 1000 / tps : 1000
+  return Math.round(tickTimeMs * 100) / 100
 }
 
 // Funzione per ottenere il numero di giocatori online via RCON
-const getPlayerCount = async (): Promise<{ online: number; max: number }> => {
+const getPlayerCount = async (): Promise<{ online: number; max: number; rconAvailable: boolean }> => {
+  const rconAvailable = rconEnabled()
+
   // Se RCON è abilitato, prova a ottenere i dati reali
-  if (rconEnabled()) {
+  if (rconAvailable) {
     try {
       const listOutput = await rconExec('list')
       // Output tipico: "There are 2 of a max of 20 players online: player1, player2"
@@ -177,7 +199,7 @@ const getPlayerCount = async (): Promise<{ online: number; max: number }> => {
         const online = parseInt(match[1], 10)
         const max = parseInt(match[2], 10)
         if (!isNaN(online) && !isNaN(max)) {
-          return { online, max }
+          return { online, max, rconAvailable }
         }
       }
     } catch {
@@ -186,7 +208,7 @@ const getPlayerCount = async (): Promise<{ online: number; max: number }> => {
   }
 
   // Fallback: valori simulati
-  return { online: 0, max: 20 }
+  return { online: 0, max: 20, rconAvailable }
 }
 
 // Controlla se esistono script di avvio personalizzati
@@ -349,10 +371,10 @@ class ProcessManager extends EventEmitter {
     const isRunning = this._state === 'RUNNING'
 
     // Ottieni informazioni di sistema aggiuntive
-    const [diskUsage, systemMemory, tps, playerCount] = await Promise.all([
+    const [diskUsage, systemMemory, tickData, playerData] = await Promise.all([
       getDiskUsage(CONFIG.MC_DIR),
       Promise.resolve(getSystemMemory()),
-      getServerTPS(isRunning),
+      getServerTickTime(isRunning),
       getPlayerCount(),
     ])
 
@@ -364,8 +386,9 @@ class ProcessManager extends EventEmitter {
       // Nuove metriche di sistema
       disk: diskUsage,
       systemMemory,
-      tps,
-      players: playerCount,
+      tickTimeMs: tickData.tickTimeMs,
+      players: { online: playerData.online, max: playerData.max },
+      rconAvailable: tickData.rconAvailable && playerData.rconAvailable,
     }
 
     if (!pid) return { ...base, cpu: 0, memMB: 0 }
@@ -376,7 +399,7 @@ class ProcessManager extends EventEmitter {
         ...base,
         cpu: stat.cpu, // pidusage già restituisce la percentuale (0-100)
         memMB: Math.round(stat.memory / (1024 * 1024)), // Process Memory: memoria del processo server in MB
-        // Server TPS: ottenuto via RCON (forge tps, tps, debug) con fallback simulato
+        // Tick Time: tempo medio per tick in millisecondi, ottenuto via RCON (forge tps, tps, debug) con fallback simulato
         // Players: ottenuti via RCON (list command) con fallback simulato
       }
     } catch {

@@ -116,6 +116,7 @@
     "systemMemory": "RAM del Sistema",
     "diskStorage": "Archiviazione",
     "tps": "TPS del Server",
+    "tickTime": "Tick del Server",
     "playersOnline": "Giocatori Online",
     "processMemory": "Memoria del Processo",
     "used": "Usata",
@@ -130,7 +131,11 @@
     "acceptable": "Accettabile",
     "slow": "Lento",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "rconRequired": "Richiede RCON",
+    "enableRcon": "Attiva RCON",
+    "rconEnabled": "RCON attivato con successo.",
+    "rconEnableError": "Errore nell'attivazione RCON: {error}"
   },
   "files": {
     "title": "File",

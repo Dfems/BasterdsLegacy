@@ -119,6 +119,7 @@ export type TranslationKey = {
     systemMemory: string
     diskStorage: string
     tps: string
+    tickTime: string
     playersOnline: string
     processMemory: string
     used: string
@@ -134,6 +135,10 @@ export type TranslationKey = {
     slow: string
     online: string
     offline: string
+    rconRequired: string
+    enableRcon: string
+    rconEnabled: string
+    rconEnableError: string
   }
   files: {
     title: string

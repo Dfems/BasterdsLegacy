@@ -25,11 +25,12 @@ type Status = {
     freeGB: number
     usedGB: number
   }
-  tps: number
+  tickTimeMs: number // Cambiato da tps a tickTimeMs
   players: {
     online: number
     max: number
   }
+  rconAvailable: boolean // Nuovo campo per indicare se RCON è disponibile
 }
 
 const fmtUptime = (ms: number): string => {
@@ -76,6 +77,32 @@ const DashboardPage = (): JSX.Element => {
         text: dashboard.operationError
           .replace('{action}', action)
           .replace('{error}', error.message),
+      })
+    },
+  })
+
+  const enableRconMutation = useMutation<{ success: boolean; rconPassword?: string; note?: string }, Error>({
+    mutationFn: async () => {
+      const r = await fetch('/api/settings/enable-rcon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!r.ok) throw new Error('Failed to enable RCON')
+      return await r.json()
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        setNote({ 
+          type: 'success', 
+          text: `${dashboard.rconEnabled}${data.rconPassword ? ` Password: ${data.rconPassword}` : ''}. ${data.note || ''}` 
+        })
+        void qc.invalidateQueries({ queryKey: ['status'] })
+      }
+    },
+    onError: (error) => {
+      setNote({
+        type: 'error',
+        text: dashboard.rconEnableError.replace('{error}', error.message),
       })
     },
   })
@@ -249,33 +276,53 @@ const DashboardPage = (): JSX.Element => {
           p={{ base: 3, md: 4 }}
         >
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.tps}
+            {dashboard.tickTime}
           </Text>
-          <Text
-            fontSize={{ base: 'sm', md: 'md' }}
-            color={
-              data?.state !== 'RUNNING'
-                ? 'textMuted'
-                : data?.tps && data.tps >= 19.5
-                  ? 'accent.success'
-                  : data?.tps && data.tps >= 18
-                    ? 'yellow.400'
-                    : 'accent.danger'
-            }
-          >
-            {data?.tps ? `${data.tps.toFixed(1)}` : '-'}
-          </Text>
-          <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.state === 'RUNNING'
-              ? data?.tps && data.tps >= 19.5
-                ? dashboard.perfect
-                : data?.tps && data.tps >= 18
-                  ? dashboard.good
-                  : data?.tps && data.tps >= 15
-                    ? dashboard.acceptable
-                    : dashboard.slow
-              : dashboard.notAvailable}
-          </Text>
+          
+          {/* Se RCON non è disponibile, mostra il messaggio e il pulsante */}
+          {!data?.rconAvailable ? (
+            <>
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="textMuted">
+                {dashboard.rconRequired}
+              </Text>
+              <GlassButton
+                size="sm"
+                onClick={() => enableRconMutation.mutate()}
+                loading={enableRconMutation.isPending}
+                mt={2}
+              >
+                {dashboard.enableRcon}
+              </GlassButton>
+            </>
+          ) : (
+            <>
+              <Text
+                fontSize={{ base: 'sm', md: 'md' }}
+                color={
+                  data?.state !== 'RUNNING'
+                    ? 'textMuted'
+                    : data?.tickTimeMs && data.tickTimeMs <= 50
+                      ? 'accent.success'
+                      : data?.tickTimeMs && data.tickTimeMs <= 55
+                        ? 'yellow.400'
+                        : 'accent.danger'
+                }
+              >
+                {data?.tickTimeMs && data.state === 'RUNNING' ? `${data.tickTimeMs.toFixed(1)} ms` : '-'}
+              </Text>
+              <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
+                {data?.state === 'RUNNING'
+                  ? data?.tickTimeMs && data.tickTimeMs <= 50
+                    ? dashboard.perfect
+                    : data?.tickTimeMs && data.tickTimeMs <= 55
+                      ? dashboard.good
+                      : data?.tickTimeMs && data.tickTimeMs <= 70
+                        ? dashboard.acceptable
+                        : dashboard.slow
+                  : dashboard.notAvailable}
+              </Text>
+            </>
+          )}
         </GlassCard>
 
         <GlassCard
@@ -288,11 +335,19 @@ const DashboardPage = (): JSX.Element => {
           <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
             {dashboard.playersOnline}
           </Text>
-          <Text fontSize={{ base: 'sm', md: 'md' }}>
-            {data?.players ? `${data.players.online}/${data.players.max}` : '-'}
-          </Text>
+          
+          {!data?.rconAvailable ? (
+            <Text fontSize={{ base: 'sm', md: 'md' }} color="textMuted">
+              {dashboard.rconRequired}
+            </Text>
+          ) : (
+            <Text fontSize={{ base: 'sm', md: 'md' }}>
+              {data?.players ? `${data.players.online}/${data.players.max}` : '-'}
+            </Text>
+          )}
+          
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.state === 'RUNNING' ? dashboard.online : dashboard.offline}
+            {data?.state === 'RUNNING' && data?.rconAvailable ? dashboard.online : dashboard.offline}
           </Text>
         </GlassCard>
 

@@ -141,6 +141,7 @@ export const useTranslation = (): UseTranslationReturnType => {
       systemMemory: '',
       diskStorage: '',
       tps: '',
+      tickTime: '',
       playersOnline: '',
       processMemory: '',
       used: '',
@@ -156,6 +157,10 @@ export const useTranslation = (): UseTranslationReturnType => {
       slow: '',
       online: '',
       offline: '',
+      rconRequired: '',
+      enableRcon: '',
+      rconEnabled: '',
+      rconEnableError: '',
     },
     files: {
       title: '',

@@ -116,6 +116,7 @@
     "systemMemory": "System RAM",
     "diskStorage": "Disk Storage",
     "tps": "Server TPS",
+    "tickTime": "Server Tick",
     "playersOnline": "Players Online",
     "processMemory": "Process Memory",
     "used": "Used",
@@ -130,7 +131,11 @@
     "acceptable": "Acceptable",
     "slow": "Slow",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "rconRequired": "Requires RCON",
+    "enableRcon": "Enable RCON",
+    "rconEnabled": "RCON successfully enabled.",
+    "rconEnableError": "Error enabling RCON: {error}"
   },
   "files": {
     "title": "Files",
