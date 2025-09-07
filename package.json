@@ -14,7 +14,7 @@
     "seed:owner": "node scripts/seed-owner.mjs --email admin@example.com --password changeme",
     "test": "vitest --run",
     "test:watch": "vitest",
-    "type-check": "tsc -b --pretty"
+    "type-check": "tsc --project tsconfig.app.json --noEmit && tsc --project tsconfig.node.json --noEmit"
   },
   "lint-staged": {
     "**/*.{ts,tsx,js,jsx,css,md,json}": [

@@ -171,4 +171,35 @@ describe('Whitelist API endpoints', () => {
     const data = await r.json()
     expect(data.players).toEqual([])
   })
+
+  it('auto-enables whitelist when adding first user', async () => {
+    // Mock empty initial whitelist and disabled whitelist
+    fetchSpy.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ players: [] }),
+      headers: new Headers(),
+    } as unknown as Response)
+
+    // Check initial state
+    const initialR = await fetch('/api/whitelist')
+    const initialData = await initialR.json()
+    expect(initialData.players).toEqual([])
+
+    // Mock successful add operation
+    fetchSpy.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true }),
+      headers: new Headers(),
+    } as unknown as Response)
+
+    // Add first user - should auto-enable whitelist
+    const addR = await fetch('/api/whitelist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', player: 'FirstPlayer' }),
+    })
+    expect(addR.ok).toBe(true)
+    const addData = await addR.json()
+    expect(addData.ok).toBe(true)
+  })
 })

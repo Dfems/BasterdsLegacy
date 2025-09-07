@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, cleanup } from '@testing-library/react'

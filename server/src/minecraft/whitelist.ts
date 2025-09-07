@@ -3,8 +3,9 @@ import path from 'node:path'
 
 import { CONFIG } from '../lib/config.js'
 import { rconEnabled, rconExec } from './rcon.js'
+import { isWhitelistEnabled, setWhitelistEnabled } from './serverProperties.js'
 
-export type WhitelistAction = 'add' | 'remove'
+export type WhitelistAction = 'add' | 'remove' | 'on' | 'off' | 'reload'
 
 const WL_FILE = path.join(CONFIG.MC_DIR, 'whitelist.json')
 
@@ -30,6 +31,50 @@ export const listWhitelist = async (): Promise<string[]> => {
 }
 
 export const updateWhitelist = async (action: WhitelistAction, player: string): Promise<void> => {
+  // Gestisci azioni specifiche della whitelist
+  if (action === 'on') {
+    await setWhitelistEnabled(true)
+    if (rconEnabled()) {
+      await rconExec('whitelist on')
+    }
+    return
+  }
+
+  if (action === 'off') {
+    await setWhitelistEnabled(false)
+    if (rconEnabled()) {
+      await rconExec('whitelist off')
+    }
+    return
+  }
+
+  if (action === 'reload') {
+    if (rconEnabled()) {
+      await rconExec('whitelist reload')
+    }
+    return
+  }
+
+  // Se stiamo aggiungendo un utente e la whitelist non è ancora abilitata, abilitala
+  if (action === 'add') {
+    const isEnabled = await isWhitelistEnabled()
+    if (!isEnabled) {
+      await setWhitelistEnabled(true)
+
+      // Se RCON è abilitato, esegui anche il comando per abilitare la whitelist
+      if (rconEnabled()) {
+        try {
+          await rconExec('whitelist on')
+        } catch (error) {
+          console.warn(
+            'Failed to enable whitelist via RCON:',
+            error instanceof Error ? error.message : String(error)
+          )
+        }
+      }
+    }
+  }
+
   if (rconEnabled()) {
     const cmd = action === 'add' ? `whitelist add ${player}` : `whitelist remove ${player}`
     await rconExec(cmd)
