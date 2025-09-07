@@ -1,7 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
 import { type JSX } from 'react'
 
-import { Badge, Box, Grid, HStack, Heading, Link as ChakraLink, Stack, Text } from '@chakra-ui/react'
+import {
+  Badge,
+  Box,
+  Grid,
+  HStack,
+  Heading,
+  Link as ChakraLink,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
+import { useQuery } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
@@ -28,7 +37,7 @@ const fmtUptime = (ms: number): string => {
 const LoggedInHomePage = (): JSX.Element => {
   const { home, common } = useLanguage()
   const { data: jarStatus } = useServerJarStatus()
-  
+
   const { data: status, error } = useQuery({
     queryKey: ['status'],
     queryFn: async (): Promise<Status> => {
@@ -66,16 +75,18 @@ const LoggedInHomePage = (): JSX.Element => {
             <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
               🖥️ {home.loggedIn?.serverOverview ?? 'Panoramica Server'}
             </Heading>
-            
+
             {/* Stato Server */}
             <HStack mb={3} justify="space-between" wrap="wrap">
               <Text fontSize={{ base: 'sm', md: 'md' }}>Stato:</Text>
-              <Badge 
-                colorPalette={isServerRunning ? 'green' : 'red'} 
+              <Badge
+                colorPalette={isServerRunning ? 'green' : 'red'}
                 variant="solid"
                 fontSize={{ base: 'xs', md: 'sm' }}
               >
-                {isServerRunning ? (home.loggedIn?.serverRunning ?? 'Attivo') : (home.loggedIn?.serverStopped ?? 'Spento')}
+                {isServerRunning
+                  ? (home.loggedIn?.serverRunning ?? 'Attivo')
+                  : (home.loggedIn?.serverStopped ?? 'Spento')}
               </Badge>
             </HStack>
 
@@ -84,15 +95,19 @@ const LoggedInHomePage = (): JSX.Element => {
               <HStack mb={3} justify="space-between" wrap="wrap">
                 <Text fontSize={{ base: 'sm', md: 'md' }}>Modpack:</Text>
                 <HStack gap={2}>
-                  <Badge 
-                    colorPalette={jarStatus.hasJar ? 'green' : 'orange'} 
+                  <Badge
+                    colorPalette={jarStatus.hasJar ? 'green' : 'orange'}
                     variant="solid"
                     fontSize={{ base: 'xs', md: 'sm' }}
                   >
                     {jarStatus.hasJar ? 'Installato' : 'Non trovato'}
                   </Badge>
                   {jarStatus.hasJar && jarStatus.jarType && (
-                    <Badge colorPalette="blue" variant="outline" fontSize={{ base: 'xs', md: 'sm' }}>
+                    <Badge
+                      colorPalette="blue"
+                      variant="outline"
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                    >
                       {jarStatus.jarType.toUpperCase()}
                     </Badge>
                   )}
@@ -108,11 +123,15 @@ const LoggedInHomePage = (): JSX.Element => {
                   <Text fontSize={{ base: 'sm', md: 'md' }}>{(status.cpu * 100).toFixed(1)}%</Text>
                 </HStack>
                 <HStack mb={2} justify="space-between">
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{home.loggedIn?.memory ?? 'Memoria'}:</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>
+                    {home.loggedIn?.memory ?? 'Memoria'}:
+                  </Text>
                   <Text fontSize={{ base: 'sm', md: 'md' }}>{status.memMB} MB</Text>
                 </HStack>
                 <HStack justify="space-between">
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{home.loggedIn?.uptime ?? 'Uptime'}:</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>
+                    {home.loggedIn?.uptime ?? 'Uptime'}:
+                  </Text>
                   <Text fontSize={{ base: 'sm', md: 'md' }}>{fmtUptime(status.uptimeMs)}</Text>
                 </HStack>
               </>
@@ -130,7 +149,7 @@ const LoggedInHomePage = (): JSX.Element => {
             <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
               ⚡ {home.loggedIn?.quickActions ?? 'Azioni Rapide'}
             </Heading>
-            
+
             <Stack gap={3}>
               <GlassButton
                 as={ChakraLink}
@@ -142,7 +161,7 @@ const LoggedInHomePage = (): JSX.Element => {
               >
                 {home.loggedIn?.goToDashboard ?? '📊 Vai al Dashboard'}
               </GlassButton>
-              
+
               <GlassButton
                 as={ChakraLink}
                 href="/app/console"
@@ -153,7 +172,7 @@ const LoggedInHomePage = (): JSX.Element => {
               >
                 {home.loggedIn?.goToConsole ?? '💻 Apri Console'}
               </GlassButton>
-              
+
               <GlassButton
                 as={ChakraLink}
                 href="/app/files"
@@ -173,7 +192,7 @@ const LoggedInHomePage = (): JSX.Element => {
           <Heading size={{ base: 'sm', md: 'md' }} mb={4} textAlign="center">
             📦 {home.loggedIn?.downloadSection ?? 'Download & Supporto'}
           </Heading>
-          
+
           <Stack direction={{ base: 'column', sm: 'row' }} gap={3} align="center" justify="center">
             <GlassButton
               as={ChakraLink}

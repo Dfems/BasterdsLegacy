@@ -27,7 +27,7 @@ const HomePage = (): JSX.Element => {
         <Text mb={4} fontSize={{ base: 'sm', md: 'md' }}>
           {t.welcomePart}
         </Text>
-        
+
         <Stack gap={3} align="center">
           <GlassButton
             as={ChakraLink}
@@ -59,7 +59,7 @@ const HomePage = (): JSX.Element => {
             {t.donateBtn}
           </GlassButton>
         </Stack>
-        
+
         <Text mt={6} fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
           {t.footer}
         </Text>
