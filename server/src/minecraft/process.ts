@@ -7,9 +7,9 @@ import { promisify } from 'node:util'
 import pidusage from 'pidusage'
 
 import { CONFIG } from '../lib/config.js'
-import { rconEnabled, rconExec } from './rcon.js'
 import { appendLog } from './logs.js'
 import { loadInstallationInfo } from './modpack.js'
+import { rconEnabled, rconExec } from './rcon.js'
 import { checkServerJarStatus } from './serverJar.js'
 
 export type ProcState = 'RUNNING' | 'STOPPED' | 'CRASHED'
@@ -95,7 +95,7 @@ const getServerTPS = async (isRunning: boolean): Promise<number> => {
     try {
       // Prova diversi comandi per ottenere il TPS a seconda del tipo di server
       let tpsOutput = ''
-      
+
       try {
         // Prova prima con /forge tps (per server Forge)
         tpsOutput = await rconExec('forge tps')
@@ -108,7 +108,7 @@ const getServerTPS = async (isRunning: boolean): Promise<number> => {
             // Prova con /minecraft:debug start per server vanilla
             await rconExec('debug start')
             // Aspetta un momento per la raccolta dati
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            await new Promise((resolve) => setTimeout(resolve, 1000))
             tpsOutput = await rconExec('debug stop')
           } catch {
             // Se tutti i comandi falliscono, usa il fallback
