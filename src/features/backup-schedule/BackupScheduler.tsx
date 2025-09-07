@@ -231,19 +231,21 @@ export const BackupScheduler = (): JSX.Element => {
         {/* Configuration Type Selection */}
         <Box mb={6}>
           <RadioGroup.Root
-            value={configType}
+            defaultValue={configType}
             onValueChange={(details) => setConfigType(details.value as 'presets' | 'custom')}
             name="configType"
           >
             <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
-              <RadioGroup.Item value="presets">
-                <RadioGroup.ItemControl />
+              <RadioGroup.Item value="presets" key={'presets'}>
+                <RadioGroup.ItemHiddenInput />
+                <RadioGroup.ItemIndicator />
                 <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                   {backups.schedule.presets}
                 </RadioGroup.ItemText>
               </RadioGroup.Item>
-              <RadioGroup.Item value="custom">
-                <RadioGroup.ItemControl />
+              <RadioGroup.Item value="custom" key={'custom'}>
+                <RadioGroup.ItemHiddenInput />
+                <RadioGroup.ItemIndicator />
                 <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                   {backups.schedule.custom}
                 </RadioGroup.ItemText>
@@ -283,13 +285,15 @@ export const BackupScheduler = (): JSX.Element => {
               >
                 <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
                   <RadioGroup.Item value="enabled">
-                    <RadioGroup.ItemControl />
+                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemIndicator />
                     <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                       {backups.schedule.enable}
                     </RadioGroup.ItemText>
                   </RadioGroup.Item>
                   <RadioGroup.Item value="disabled">
-                    <RadioGroup.ItemControl />
+                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemIndicator />
                     <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                       {backups.schedule.disable}
                     </RadioGroup.ItemText>
@@ -320,13 +324,15 @@ export const BackupScheduler = (): JSX.Element => {
                   >
                     <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
                       <RadioGroup.Item value="full">
-                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemIndicator />
                         <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                           {backups.schedule.mode_options.full}
                         </RadioGroup.ItemText>
                       </RadioGroup.Item>
                       <RadioGroup.Item value="world">
-                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemIndicator />
                         <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                           {backups.schedule.mode_options.world}
                         </RadioGroup.ItemText>
