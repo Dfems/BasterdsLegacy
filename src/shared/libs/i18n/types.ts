@@ -48,6 +48,22 @@ export type TranslationKey = {
     launcherBtn: string
     donateBtn: string
     footer: string
+    loggedIn: {
+      welcomeBack: string
+      serverOverview: string
+      quickActions: string
+      systemInfo: string
+      downloadSection: string
+      cpu: string
+      memory: string
+      uptime: string
+      goToDashboard: string
+      goToConsole: string
+      goToFiles: string
+      serverRunning: string
+      serverStopped: string
+      lastRestart: string
+    }
   }
   auth: {
     loginTitle: string
