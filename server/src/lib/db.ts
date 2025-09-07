@@ -22,7 +22,7 @@ try {
           return {
             id: 'mock-admin-id',
             email: 'admin@test.com',
-            passHash: '$2b$10$test.hash.for.development',
+            passHash: '$2b$10$6wgb8p3n3izo5F2lpQzgXub7u5sMXPHfYnb53i4Z0.wRSDEfQ6C3q', // password
             role: 'owner',
             createdAt: new Date(),
             updatedAt: new Date()

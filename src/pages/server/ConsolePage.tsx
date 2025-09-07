@@ -80,12 +80,15 @@ export default function ConsolePage(): JSX.Element {
     }
   }, [token, fetchStatus, setOutput])
 
-  const sendCmd = useCallback((cmd: string) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
-    const payload = JSON.stringify({ type: 'cmd', data: cmd })
-    wsRef.current.send(payload)
-    setOutput((o) => o + `> ${cmd}\n`)
-  }, [setOutput])
+  const sendCmd = useCallback(
+    (cmd: string) => {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
+      const payload = JSON.stringify({ type: 'cmd', data: cmd })
+      wsRef.current.send(payload)
+      setOutput((o) => o + `> ${cmd}\n`)
+    },
+    [setOutput]
+  )
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
