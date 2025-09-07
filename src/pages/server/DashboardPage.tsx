@@ -168,7 +168,7 @@ const DashboardPage = (): JSX.Element => {
             {dashboard.cpu}
           </Text>
           <Text fontSize={{ base: 'sm', md: 'md' }}>
-            {data ? `${(data.cpu * 100).toFixed(1)}%` : '-'}
+            {data ? `${data.cpu.toFixed(1)}%` : '-'}
           </Text>
         </GlassCard>
 
@@ -216,7 +216,7 @@ const DashboardPage = (): JSX.Element => {
           </Text>
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
             {data?.systemMemory
-              ? `${Math.round((data.systemMemory.usedGB / data.systemMemory.totalGB) * 100)}% utilizzata`
+              ? `${Math.round((data.systemMemory.usedGB / data.systemMemory.totalGB) * 100)}% ${dashboard.utilized}`
               : ''}
           </Text>
         </GlassCard>
@@ -234,12 +234,12 @@ const DashboardPage = (): JSX.Element => {
           <Text fontSize={{ base: 'sm', md: 'md' }}>
             {data?.disk && data.disk.totalGB > 0
               ? `${data.disk.usedGB}/${data.disk.totalGB} GB`
-              : 'Non disponibile'}
+              : dashboard.notAvailable}
           </Text>
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
             {data?.disk && data.disk.totalGB > 0
-              ? `${Math.round((data.disk.usedGB / data.disk.totalGB) * 100)}% utilizzato`
-              : 'Controllo spazio...'}
+              ? `${Math.round((data.disk.usedGB / data.disk.totalGB) * 100)}% ${dashboard.utilized_masculine}`
+              : dashboard.checkingSpace}
           </Text>
         </GlassCard>
 
@@ -270,13 +270,13 @@ const DashboardPage = (): JSX.Element => {
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
             {data?.state === 'RUNNING'
               ? data?.tps && data.tps >= 19.5
-                ? 'Perfetto'
+                ? dashboard.perfect
                 : data?.tps && data.tps >= 18
-                  ? 'Buono'
+                  ? dashboard.good
                   : data?.tps && data.tps >= 15
-                    ? 'Accettabile'
-                    : 'Lento'
-              : 'Non disponibile'}
+                    ? dashboard.acceptable
+                    : dashboard.slow
+              : dashboard.notAvailable}
           </Text>
         </GlassCard>
 
@@ -294,7 +294,7 @@ const DashboardPage = (): JSX.Element => {
             {data?.players ? `${data.players.online}/${data.players.max}` : '-'}
           </Text>
           <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.state === 'RUNNING' ? 'Online' : 'Offline'}
+            {data?.state === 'RUNNING' ? dashboard.online : dashboard.offline}
           </Text>
         </GlassCard>
 

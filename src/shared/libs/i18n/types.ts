@@ -124,6 +124,16 @@ export type TranslationKey = {
     used: string
     free: string
     total: string
+    utilized: string
+    utilized_masculine: string
+    notAvailable: string
+    checkingSpace: string
+    perfect: string
+    good: string
+    acceptable: string
+    slow: string
+    online: string
+    offline: string
   }
   files: {
     title: string

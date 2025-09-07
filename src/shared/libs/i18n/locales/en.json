@@ -120,7 +120,17 @@
     "processMemory": "Process Memory",
     "used": "Used",
     "free": "Free",
-    "total": "Total"
+    "total": "Total",
+    "utilized": "utilized",
+    "utilized_masculine": "used",
+    "notAvailable": "Not available",
+    "checkingSpace": "Checking space...",
+    "perfect": "Perfect",
+    "good": "Good",
+    "acceptable": "Acceptable",
+    "slow": "Slow",
+    "online": "Online",
+    "offline": "Offline"
   },
   "files": {
     "title": "Files",

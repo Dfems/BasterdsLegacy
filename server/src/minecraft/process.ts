@@ -289,7 +289,7 @@ class ProcessManager extends EventEmitter {
       const stat = await pidusage(pid)
       return {
         ...base,
-        cpu: stat.cpu / 100,
+        cpu: stat.cpu, // pidusage già restituisce la percentuale (0-100), non dividere per 100
         memMB: Math.round(stat.memory / (1024 * 1024)),
       }
     } catch {
