@@ -23,14 +23,21 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     },
     async (req, reply) => {
       const body = (await req.body) as { action?: WhitelistAction; player?: string }
-      if (!body?.action || !body?.player) return reply.status(400).send({ error: 'Invalid body' })
-      await updateWhitelist(body.action, body.player)
+      if (!body?.action) return reply.status(400).send({ error: 'Invalid body' })
+
+      // Player is required for add/remove actions, but not for on/off/reload
+      const requiresPlayer = ['add', 'remove'].includes(body.action)
+      if (requiresPlayer && !body.player) {
+        return reply.status(400).send({ error: 'Invalid body' })
+      }
+
+      await updateWhitelist(body.action, body.player ?? '')
       try {
         await (
           await import('../lib/audit.js')
         ).auditLog({
           type: 'command',
-          cmd: `whitelist ${body.action} ${body.player}`,
+          cmd: `whitelist ${body.action}${body.player ? ` ${body.player}` : ''}`,
           userId: req.user?.sub,
         })
       } catch {}
