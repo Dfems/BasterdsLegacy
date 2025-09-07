@@ -90,7 +90,7 @@ describe('Backups API endpoints', () => {
     fetchSpy.mockResolvedValueOnce({
       ok: false,
       status: 400,
-      json: async () => ({ error: 'Invalid body' }),
+      json: async () => ({ error: 'Invalid mode. Must be "full" or "world"' }),
       headers: new Headers(),
     } as unknown as Response)
 
@@ -117,5 +117,68 @@ describe('Backups API endpoints', () => {
     })
     expect(r.ok).toBe(false)
     expect(r.status).toBe(404)
+  })
+
+  it('handles backup creation with missing mode', async () => {
+    fetchSpy.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'Invalid mode. Must be "full" or "world"' }),
+      headers: new Headers(),
+    } as unknown as Response)
+
+    const r = await fetch('/api/backups', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+    expect(r.ok).toBe(false)
+    expect(r.status).toBe(400)
+  })
+
+  it('handles backup restore with missing ID', async () => {
+    fetchSpy.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'Missing or invalid backup ID' }),
+      headers: new Headers(),
+    } as unknown as Response)
+
+    const r = await fetch('/api/backups//restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    expect(r.ok).toBe(false)
+    expect(r.status).toBe(400)
+  })
+
+  it('handles server errors during backup listing', async () => {
+    fetchSpy.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'Failed to list backups' }),
+      headers: new Headers(),
+    } as unknown as Response)
+
+    const r = await fetch('/api/backups')
+    expect(r.ok).toBe(false)
+    expect(r.status).toBe(500)
+  })
+
+  it('handles server errors during backup creation', async () => {
+    fetchSpy.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'Backup creation failed: Source directory not found' }),
+      headers: new Headers(),
+    } as unknown as Response)
+
+    const r = await fetch('/api/backups', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'world' }),
+    })
+    expect(r.ok).toBe(false)
+    expect(r.status).toBe(500)
   })
 })
