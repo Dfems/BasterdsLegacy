@@ -9,6 +9,7 @@ Pannello di controllo per server Minecraft con installazione automatica modpack 
 - **Modpack automatico**: Installazione Fabric/Forge/NeoForge/Quilt con progresso real-time
 - **Stato JAR intelligente**: Rileva automaticamente il tipo di server installato
 - **Controlli di sicurezza**: Impedisce start senza JAR e cancellazione con server attivo
+- **Background personalizzato**: Gli owner possono caricare immagini di sfondo personalizzate
 
 ## Come Usare il Sistema
 
@@ -41,6 +42,14 @@ Pannello di controllo per server Minecraft con installazione automatica modpack 
 - ❌ **Non puoi avviare** senza modpack installato
 - ❌ **Non puoi cancellare** modpack con server attivo
 - ✅ **Feedback real-time** su tutte le operazioni
+
+### 6. **Personalizzazione UI (Solo Owner)**
+- **Background personalizzato**: Carica immagini di sfondo per personalizzare l'interfaccia
+  - Formati supportati: JPEG, PNG, WebP, GIF
+  - Dimensione massima: 5MB
+  - Accessibile da Settings → Sfondo Personalizzato
+  - Anteprima in tempo reale
+  - Rimozione con un click
 
 ---
 

@@ -30,6 +30,10 @@ try {
         }
         return null
       },
+      count: async () => {
+        console.log('Mock DB: user.count')
+        return 1 // Simula che esiste almeno un utente
+      },
       findMany: async () => {
         console.log('Mock DB: user.findMany')
         return []
@@ -75,11 +79,20 @@ try {
     setting: {
       findUnique: async (options: any) => {
         console.log('Mock DB: setting.findUnique', options)
+        // Simula che non ci sia background impostato inizialmente
         return null
       },
       upsert: async (data: any) => {
         console.log('Mock DB: setting.upsert', data)
-        return { ...data.create }
+        return { 
+          key: data.where.key,
+          value: data.create.value || data.update.value,
+          ...data.create 
+        }
+      },
+      deleteMany: async (options: any) => {
+        console.log('Mock DB: setting.deleteMany', options)
+        return { count: 1 }
       }
     }
   }

@@ -3,7 +3,9 @@ import { useEffect, useState, type JSX } from 'react'
 import { Box, Heading, HStack, Kbd, RadioGroup, Stack, Text } from '@chakra-ui/react'
 
 import { useThemeMode, type ThemeMode } from '@/entities/user/ThemeModeContext'
+import { BackgroundUpload } from '@/shared/components/BackgroundUpload'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { useUiSettings } from '@/shared/hooks'
 import useLanguage from '@/shared/hooks/useLanguage'
 
 type Settings = {
@@ -19,6 +21,7 @@ type Settings = {
 export default function SettingsPage(): JSX.Element {
   const { settings } = useLanguage()
   const theme = useThemeMode()
+  const { isOwner } = useUiSettings()
   const [s, setS] = useState<Settings | null>(null)
   const [err, setErr] = useState<string | null>(null)
 
@@ -104,6 +107,12 @@ export default function SettingsPage(): JSX.Element {
             {s.retentionDays} days, {s.retentionWeeks} weeks
           </Text>
         </GlassCard>
+      )}
+      {/* Background Upload - Solo per owner */}
+      {isOwner && (
+        <Box mb={6}>
+          <BackgroundUpload />
+        </Box>
       )}
       <GlassCard inset p={{ base: 3, md: 4 }}>
         {' '}
