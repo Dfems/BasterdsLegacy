@@ -2,14 +2,14 @@ import type { FastifyInstance, FastifyPluginCallback } from 'fastify'
 import cron from 'node-cron'
 
 import { CONFIG } from '../lib/config.js'
-import { applyRetention, createBackup, listBackups, restoreBackup } from '../minecraft/backups.js'
-import { 
-  getCurrentSchedule, 
-  updateScheduler, 
-  validateScheduleConfig, 
+import {
+  getCurrentSchedule,
+  updateScheduler,
+  validateScheduleConfig,
   BACKUP_PRESETS,
-  type BackupScheduleConfig 
+  type BackupScheduleConfig,
 } from '../minecraft/auto-backup.js'
+import { applyRetention, createBackup, listBackups, restoreBackup } from '../minecraft/backups.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
   fastify.get(
@@ -136,22 +136,22 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         if (body.preset && typeof body.preset === 'string') {
           const preset = BACKUP_PRESETS[body.preset as keyof typeof BACKUP_PRESETS]
           if (!preset) {
-            return reply.status(400).send({ 
-              error: `Invalid preset. Available presets: ${Object.keys(BACKUP_PRESETS).join(', ')}` 
+            return reply.status(400).send({
+              error: `Invalid preset. Available presets: ${Object.keys(BACKUP_PRESETS).join(', ')}`,
             })
           }
-          
+
           // Applica preset
           updateScheduler(preset as BackupScheduleConfig)
 
           try {
             await (
               await import('../lib/audit.js')
-            ).auditLog({ 
-              type: 'backup', 
-              op: 'schedule_update', 
-              details: { preset: body.preset }, 
-              userId: req.user?.sub 
+            ).auditLog({
+              type: 'backup',
+              op: 'schedule_update',
+              details: { preset: body.preset },
+              userId: req.user?.sub,
             })
           } catch {
             console.warn('Failed to log backup schedule update audit')
@@ -163,9 +163,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         // Validazione configurazione custom
         const validation = validateScheduleConfig(body)
         if (!validation.valid) {
-          return reply.status(400).send({ 
-            error: 'Invalid configuration', 
-            details: validation.errors 
+          return reply.status(400).send({
+            error: 'Invalid configuration',
+            details: validation.errors,
           })
         }
 
@@ -175,11 +175,11 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         try {
           await (
             await import('../lib/audit.js')
-          ).auditLog({ 
-            type: 'backup', 
-            op: 'schedule_update', 
-            details: { custom: true }, 
-            userId: req.user?.sub 
+          ).auditLog({
+            type: 'backup',
+            op: 'schedule_update',
+            details: { custom: true },
+            userId: req.user?.sub,
           })
         } catch {
           console.warn('Failed to log backup schedule update audit')
@@ -194,7 +194,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     }
   )
 
-  // GET /api/backups/presets - Lista preset disponibili  
+  // GET /api/backups/presets - Lista preset disponibili
   fastify.get(
     '/api/backups/presets',
     {
@@ -206,9 +206,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         return {
           presets: Object.entries(BACKUP_PRESETS).map(([key, config]) => ({
             id: key,
-            name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            name: key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
             ...config,
-          }))
+          })),
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'

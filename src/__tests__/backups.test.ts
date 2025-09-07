@@ -279,8 +279,23 @@ describe('Automatic Backup Schedule API endpoints', () => {
     const mockPresets = {
       presets: [
         { id: 'disabled', name: 'Disabled', enabled: false, frequency: 'disabled' },
-        { id: 'daily_3am', name: 'Daily 3am', enabled: true, frequency: 'daily', mode: 'world', dailyAt: '03:00' },
-        { id: 'weekly_monday', name: 'Weekly Monday', enabled: true, frequency: 'weekly', mode: 'full', weeklyOn: 1, dailyAt: '03:00' },
+        {
+          id: 'daily_3am',
+          name: 'Daily 3am',
+          enabled: true,
+          frequency: 'daily',
+          mode: 'world',
+          dailyAt: '03:00',
+        },
+        {
+          id: 'weekly_monday',
+          name: 'Weekly Monday',
+          enabled: true,
+          frequency: 'weekly',
+          mode: 'full',
+          weeklyOn: 1,
+          dailyAt: '03:00',
+        },
       ],
     }
 
@@ -304,7 +319,9 @@ describe('Automatic Backup Schedule API endpoints', () => {
     fetchSpy.mockResolvedValueOnce({
       ok: false,
       status: 400,
-      json: async () => ({ error: 'Invalid preset. Available presets: disabled, daily_3am, weekly_monday' }),
+      json: async () => ({
+        error: 'Invalid preset. Available presets: disabled, daily_3am, weekly_monday',
+      }),
       headers: new Headers(),
     } as unknown as Response)
 
