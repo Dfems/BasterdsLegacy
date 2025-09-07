@@ -161,6 +161,8 @@ export const useTranslation = (): UseTranslationReturnType => {
       enableRcon: '',
       rconEnabled: '',
       rconEnableError: '',
+      restartRequired: '',
+      restartServer: '',
     },
     files: {
       title: '',

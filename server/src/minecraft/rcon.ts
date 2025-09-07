@@ -1,6 +1,6 @@
-import { Rcon } from 'rcon-client'
 import fs from 'node:fs'
 import path from 'node:path'
+import { Rcon } from 'rcon-client'
 
 import { CONFIG } from '../lib/config.js'
 
@@ -29,7 +29,9 @@ const readRconConfigFromProperties = (): { enabled: boolean; port: number; passw
     }
 
     const enabled = properties['enable-rcon'] === 'true'
-    const port = properties['rcon.port'] ? parseInt(properties['rcon.port'], 10) : defaultConfig.port
+    const port = properties['rcon.port']
+      ? parseInt(properties['rcon.port'], 10)
+      : defaultConfig.port
     const password = properties['rcon.password'] || defaultConfig.password
 
     return { enabled, port, password }
@@ -52,7 +54,7 @@ export const rconEnabled = (): boolean => {
 export const getRcon = async (): Promise<RconClient> => {
   if (!rconEnabled()) throw new Error('RCON disabled')
   if (client) return client
-  
+
   const config = readRconConfigFromProperties()
   client = await Rcon.connect({
     host: CONFIG.RCON_HOST,

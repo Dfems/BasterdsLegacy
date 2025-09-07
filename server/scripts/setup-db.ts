@@ -32,7 +32,7 @@ async function setupDatabase(): Promise<void> {
           reject(error)
         })
       })
-    } catch (error) {
+    } catch (_error) {
       console.log('⚠️  Impossibile generare client Prisma (probabilmente network issue)')
       console.log('   Il server userà il database mock per lo sviluppo')
       return
@@ -51,7 +51,7 @@ async function setupDatabase(): Promise<void> {
       try {
         await db.user.findFirst()
         console.log('✅ Schema database già presente')
-      } catch (error) {
+      } catch (_error) {
         console.log('⚠️  Schema database non trovato, eseguendo push...')
 
         // Esegui db push
@@ -92,11 +92,11 @@ async function setupDatabase(): Promise<void> {
 
       await db.$disconnect()
       console.log('\n🎉 Setup database completato! Prisma attivo.')
-    } catch (error) {
+    } catch (_error) {
       console.log('⚠️  Errore con Prisma, il server userà il database mock')
       console.log('   Questo è normale in ambiente di sviluppo senza connessione')
     }
-  } catch (error) {
+  } catch (_error) {
     console.log('\n⚠️  Setup Prisma non riuscito, utilizzando database mock')
     console.log('   Il server funzionerà comunque in modalità sviluppo')
     console.log('\n💡 Per attivare Prisma in futuro:')

@@ -108,7 +108,7 @@ const DashboardPage = (): JSX.Element => {
           message += ` ${dashboard.restartRequired}`
           setRequiresRestart(true)
         }
-        
+
         setNote({
           type: 'success',
           text: message,
@@ -383,19 +383,19 @@ const DashboardPage = (): JSX.Element => {
             <Text fontWeight="bold" mb={2} fontSize={{ base: 'sm', md: 'md' }}>
               {dashboard.actions}
             </Text>
-            
+
             {/* Messaggio di riavvio necessario se presente */}
             {requiresRestart && (
-              <Text 
-                color="orange.400" 
-                fontSize={{ base: 'xs', md: 'sm' }} 
+              <Text
+                color="orange.400"
+                fontSize={{ base: 'xs', md: 'sm' }}
                 mb={2}
                 fontWeight="semibold"
               >
                 {dashboard.restartRequired}
               </Text>
             )}
-            
+
             <HStack gap={2} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
               <GlassButton
                 size={{ base: 'sm', md: 'md' }}

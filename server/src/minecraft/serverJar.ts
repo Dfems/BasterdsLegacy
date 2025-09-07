@@ -1,5 +1,4 @@
 import fsp from 'node:fs/promises'
-import path from 'node:path'
 
 import { CONFIG } from '../lib/config.js'
 
@@ -118,7 +117,7 @@ export const checkServerJarStatus = async (installationInfo?: {
       jarName: serverJar,
       canStart: serverJar !== null,
     }
-  } catch (error) {
+  } catch (_error) {
     // Se la directory non esiste o ci sono altri errori
     return {
       hasJar: false,
