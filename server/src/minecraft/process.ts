@@ -155,6 +155,7 @@ const parseTickTimeFromOutput = (output: string): number | null => {
 
   for (let i = 0; i < patterns.length; i++) {
     const pattern = patterns[i]
+    if (!pattern) continue
     const match = output.match(pattern)
     if (match && match[1]) {
       const value = parseFloat(match[1])

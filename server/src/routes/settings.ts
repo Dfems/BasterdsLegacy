@@ -92,7 +92,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
   // API per attivare RCON nel server.properties
   fastify.post(
     '/api/settings/enable-rcon',
-    { preHandler: fastify.authorize('admin') },
+    { preHandler: fastify.authorize('owner') },
     async (request, reply) => {
       try {
         const properties = readServerProperties()
