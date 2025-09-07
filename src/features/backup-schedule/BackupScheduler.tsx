@@ -229,26 +229,28 @@ export const BackupScheduler = (): JSX.Element => {
         </Heading>
 
         {/* Configuration Type Selection */}
-        <RadioGroup.Root
-          value={configType}
-          onValueChange={(details) => setConfigType(details.value as 'presets' | 'custom')}
-          mb={6}
-        >
-          <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
-            <RadioGroup.Item value="presets">
-              <RadioGroup.ItemControl />
-              <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
-                {backups.schedule.presets}
-              </RadioGroup.ItemText>
-            </RadioGroup.Item>
-            <RadioGroup.Item value="custom">
-              <RadioGroup.ItemControl />
-              <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
-                {backups.schedule.custom}
-              </RadioGroup.ItemText>
-            </RadioGroup.Item>
-          </Stack>
-        </RadioGroup.Root>
+        <Box mb={6}>
+          <RadioGroup.Root
+            value={configType}
+            onValueChange={(details) => setConfigType(details.value as 'presets' | 'custom')}
+            name="configType"
+          >
+            <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
+              <RadioGroup.Item value="presets">
+                <RadioGroup.ItemControl />
+                <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
+                  {backups.schedule.presets}
+                </RadioGroup.ItemText>
+              </RadioGroup.Item>
+              <RadioGroup.Item value="custom">
+                <RadioGroup.ItemControl />
+                <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
+                  {backups.schedule.custom}
+                </RadioGroup.ItemText>
+              </RadioGroup.Item>
+            </Stack>
+          </RadioGroup.Root>
+        </Box>
 
         {configType === 'presets' ? (
           /* Preset Configuration */
@@ -263,17 +265,6 @@ export const BackupScheduler = (): JSX.Element => {
                 options={presetOptions}
               />
             </Box>
-
-            <HStack justify={{ base: 'center', sm: 'flex-start' }} wrap="wrap">
-              <GlassButton
-                onClick={handlePresetSubmit}
-                loading={updateSchedule.isPending}
-                size={{ base: 'sm', md: 'md' }}
-                minH="44px"
-              >
-                {backups.schedule.save}
-              </GlassButton>
-            </HStack>
           </VStack>
         ) : (
           /* Custom Configuration */
@@ -288,6 +279,7 @@ export const BackupScheduler = (): JSX.Element => {
                 onValueChange={(details) =>
                   setCustomConfig((prev) => ({ ...prev, enabled: details.value === 'enabled' }))
                 }
+                name="enabledState"
               >
                 <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
                   <RadioGroup.Item value="enabled">
@@ -324,6 +316,7 @@ export const BackupScheduler = (): JSX.Element => {
                         mode: details.value as 'full' | 'world',
                       }))
                     }
+                    name="backupMode"
                   >
                     <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
                       <RadioGroup.Item value="full">
@@ -422,19 +415,24 @@ export const BackupScheduler = (): JSX.Element => {
                 )}
               </>
             )}
-
-            <HStack justify={{ base: 'center', sm: 'flex-start' }} wrap="wrap">
-              <GlassButton
-                onClick={handleCustomSubmit}
-                loading={updateSchedule.isPending}
-                size={{ base: 'sm', md: 'md' }}
-                minH="44px"
-              >
-                {backups.schedule.save}
-              </GlassButton>
-            </HStack>
           </VStack>
         )}
+
+        {/* Unified Save Button */}
+        <Box mt={6} textAlign="center">
+          <GlassButton
+            onClick={configType === 'presets' ? handlePresetSubmit : handleCustomSubmit}
+            loading={updateSchedule.isPending}
+            size={{ base: 'md', md: 'lg' }}
+            minH="48px"
+            px={8}
+            bg="brand.primary"
+            color="white"
+            _hover={{ bg: 'brand.secondary' }}
+          >
+            {backups.schedule.save}
+          </GlassButton>
+        </Box>
 
         {/* Success/Error Messages */}
         {updateSchedule.isSuccess && (
