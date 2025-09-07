@@ -3,6 +3,7 @@ import fse from 'fs-extra'
 import path from 'node:path'
 
 import { CONFIG } from '../lib/config.js'
+import { loadInstallationInfo } from '../minecraft/modpack.js'
 import { processManager } from '../minecraft/process.js'
 import { checkServerJarStatus } from '../minecraft/serverJar.js'
 
@@ -14,7 +15,8 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       preHandler: fastify.authorize('user'),
     },
     async () => {
-      return await checkServerJarStatus()
+      const installationInfo = await loadInstallationInfo()
+      return await checkServerJarStatus(installationInfo || undefined)
     }
   )
 

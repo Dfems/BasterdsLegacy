@@ -7,6 +7,7 @@ import pidusage from 'pidusage'
 
 import { CONFIG } from '../lib/config.js'
 import { appendLog } from './logs.js'
+import { loadInstallationInfo } from './modpack.js'
 import { checkServerJarStatus } from './serverJar.js'
 
 export type ProcState = 'RUNNING' | 'STOPPED' | 'CRASHED'
@@ -73,7 +74,8 @@ class ProcessManager extends EventEmitter {
       } else {
         // Fallback al metodo JAR tradizionale
         // Controlla se c'è un JAR del server disponibile
-        const jarStatus = await checkServerJarStatus()
+        const installationInfo = await loadInstallationInfo()
+        const jarStatus = await checkServerJarStatus(installationInfo || undefined)
         if (!jarStatus.hasJar || !jarStatus.jarName) {
           throw new Error('Nessun JAR del server trovato. Installa un modpack prima di avviare.')
         }

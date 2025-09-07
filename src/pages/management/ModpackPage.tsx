@@ -11,12 +11,12 @@ import { useModpackVersions } from '@/shared/hooks/useModpackVersions'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 type InstallMode = 'automatic' | 'manual'
-type LoaderType = 'Fabric' | 'Forge' | 'Quilt' | 'NeoForge'
+type LoaderType = 'Vanilla' | 'Fabric' | 'Forge' | 'Quilt' | 'NeoForge'
 
 export default function ModpackPage(): JSX.Element {
   const { modpack, common } = useLanguage()
   const [installMode, setInstallMode] = useState<InstallMode>('automatic')
-  const [loader, setLoader] = useState<LoaderType>('Fabric')
+  const [loader, setLoader] = useState<LoaderType>('Vanilla')
   const [mcVersion, setMcVersion] = useState('1.21.1')
   const [jarFileName, setJarFileName] = useState('')
   const [busy, setBusy] = useState(false)
@@ -150,6 +150,7 @@ export default function ModpackPage(): JSX.Element {
                   value={loader}
                   onChange={(v) => setLoader(v as LoaderType)}
                   options={[
+                    { value: 'Vanilla', label: 'Vanilla' },
                     { value: 'Fabric', label: 'Fabric' },
                     { value: 'Forge', label: 'Forge' },
                     { value: 'Quilt', label: 'Quilt' },

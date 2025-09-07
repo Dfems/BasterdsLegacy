@@ -56,6 +56,10 @@ const mockVersionsResponse = {
   versions: {
     minecraft: ['1.21.1', '1.21', '1.20.1'],
     loaders: {
+      Vanilla: {
+        label: 'Vanilla',
+        versions: { '1.21.1': '1.21.1', '1.21': '1.21', '1.20.1': '1.20.1' },
+      },
       Fabric: {
         label: 'Fabric',
         versions: { '1.21.1': 'latest', '1.21': 'latest', '1.20.1': 'latest' },
@@ -113,7 +117,7 @@ describe('ModpackPage', () => {
 
     await waitFor(
       () => {
-        const versionElements = screen.getAllByText(/Versione Fabric: latest/)
+        const versionElements = screen.getAllByText(/Versione Vanilla: 1.21.1/)
         expect(versionElements.length).toBeGreaterThan(0)
       },
       { timeout: 3000 }
@@ -234,7 +238,7 @@ describe('ModpackPage', () => {
     await waitFor(
       () => {
         const helperTexts = screen.getAllByText(
-          /Scaricherà automaticamente l'installer per Fabric 1\.21\.1/
+          /Scaricherà automaticamente l'installer per Vanilla 1\.21\.1/
         )
         expect(helperTexts.length).toBeGreaterThan(0)
       },

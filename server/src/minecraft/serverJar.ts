@@ -10,6 +10,30 @@ export type ServerJarStatus = {
   canStart: boolean
 }
 
+// Funzione helper per determinare il tipo in base al loader installato automaticamente
+const getJarTypeFromInstallation = (installationInfo?: {
+  mode?: string
+  loader?: string
+}): ServerJarStatus['jarType'] => {
+  if (installationInfo?.mode === 'automatic' && installationInfo.loader) {
+    switch (installationInfo.loader.toLowerCase()) {
+      case 'vanilla':
+        return 'vanilla'
+      case 'fabric':
+        return 'fabric'
+      case 'forge':
+        return 'forge'
+      case 'neoforge':
+        return 'neoforge'
+      case 'quilt':
+        return 'quilt'
+      default:
+        return 'custom'
+    }
+  }
+  return null
+}
+
 // Lista dei file JAR comuni per i server
 const COMMON_SERVER_JARS = [
   'server.jar',
@@ -32,7 +56,10 @@ const JAR_TYPE_PATTERNS = [
   { pattern: /server\.jar$/i, type: 'vanilla' as const },
 ]
 
-export const checkServerJarStatus = async (): Promise<ServerJarStatus> => {
+export const checkServerJarStatus = async (installationInfo?: {
+  mode?: string
+  loader?: string
+}): Promise<ServerJarStatus> => {
   try {
     // Verifica se la directory del server esiste
     await fsp.access(CONFIG.MC_DIR)
@@ -54,7 +81,12 @@ export const checkServerJarStatus = async (): Promise<ServerJarStatus> => {
 
     // Trova il JAR del server principale
     let serverJar: string | null = null
-    let jarType: ServerJarStatus['jarType'] = 'custom'
+    let jarType: ServerJarStatus['jarType'] = null
+
+    // Se abbiamo informazioni sull'installazione automatica, usale per determinare il tipo
+    if (installationInfo?.mode === 'automatic') {
+      jarType = getJarTypeFromInstallation(installationInfo)
+    }
 
     // Prima cerca i JAR comuni
     for (const commonJar of COMMON_SERVER_JARS) {
@@ -69,8 +101,9 @@ export const checkServerJarStatus = async (): Promise<ServerJarStatus> => {
       serverJar = jarFiles[0] ?? null
     }
 
-    // Determina il tipo di server dal nome del file
-    if (serverJar) {
+    // Se non abbiamo determinato il tipo dall'installazione, usa i pattern del nome file
+    if (!jarType && serverJar) {
+      jarType = 'custom' // Default
       for (const { pattern, type } of JAR_TYPE_PATTERNS) {
         if (pattern.test(serverJar)) {
           jarType = type

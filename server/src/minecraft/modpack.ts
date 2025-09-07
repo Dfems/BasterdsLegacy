@@ -8,7 +8,7 @@ import { CONFIG } from '../lib/config.js'
 
 export type InstallRequest = {
   mode: 'automatic' | 'manual'
-  loader?: 'Forge' | 'Fabric' | 'Quilt' | 'NeoForge'
+  loader?: 'Vanilla' | 'Forge' | 'Fabric' | 'Quilt' | 'NeoForge'
   mcVersion?: string
   jarFileName?: string
   manifest?: unknown
@@ -16,6 +16,26 @@ export type InstallRequest = {
 
 const EULA = 'eula.txt'
 const JVM_ARGS = 'user_jvm_args.txt'
+const INSTALLATION_INFO = '.installation_info.json'
+
+// Funzioni per gestire le informazioni sull'installazione
+const saveInstallationInfo = async (info: { mode: string; loader?: string }): Promise<void> => {
+  const file = path.join(CONFIG.MC_DIR, INSTALLATION_INFO)
+  await fsp.writeFile(file, JSON.stringify(info, null, 2), 'utf8')
+}
+
+export const loadInstallationInfo = async (): Promise<{
+  mode?: string
+  loader?: string
+} | null> => {
+  try {
+    const file = path.join(CONFIG.MC_DIR, INSTALLATION_INFO)
+    const content = await fsp.readFile(file, 'utf8')
+    return JSON.parse(content)
+  } catch {
+    return null
+  }
+}
 
 export const ensureEula = async (): Promise<void> => {
   const file = path.join(CONFIG.MC_DIR, EULA)
@@ -75,7 +95,36 @@ const runJavaJar = async (jarPath: string, args: string[], cwd: string): Promise
   })
 }
 
-// Installazione di Fabric
+// Installazione di Vanilla Minecraft
+const installVanilla = async (mcVersion: string, notes: string[]): Promise<void> => {
+  try {
+    const serverJar = path.join(CONFIG.MC_DIR, 'server.jar')
+    // URL del server vanilla per la versione specifica
+    const versionManifest = await fetch(
+      'https://launchermeta.mojang.com/mc/game/version_manifest.json'
+    )
+    const manifest = await versionManifest.json()
+
+    const versionInfo = manifest.versions.find((v: any) => v.id === mcVersion)
+    if (!versionInfo) {
+      throw new Error(`Versione Minecraft ${mcVersion} non trovata`)
+    }
+
+    const versionDetail = await fetch(versionInfo.url)
+    const versionData = await versionDetail.json()
+
+    if (!versionData.downloads?.server?.url) {
+      throw new Error(`Server JAR non disponibile per la versione ${mcVersion}`)
+    }
+
+    const serverUrl = versionData.downloads.server.url
+    await downloadToFile(serverUrl, serverJar)
+    notes.push(`Scaricato server.jar per Minecraft ${mcVersion}`)
+  } catch (e) {
+    notes.push(`Errore installazione Vanilla: ${(e as Error).message}`)
+    throw e
+  }
+}
 const installFabric = async (mcVersion: string, notes: string[]): Promise<void> => {
   const installerJar = path.join(CONFIG.MC_DIR, 'fabric-installer.jar')
   const url = 'https://maven.fabricmc.net/net/fabricmc/fabric-installer/latest/fabric-installer.jar'
@@ -237,6 +286,21 @@ export const getSupportedVersions = async (): Promise<{
   ]
 
   const loaders = {
+    Vanilla: {
+      label: 'Vanilla',
+      versions: {
+        '1.21.1': '1.21.1',
+        '1.21': '1.21',
+        '1.20.6': '1.20.6',
+        '1.20.4': '1.20.4',
+        '1.20.1': '1.20.1',
+        '1.19.4': '1.19.4',
+        '1.19.2': '1.19.2',
+        '1.18.2': '1.18.2',
+        '1.17.1': '1.17.1',
+        '1.16.5': '1.16.5',
+      },
+    },
     Fabric: {
       label: 'Fabric',
       versions: {
@@ -296,7 +360,9 @@ export const installModpack = async (
     await writeJvmArgs()
     await fsp.mkdir(CONFIG.MC_DIR, { recursive: true })
 
-    if (req.loader === 'Fabric') {
+    if (req.loader === 'Vanilla') {
+      await installVanilla(req.mcVersion, notes)
+    } else if (req.loader === 'Fabric') {
       await installFabric(req.mcVersion, notes)
     } else if (req.loader === 'Forge') {
       await installForge(req.mcVersion, notes)
@@ -316,6 +382,12 @@ export const installModpack = async (
   }
 
   notes.push('EULA e JVM args configurati.')
+
+  // Salva le informazioni dell'installazione per la detection del tipo
+  if (req.mode === 'automatic' && req.loader) {
+    await saveInstallationInfo({ mode: req.mode, loader: req.loader })
+  }
+
   return { ok: true, notes }
 }
 
@@ -360,7 +432,9 @@ export const installModpackWithProgress = async (
       await writeJvmArgs()
       await fsp.mkdir(CONFIG.MC_DIR, { recursive: true })
 
-      if (req.loader === 'Fabric') {
+      if (req.loader === 'Vanilla') {
+        await installVanillaWithProgress(req.mcVersion, sendProgress)
+      } else if (req.loader === 'Fabric') {
         await installFabricWithProgress(req.mcVersion, sendProgress)
       } else if (req.loader === 'Forge') {
         await installForgeWithProgress(req.mcVersion, sendProgress)
@@ -382,6 +456,12 @@ export const installModpackWithProgress = async (
     }
 
     sendProgress('EULA e JVM args configurati.')
+
+    // Salva le informazioni dell'installazione per la detection del tipo
+    if (req.mode === 'automatic' && req.loader) {
+      await saveInstallationInfo({ mode: req.mode, loader: req.loader })
+    }
+
     sendComplete('✅ Installazione modpack completata con successo!')
   } catch (error) {
     sendError((error as Error).message)
@@ -389,6 +469,42 @@ export const installModpackWithProgress = async (
 }
 
 // Versioni con progresso per le funzioni di installazione
+const installVanillaWithProgress = async (
+  mcVersion: string,
+  sendProgress: (msg: string) => void
+): Promise<void> => {
+  try {
+    const serverJar = path.join(CONFIG.MC_DIR, 'server.jar')
+
+    sendProgress('Ricerca versione Vanilla...')
+    const versionManifest = await fetch(
+      'https://launchermeta.mojang.com/mc/game/version_manifest.json'
+    )
+    const manifest = await versionManifest.json()
+
+    const versionInfo = manifest.versions.find((v: any) => v.id === mcVersion)
+    if (!versionInfo) {
+      throw new Error(`Versione Minecraft ${mcVersion} non trovata`)
+    }
+
+    sendProgress('Download informazioni versione...')
+    const versionDetail = await fetch(versionInfo.url)
+    const versionData = await versionDetail.json()
+
+    if (!versionData.downloads?.server?.url) {
+      throw new Error(`Server JAR non disponibile per la versione ${mcVersion}`)
+    }
+
+    sendProgress('Download server vanilla...')
+    const serverUrl = versionData.downloads.server.url
+    await downloadToFile(serverUrl, serverJar)
+    sendProgress(`Scaricato server.jar per Minecraft ${mcVersion}`)
+  } catch (e) {
+    sendProgress(`Errore installazione Vanilla: ${(e as Error).message}`)
+    throw e
+  }
+}
+
 const installFabricWithProgress = async (
   mcVersion: string,
   sendProgress: (msg: string) => void
