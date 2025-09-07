@@ -20,20 +20,23 @@ export const listBackups = async (): Promise<BackupInfo[]> => {
     await ensureDirs()
     const files = await fsp.readdir(CONFIG.BACKUP_DIR)
     const items: BackupInfo[] = []
-    
+
     for (const name of files) {
       if (!name.endsWith('.tar.gz')) continue
-      
+
       const full = path.join(CONFIG.BACKUP_DIR, name)
       try {
         const stat = await fsp.stat(full)
         items.push({ id: name, path: full, size: stat.size, createdAt: stat.mtimeMs })
       } catch (error) {
         // Ignora file che non possono essere letti (potrebbero essere stati cancellati nel frattempo)
-        console.warn(`Failed to stat backup file ${name}:`, error instanceof Error ? error.message : error)
+        console.warn(
+          `Failed to stat backup file ${name}:`,
+          error instanceof Error ? error.message : error
+        )
       }
     }
-    
+
     items.sort((a, b) => b.createdAt - a.createdAt)
     return items
   } catch (error) {
@@ -44,16 +47,16 @@ export const listBackups = async (): Promise<BackupInfo[]> => {
 
 const tarGzDir = async (srcDir: string, outFile: string, baseDir: string) => {
   await fsp.mkdir(path.dirname(outFile), { recursive: true })
-  
+
   const output = fs.createWriteStream(outFile)
   const archive = archiver('tar', {
     gzip: true,
     gzipOptions: { level: zlib.constants.Z_BEST_COMPRESSION },
   })
-  
+
   const done = new Promise<void>((resolve, reject) => {
     let completed = false
-    
+
     const cleanup = () => {
       if (!completed) {
         completed = true
@@ -64,30 +67,30 @@ const tarGzDir = async (srcDir: string, outFile: string, baseDir: string) => {
         }
       }
     }
-    
+
     output.on('close', () => {
       if (!completed) {
         completed = true
         resolve()
       }
     })
-    
+
     output.on('error', (err) => {
       cleanup()
       reject(new Error(`Output stream error: ${err.message}`))
     })
-    
+
     archive.on('error', (err) => {
       cleanup()
       reject(new Error(`Archive error: ${err.message}`))
     })
-    
+
     archive.on('warning', (err) => {
       // Log warnings but don't fail the operation
       console.warn('Archive warning:', err.message)
     })
   })
-  
+
   try {
     archive.pipe(output)
     archive.directory(srcDir, false, (entry) => {
@@ -120,7 +123,7 @@ export const createBackup = async (mode: 'full' | 'world'): Promise<BackupInfo> 
   try {
     // Verifica che la directory sorgente esista
     await fsp.access(src)
-    
+
     await tarGzDir(src, out, CONFIG.MC_DIR)
     const stat = await fsp.stat(out)
     return { id: name, path: out, size: stat.size, createdAt: stat.mtimeMs }
@@ -131,7 +134,7 @@ export const createBackup = async (mode: 'full' | 'world'): Promise<BackupInfo> 
     } catch {
       // Ignora errori di cleanup
     }
-    
+
     const errorMsg = error instanceof Error ? error.message : 'Unknown error'
     throw new Error(`Backup creation failed: ${errorMsg}`)
   }
@@ -140,35 +143,35 @@ export const createBackup = async (mode: 'full' | 'world'): Promise<BackupInfo> 
 export const restoreBackup = async (id: string): Promise<void> => {
   await ensureDirs()
   const file = path.join(CONFIG.BACKUP_DIR, id)
-  
+
   // Validazione input
   if (!id || typeof id !== 'string') {
     throw new Error('Invalid backup ID')
   }
-  
+
   // Controlla che il file esista
   try {
     await fsp.access(file)
   } catch {
     throw new Error(`Backup file not found: ${id}`)
   }
-  
+
   // Controlla che il file sia un backup valido (tar.gz)
   if (!id.endsWith('.tar.gz')) {
     throw new Error('Invalid backup file format')
   }
-  
+
   let serverWasStopped = false
-  
+
   try {
     // Stoppa il processo
     await processManager.stop()
     serverWasStopped = true
-    
+
     // Crea snapshot di sicurezza
     const snapDir = path.join(CONFIG.BACKUP_DIR, 'snapshots', `snap-${Date.now()}`)
     await fse.copy(CONFIG.MC_DIR, snapDir, { overwrite: true, errorOnExist: false })
-    
+
     // Svuota MC_DIR tranne backup dir
     const items = await fsp.readdir(CONFIG.MC_DIR)
     for (const it of items) {
@@ -176,27 +179,27 @@ export const restoreBackup = async (id: string): Promise<void> => {
       if (path.resolve(full) === path.resolve(CONFIG.BACKUP_DIR)) continue
       await fse.remove(full)
     }
-    
+
     // Estrai tar.gz nella root MC_DIR
     const extract = (await import('tar')).extract
     await extract({ file, cwd: CONFIG.MC_DIR, strict: true })
-    
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error'
-    
+
     // Sempre riavvia il server, anche se restore è fallito
     if (serverWasStopped) {
       try {
         await processManager.start()
       } catch (startError) {
-        const startErrorMsg = startError instanceof Error ? startError.message : 'Unknown start error'
+        const startErrorMsg =
+          startError instanceof Error ? startError.message : 'Unknown start error'
         throw new Error(`Restore failed: ${errorMsg}. Failed to restart server: ${startErrorMsg}`)
       }
     }
-    
+
     throw new Error(`Backup restore failed: ${errorMsg}`)
   }
-  
+
   // Riavvia il server se tutto è andato bene
   try {
     await processManager.start()

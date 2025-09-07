@@ -8,6 +8,7 @@ Pannello di controllo per server Minecraft con installazione automatica modpack 
 - **Console real-time**: Output del server in tempo reale via WebSocket
 - **Modpack automatico**: Installazione Fabric/Forge/NeoForge/Quilt con progresso real-time
 - **Stato JAR intelligente**: Rileva automaticamente il tipo di server installato
+- **Sistema di Backup Robusto**: Backup automatici con gestione errori completa
 - **Controlli di sicurezza**: Impedisce start senza JAR e cancellazione con server attivo
 
 ## Come Usare il Sistema
@@ -30,14 +31,22 @@ Pannello di controllo per server Minecraft con installazione automatica modpack 
   - Invio comandi
   - Controlli Start/Stop/Restart/Clear
 
-### 4. **Flusso Tipico**
+### 4. **Sistema di Backup**
+- **Pagina Backup**: Gestione completa backup del server
+- **Backup Tipi**: 
+  - `full`: Backup completo del server
+  - `world`: Backup solo della directory world (più veloce)
+- **Ripristino Sicuro**: Il server viene sempre riavviato dopo un restore
+- **Gestione Errori**: Cleanup automatico e garanzia di riavvio server
+
+### 5. **Flusso Tipico**
 1. Apri la Console → Vedi se c'è un JAR/Modpack
 2. Se manca, vai alla pagina Modpack → Installa
 3. Torna alla Console → Premi "Start"
 4. Monitora l'avvio in tempo reale
 5. Gestisci il server (comandi, stop, restart)
 
-### 5. **Protezioni di Sicurezza**
+### 6. **Protezioni di Sicurezza**
 - ❌ **Non puoi avviare** senza modpack installato
 - ❌ **Non puoi cancellare** modpack con server attivo
 - ✅ **Feedback real-time** su tutte le operazioni
@@ -96,8 +105,15 @@ Il sistema gestisce automaticamente:
 
 ### Variabili Ambiente
 
+**Server:**
 - `MC_DIR`: Directory server Minecraft (default: `./minecraft`)
 - `JAVA_BIN`: Eseguibile Java (default: `java`)
+
+**Backup:**
+- `BACKUP_DIR`: Directory backup (default: `MC_DIR/backups`)
+- `BACKUP_CRON`: Schedule retention automatica (default: `0 3 * * *`)
+- `RETENTION_DAYS`: Giorni retention backup (default: `7`)
+- `RETENTION_WEEKS`: Settimane retention backup (default: `4`)
 - `JWT_SECRET`: Segreto per autenticazione
 - `DATABASE_URL`: URL database Prisma
 

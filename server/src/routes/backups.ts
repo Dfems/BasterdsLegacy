@@ -31,14 +31,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     async (req, reply) => {
       try {
         const { mode } = (await req.body) as { mode?: 'full' | 'world' }
-        
+
         // Validazione input
         if (!mode || (mode !== 'full' && mode !== 'world')) {
           return reply.status(400).send({ error: 'Invalid mode. Must be "full" or "world"' })
         }
-        
+
         const b = await createBackup(mode)
-        
+
         try {
           await (
             await import('../lib/audit.js')
@@ -47,7 +47,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           // Log audit error but don't fail the request
           console.warn('Failed to log backup creation audit')
         }
-        
+
         return b
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'
@@ -66,14 +66,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     async (req, reply) => {
       try {
         const id = (req.params as { id?: string }).id
-        
+
         // Validazione input
         if (!id || typeof id !== 'string') {
           return reply.status(400).send({ error: 'Missing or invalid backup ID' })
         }
-        
+
         await restoreBackup(id)
-        
+
         try {
           await (
             await import('../lib/audit.js')
@@ -82,7 +82,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           // Log audit error but don't fail the request
           console.warn('Failed to log backup restore audit')
         }
-        
+
         return { ok: true }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'
