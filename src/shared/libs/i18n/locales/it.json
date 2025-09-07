@@ -189,6 +189,7 @@
         "cronInvalid": "Pattern cron non valido"
       },
       "messages": {
+        "loading": "Caricamento configurazione...",
         "updateSuccess": "Configurazione backup aggiornata con successo",
         "updateError": "Errore nell'aggiornamento della configurazione",
         "loadError": "Errore nel caricamento della configurazione"

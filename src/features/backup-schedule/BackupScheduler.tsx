@@ -155,7 +155,7 @@ export const BackupScheduler = (): JSX.Element => {
   if (isLoading) {
     return (
       <GlassCard p={{ base: 4, md: 6 }}>
-        <Text>{backups.schedule.messages.loadError}</Text>
+        <Text>{backups.schedule.messages.loading}</Text>
       </GlassCard>
     )
   }

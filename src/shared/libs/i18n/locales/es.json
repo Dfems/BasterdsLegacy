@@ -126,7 +126,75 @@
     "confirmDelete": "¿Eliminar copia de seguridad?",
     "creating": "Creando copia...",
     "restoring": "Restaurando...",
-    "noBackups": "No hay copias disponibles"
+    "noBackups": "No hay copias disponibles",
+    "schedule": {
+      "title": "Copias Automáticas",
+      "enabled": "Copias automáticas habilitadas",
+      "disabled": "Copias automáticas deshabilitadas",
+      "frequency": "Frecuencia",
+      "mode": "Modo de copia",
+      "time": "Hora",
+      "day": "Día",
+      "status": "Estado",
+      "nextRun": "Próxima copia",
+      "lastRun": "Última copia",
+      "configuration": "Configuración",
+      "presets": "Preajustes",
+      "custom": "Personalizada",
+      "enable": "Habilitar",
+      "disable": "Deshabilitar",
+      "save": "Guardar configuración",
+      "preset": {
+        "disabled": "Deshabilitado",
+        "daily_3am": "Diario a las 03:00",
+        "daily_2am": "Diario a las 02:00",
+        "every_2_days": "Cada 2 días",
+        "every_3_days": "Cada 3 días",
+        "weekly_monday": "Semanal (Lunes)",
+        "weekly_sunday": "Semanal (Domingo)",
+        "triple_daily": "3 veces al día"
+      },
+      "frequency_options": {
+        "daily": "Diario",
+        "every_2_days": "Cada 2 días",
+        "every_3_days": "Cada 3 días",
+        "weekly": "Semanal",
+        "custom": "Personalizado"
+      },
+      "mode_options": {
+        "full": "Copia completa",
+        "world": "Solo mundo"
+      },
+      "day_options": {
+        "0": "Domingo",
+        "1": "Lunes",
+        "2": "Martes",
+        "3": "Miércoles",
+        "4": "Jueves",
+        "5": "Viernes",
+        "6": "Sábado"
+      },
+      "help": {
+        "frequency": "Elige con qué frecuencia ejecutar copias automáticas",
+        "mode": "Copia completa incluye todo el servidor, Solo mundo incluye archivos del mundo",
+        "time": "Hora de ejecución de la copia (formato 24h)",
+        "day": "Día de la semana para copias semanales",
+        "custom": "Usar patrón cron personalizado (ej. '0 3 * * *' para diario a las 3:00)"
+      },
+      "validation": {
+        "timeRequired": "Hora requerida",
+        "timeInvalid": "Hora inválida (usar formato HH:MM)",
+        "dayRequired": "Día requerido para copias semanales",
+        "cronRequired": "Patrón cron requerido para configuración personalizada",
+        "cronInvalid": "Patrón cron inválido"
+      },
+      "messages": {
+        "loading": "Cargando configuración...",
+        "updateSuccess": "Configuración de copias actualizada exitosamente",
+        "updateError": "Error al actualizar configuración",
+        "loadError": "Error al cargar configuración"
+      }
+    }
   },
   "settings": {
     "title": "Ajustes",

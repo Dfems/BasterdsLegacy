@@ -214,6 +214,7 @@ export const useTranslation = (): UseTranslationReturnType => {
           cronInvalid: '',
         },
         messages: {
+          loading: '',
           updateSuccess: '',
           updateError: '',
           loadError: '',

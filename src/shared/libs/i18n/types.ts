@@ -192,6 +192,7 @@ export type TranslationKey = {
         cronInvalid: string
       }
       messages: {
+        loading: string
         updateSuccess: string
         updateError: string
         loadError: string
