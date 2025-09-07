@@ -85,7 +85,9 @@ const getSystemMemory = (): { totalGB: number; freeGB: number; usedGB: number } 
 }
 
 // Funzione per ottenere il tick time del server in millisecondi via RCON
-const getServerTickTime = async (isRunning: boolean): Promise<{ tickTimeMs: number; rconAvailable: boolean }> => {
+const getServerTickTime = async (
+  isRunning: boolean
+): Promise<{ tickTimeMs: number; rconAvailable: boolean }> => {
   if (!isRunning) {
     return { tickTimeMs: 0, rconAvailable: rconEnabled() } // Server non in esecuzione
   }
@@ -159,12 +161,14 @@ const parseTickTimeFromOutput = (output: string): number | null => {
       if (!isNaN(value)) {
         // I primi due pattern sono già in millisecondi
         if (i <= 1) {
-          if (value >= 0 && value <= 1000) { // Tick time ragionevole
+          if (value >= 0 && value <= 1000) {
+            // Tick time ragionevole
             return Math.round(value * 100) / 100 // Arrotonda a 2 decimali
           }
         } else {
           // Pattern successivi sono TPS, converti a tick time (ms)
-          if (value >= 0 && value <= 20) { // TPS ragionevole
+          if (value >= 0 && value <= 20) {
+            // TPS ragionevole
             const tickTimeMs = value > 0 ? 1000 / value : 1000
             return Math.round(tickTimeMs * 100) / 100 // Arrotonda a 2 decimali
           }
@@ -186,7 +190,11 @@ const getFallbackTickTime = (): number => {
 }
 
 // Funzione per ottenere il numero di giocatori online via RCON
-const getPlayerCount = async (): Promise<{ online: number; max: number; rconAvailable: boolean }> => {
+const getPlayerCount = async (): Promise<{
+  online: number
+  max: number
+  rconAvailable: boolean
+}> => {
   const rconAvailable = rconEnabled()
 
   // Se RCON è abilitato, prova a ottenere i dati reali
