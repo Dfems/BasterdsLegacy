@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
