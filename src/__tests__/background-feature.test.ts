@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { useUiSettings } from '@/shared/hooks/useUiSettings'
 
@@ -8,7 +8,8 @@ global.fetch = vi.fn()
 // Mock AuthContext
 vi.mock('@/entities/user/AuthContext', () => ({
   default: {
-    Consumer: ({ children }: any) => children({ role: 'owner' }),
+    Consumer: ({ children }: { children: (value: { role: string }) => unknown }) =>
+      children({ role: 'owner' }),
   },
 }))
 

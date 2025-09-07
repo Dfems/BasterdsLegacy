@@ -152,7 +152,8 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
 
         return { success: true, filename }
       } catch (error) {
-        fastify.log.error('Error uploading background image:', error)
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        fastify.log.error('Error uploading background image: ' + errorMessage)
         if (
           error &&
           typeof error === 'object' &&
