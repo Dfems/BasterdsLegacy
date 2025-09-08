@@ -9,7 +9,7 @@ import pidusage from 'pidusage'
 import { CONFIG } from '../lib/config.js'
 import { appendLog } from './logs.js'
 import { loadInstallationInfo } from './modpack.js'
-import { rconEnabled, rconExec } from './rcon.js'
+import { rconEnabled, rconExec, disconnectRcon } from './rcon.js'
 import { checkServerJarStatus } from './serverJar.js'
 
 export type ProcState = 'RUNNING' | 'STOPPED' | 'CRASHED'
@@ -99,39 +99,42 @@ const getServerTickTime = async (
 
   // Se RCON è abilitato, prova a ottenere il TPS reale
   if (rconAvailable) {
-    try {
-      // Prova diversi comandi per ottenere il TPS a seconda del tipo di server
-      let tpsOutput = ''
+    // Lista di comandi da provare in ordine
+    const commands = [
+      { cmd: 'forge tps', description: 'Forge TPS command' },
+      { cmd: 'tps', description: 'Generic TPS command' },
+      { cmd: 'spark tps', description: 'Spark profiler TPS' },
+      { cmd: 'mspt', description: 'MSPT command (Paper/Spigot)' },
+      { cmd: 'debug start', description: 'Vanilla debug start', followup: 'debug stop' },
+    ]
 
+    for (const { cmd, description, followup } of commands) {
       try {
-        // Prova prima con /forge tps (per server Forge)
-        tpsOutput = await rconExec('forge tps')
-      } catch {
-        try {
-          // Prova con /tps (per alcuni plugin/mod)
-          tpsOutput = await rconExec('tps')
-        } catch {
-          try {
-            // Prova con /minecraft:debug start per server vanilla
-            await rconExec('debug start')
-            // Aspetta un momento per la raccolta dati
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            tpsOutput = await rconExec('debug stop')
-          } catch {
-            // Se tutti i comandi falliscono, usa il fallback
-            return { tickTimeMs: getFallbackTickTime(), rconAvailable }
-          }
-        }
-      }
+        console.log(`[RCON] Trying ${description}: ${cmd}`)
+        let tpsOutput = await rconExec(cmd)
 
-      // Parse della risposta per estrarre il tick time
-      const tickTimeMs = parseTickTimeFromOutput(tpsOutput)
-      if (tickTimeMs !== null) {
-        return { tickTimeMs, rconAvailable }
+        // Se è un comando debug, aspetta e fai il followup
+        if (followup) {
+          console.log(`[RCON] Waiting 2 seconds for debug data collection...`)
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+          tpsOutput = await rconExec(followup)
+        }
+
+        // Parse della risposta per estrarre il tick time
+        const tickTimeMs = parseTickTimeFromOutput(tpsOutput)
+        if (tickTimeMs !== null && tickTimeMs > 0) {
+          console.log(`[RCON] Successfully got tick time: ${tickTimeMs}ms from ${description}`)
+          return { tickTimeMs, rconAvailable }
+        } else {
+          console.log(`[RCON] ${description} didn't return valid tick time`)
+        }
+      } catch (error) {
+        console.warn(`[RCON] ${description} failed:`, error)
+        // Continue to next command
       }
-    } catch {
-      // Se RCON fallisce, usa il fallback
     }
+
+    console.log('[RCON] All tick time commands failed, using fallback')
   }
 
   // Fallback: simula tick time realistici con una leggera variazione
@@ -140,47 +143,87 @@ const getServerTickTime = async (
 
 // Funzione per parsare il tick time dall'output di diversi comandi
 const parseTickTimeFromOutput = (output: string): number | null => {
+  if (!output || typeof output !== 'string') {
+    return null
+  }
+
+  // Normalizza l'output rimuovendo prefissi di logging
+  const cleanOutput = output
+    .replace(/\[.*?\]\s*/g, '') // Rimuove timestamp e level [INFO], [WARN], etc.
+    .replace(/.*?thread\/\w+\]:\s*/g, '') // Rimuove "Server thread/INFO]:"
+    .trim()
+
+  console.log(`[RCON] Parsing tick time from: "${cleanOutput}"`)
+
   // Pattern per diversi formati di output tick time e TPS
   const patterns = [
     // Tick time diretto: "Average tick time: 50.0 ms" o "Avg tick: 0.221 ms"
-    /(?:Average tick time|Avg tick):\s*(\d+\.?\d*)\s*ms/i,
+    {
+      regex: /(?:Average tick time|Avg tick):\s*(\d+\.?\d*)\s*ms/i,
+      type: 'direct_ms',
+      converter: (value: number) => value,
+    },
     // Debug output con tick time: "Average tick time: 50.0 ms (20.0 TPS)"
-    /Average tick time:\s*(\d+\.?\d*)\s*ms/i,
+    {
+      regex: /Average tick time:\s*(\d+\.?\d*)\s*ms(?:\s*\([^)]*\))?/i,
+      type: 'debug_ms',
+      converter: (value: number) => value,
+    },
     // Forge TPS con conversione: "Overall: 20.0 TPS" o "Mean TPS: 20.0"
-    /(?:Overall|Mean|TPS).*?(\d+\.?\d*)\s*TPS/i,
+    {
+      regex: /(?:Overall|Mean|TPS).*?(\d+\.?\d*)\s*TPS/i,
+      type: 'tps_conversion',
+      converter: (value: number) => (value > 0 ? 1000 / value : 1000),
+    },
     // Debug output con TPS tra parentesi: "(20.0 TPS)" - converti a tick time
-    /\((\d+\.?\d*)\s*TPS\)/i,
+    {
+      regex: /\((\d+\.?\d*)\s*TPS\)/i,
+      type: 'tps_parentheses',
+      converter: (value: number) => (value > 0 ? 1000 / value : 1000),
+    },
     // Semplice numero con TPS - converti a tick time
-    /(\d+\.?\d*)\s*TPS/i,
-    // Solo numero (assumendo sia TPS) - converti a tick time
-    /^(\d+\.?\d*)$/,
+    {
+      regex: /(\d+\.?\d*)\s*TPS/i,
+      type: 'simple_tps',
+      converter: (value: number) => (value > 0 ? 1000 / value : 1000),
+    },
+    // Pattern per server specifici con formato Bukkit/Spigot/Paper
+    {
+      regex: /TPS from last 1m, 5m, 15m: (\d+\.?\d*),/i,
+      type: 'bukkit_tps',
+      converter: (value: number) => (value > 0 ? 1000 / value : 1000),
+    },
+    // Pattern per Fabric/Quilt
+    {
+      regex: /Server tick time: (\d+\.?\d*) ms/i,
+      type: 'fabric_ms',
+      converter: (value: number) => value,
+    },
   ]
 
-  for (let i = 0; i < patterns.length; i++) {
-    const pattern = patterns[i]
-    if (!pattern) continue
-    const match = output.match(pattern)
+  for (const { regex, type, converter } of patterns) {
+    const match = cleanOutput.match(regex)
     if (match && match[1]) {
       const value = parseFloat(match[1])
-      if (!isNaN(value)) {
-        // I primi due pattern sono già in millisecondi
-        if (i <= 1) {
-          if (value >= 0 && value <= 1000) {
-            // Tick time ragionevole
-            return Math.round(value * 100) / 100 // Arrotonda a 2 decimali
-          }
+      if (!isNaN(value) && value >= 0) {
+        const tickTimeMs = converter(value)
+
+        // Validazione del risultato
+        if (tickTimeMs >= 0 && tickTimeMs <= 5000) {
+          // Tick time ragionevole (0-5000ms)
+          const result = Math.round(tickTimeMs * 100) / 100
+          console.log(`[RCON] Parsed tick time: ${result}ms (pattern: ${type}, raw: ${value})`)
+          return result
         } else {
-          // Pattern successivi sono TPS, converti a tick time (ms)
-          if (value >= 0 && value <= 20) {
-            // TPS ragionevole
-            const tickTimeMs = value > 0 ? 1000 / value : 1000
-            return Math.round(tickTimeMs * 100) / 100 // Arrotonda a 2 decimali
-          }
+          console.warn(
+            `[RCON] Invalid tick time calculated: ${tickTimeMs}ms from ${value} (pattern: ${type})`
+          )
         }
       }
     }
   }
 
+  console.warn(`[RCON] No valid tick time found in output: "${cleanOutput}"`)
   return null
 }
 
@@ -204,22 +247,43 @@ const getPlayerCount = async (): Promise<{
   // Se RCON è abilitato, prova a ottenere i dati reali
   if (rconAvailable) {
     try {
+      console.log('[RCON] Getting player count with /list command')
       const listOutput = await rconExec('list')
-      // Output tipico: "There are 2 of a max of 20 players online: player1, player2"
-      const match = listOutput.match(/There are (\d+) of a max of (\d+) players online/)
-      if (match && match[1] && match[2]) {
-        const online = parseInt(match[1], 10)
-        const max = parseInt(match[2], 10)
-        if (!isNaN(online) && !isNaN(max)) {
-          return { online, max, rconAvailable }
+
+      console.log(`[RCON] List output: "${listOutput}"`)
+
+      // Pattern multipli per diversi formati di output
+      const patterns = [
+        // Formato standard: "There are 2 of a max of 20 players online: player1, player2"
+        /There are (\d+) of a max of (\d+) players online/i,
+        // Formato alternativo: "2/20 players online"
+        /(\d+)\/(\d+) players online/i,
+        // Formato Bukkit/Spigot: "Online players (2/20): player1, player2"
+        /Online players \((\d+)\/(\d+)\)/i,
+        // Formato con solo numeri: "Players online: 2 (max: 20)"
+        /Players online:\s*(\d+).*?max:\s*(\d+)/i,
+      ]
+
+      for (const pattern of patterns) {
+        const match = listOutput.match(pattern)
+        if (match && match[1] && match[2]) {
+          const online = parseInt(match[1], 10)
+          const max = parseInt(match[2], 10)
+          if (!isNaN(online) && !isNaN(max) && online >= 0 && max > 0) {
+            console.log(`[RCON] Player count parsed: ${online}/${max}`)
+            return { online, max, rconAvailable }
+          }
         }
       }
-    } catch {
-      // Se RCON fallisce, usa il fallback
+
+      console.warn('[RCON] Could not parse player count from list output')
+    } catch (error) {
+      console.error('[RCON] Player count command failed:', error)
     }
   }
 
   // Fallback: valori simulati
+  console.log('[RCON] Using fallback player count')
   return { online: 0, max: 20, rconAvailable }
 }
 
@@ -375,9 +439,17 @@ class ProcessManager extends EventEmitter {
         proc.off('exit', onExit)
       }
 
-      const onExit = () => {
+      const onExit = async () => {
         exited = true
         clearAll()
+
+        // Cleanup RCON connection quando il server si ferma
+        try {
+          await disconnectRcon()
+        } catch (error) {
+          console.warn('[Process] Error during RCON cleanup:', error)
+        }
+
         resolve()
       }
 
