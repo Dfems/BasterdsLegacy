@@ -9,7 +9,7 @@ import pidusage from 'pidusage'
 import { CONFIG } from '../lib/config.js'
 import { appendLog } from './logs.js'
 import { loadInstallationInfo } from './modpack.js'
-import { rconEnabled, rconExec, disconnectRcon } from './rcon.js'
+import { disconnectRcon, rconEnabled, rconExec } from './rcon.js'
 import { checkServerJarStatus } from './serverJar.js'
 
 export type ProcState = 'RUNNING' | 'STOPPED' | 'CRASHED'
@@ -21,57 +21,71 @@ const isWindows = os.platform() === 'win32'
 
 const execAsync = promisify(exec)
 
-// Funzione per ottenere l'utilizzo del disco
+// Cache ultimo risultato disco per evitare fluttuazioni casuali in fallback
+let lastDiskUsage: { usedGB: number; totalGB: number; freeGB: number } | null = null
+
+// Funzione per ottenere l'utilizzo del disco (cross-platform) con fallback stabile
 const getDiskUsage = async (
   dirPath: string
 ): Promise<{ usedGB: number; totalGB: number; freeGB: number }> => {
   try {
     if (isWindows) {
-      // Su Windows usa WMIC
-      const drive = path.parse(path.resolve(dirPath)).root.slice(0, 2)
-      const { stdout } = await execAsync(
-        `wmic LogicalDisk where Caption="${drive}" get Size,FreeSpace /format:csv`
-      )
-      const lines = stdout.split('\n').filter((line: string) => line.includes(','))
-      if (lines.length > 0 && lines[0]) {
-        const columns = lines[0].split(',')
-        const freeSpace = columns[2]
-        const size = columns[3]
-        if (!freeSpace || !size) return { totalGB: 0, usedGB: 0, freeGB: 0 }
-        const totalBytes = parseInt(size, 10)
-        const freeBytes = parseInt(freeSpace, 10)
-        const usedBytes = totalBytes - freeBytes
-        return {
-          totalGB: Math.round((totalBytes / 1024 ** 3) * 10) / 10,
-          freeGB: Math.round((freeBytes / 1024 ** 3) * 10) / 10,
-          usedGB: Math.round((usedBytes / 1024 ** 3) * 10) / 10,
+      // Usa WMIC (deprecated ma ancora disponibile) in formato CSV e parse robusto
+      const root = path.parse(path.resolve(dirPath)).root // es: C:\
+      const driveId = root.replace(/\\$/, '') // C:
+      const { stdout } = await execAsync('wmic logicaldisk get size,freespace,caption /format:csv')
+      const lines = stdout
+        .split(/\r?\n/)
+        .map((l: string) => l.trim())
+        .filter((l: string) => l && l.includes(','))
+
+      // Cerca la linea con la Caption corretta (Node,Caption,FreeSpace,Size)
+      for (const line of lines) {
+        const columns = line.split(',')
+        if (columns.length < 4) continue
+        const caption = columns[1]
+        const freeSpaceStr = columns[2]
+        const sizeStr = columns[3]
+        if (!caption || !freeSpaceStr || !sizeStr) continue
+        if (caption === driveId && /\d/.test(freeSpaceStr) && /\d/.test(sizeStr)) {
+          const totalBytes = parseInt(sizeStr, 10)
+          const freeBytes = parseInt(freeSpaceStr, 10)
+          if (!isNaN(totalBytes) && !isNaN(freeBytes) && totalBytes > 0 && freeBytes >= 0) {
+            const usedBytes = totalBytes - freeBytes
+            const usage = {
+              totalGB: Math.round((totalBytes / 1024 ** 3) * 10) / 10,
+              freeGB: Math.round((freeBytes / 1024 ** 3) * 10) / 10,
+              usedGB: Math.round((usedBytes / 1024 ** 3) * 10) / 10,
+            }
+            lastDiskUsage = usage
+            return usage
+          }
         }
       }
     } else {
-      // Su Linux usa df
+      // Linux / Unix: usa df -BG
       const { stdout } = await execAsync(`df -BG "${path.resolve(dirPath)}" | tail -1`)
       const parts = stdout.trim().split(/\s+/)
       if (parts.length >= 4 && parts[1] && parts[2] && parts[3]) {
         const totalGB = parseInt(parts[1].replace('G', ''), 10)
         const usedGB = parseInt(parts[2].replace('G', ''), 10)
         const freeGB = parseInt(parts[3].replace('G', ''), 10)
-        return { totalGB, usedGB, freeGB }
+        if (!isNaN(totalGB) && !isNaN(usedGB) && !isNaN(freeGB)) {
+          const usage = { totalGB, usedGB, freeGB }
+          lastDiskUsage = usage
+          return usage
+        }
       }
     }
   } catch {
-    // Fallback: prova a usare statfs se disponibile o restituisci dati simulati
-    try {
-      await fsp.stat(path.resolve(dirPath))
-      // Simula dati realistici se non riusciamo ad ottenere le info reali
-      const totalGB = 100 // Simula 100GB di spazio totale
-      const usedGB = Math.round(Math.random() * 60 + 10) // 10-70GB usati
-      const freeGB = totalGB - usedGB
-      return { totalGB, usedGB, freeGB }
-    } catch {
-      return { totalGB: 0, usedGB: 0, freeGB: 0 }
-    }
+    // ignora e passa al fallback
   }
-  return { totalGB: 0, usedGB: 0, freeGB: 0 }
+
+  // Fallback stabile: riusa ultimo valore valido oppure stima fissa
+  if (lastDiskUsage) return lastDiskUsage
+  const fallback = { totalGB: 0, usedGB: 0, freeGB: 0 }
+  lastDiskUsage = fallback
+  return fallback
 }
 
 // Funzione per ottenere statistiche di memoria del sistema
@@ -199,6 +213,18 @@ const parseTickTimeFromOutput = (output: string): number | null => {
       type: 'fabric_ms',
       converter: (value: number) => value,
     },
+    // Pattern vanilla debug profiling: "(20.61 ticks per second)"
+    {
+      regex: /\((\d+\.?\d*)\s*ticks per second\)/i,
+      type: 'ticks_per_second_parentheses',
+      converter: (value: number) => (value > 0 ? 1000 / value : 1000),
+    },
+    // Pattern frase diretta senza parentesi: "20.61 ticks per second"
+    {
+      regex: /(\d+\.?\d*)\s*ticks per second/i,
+      type: 'ticks_per_second_phrase',
+      converter: (value: number) => (value > 0 ? 1000 / value : 1000),
+    },
   ]
 
   for (const { regex, type, converter } of patterns) {
@@ -224,6 +250,24 @@ const parseTickTimeFromOutput = (output: string): number | null => {
   }
 
   console.warn(`[RCON] No valid tick time found in output: "${cleanOutput}"`)
+  // Fallback extra: calcola da "Stopped tick profiling after X seconds and Y ticks" se disponibile
+  const debugMatch = cleanOutput.match(
+    /Stopped tick profiling after (\d+\.?\d*) seconds and (\d+) ticks/i
+  )
+  if (debugMatch && debugMatch[1] && debugMatch[2]) {
+    const seconds = parseFloat(debugMatch[1])
+    const ticks = parseInt(debugMatch[2], 10)
+    if (!isNaN(seconds) && !isNaN(ticks) && ticks > 0) {
+      const avgMs = (seconds * 1000) / ticks
+      if (avgMs >= 0 && avgMs <= 5000) {
+        const result = Math.round(avgMs * 100) / 100
+        console.log(
+          `[RCON] Derived tick time from debug profiling: ${result}ms (seconds=${seconds}, ticks=${ticks})`
+        )
+        return result
+      }
+    }
+  }
   return null
 }
 
@@ -312,6 +356,7 @@ class ProcessManager extends EventEmitter {
   private proc: ChildProcessWithoutNullStreams | null = null
   private _state: ProcState = 'STOPPED'
   private startedAt: number | null = null
+  private cpuSamples: number[] = [] // per smoothing
 
   get state() {
     return this._state
@@ -519,12 +564,17 @@ class ProcessManager extends EventEmitter {
 
     try {
       const stat = await pidusage(pid)
+      const rawCpu = typeof stat.cpu === 'number' ? stat.cpu : 0
+      // Clamp e smoothing (media ultimi 5 campioni)
+      this.cpuSamples.push(Math.max(0, Math.min(100, rawCpu)))
+      if (this.cpuSamples.length > 5) this.cpuSamples.shift()
+      const cpuAvg = this.cpuSamples.reduce((acc, v) => acc + v, 0) / (this.cpuSamples.length || 1)
+      const memBytes = typeof stat.memory === 'number' ? stat.memory : 0
+      const memMB = Math.max(0, Math.round(memBytes / (1024 * 1024)))
       return {
         ...base,
-        cpu: stat.cpu, // pidusage già restituisce la percentuale (0-100)
-        memMB: Math.round(stat.memory / (1024 * 1024)), // Process Memory: memoria del processo server in MB
-        // Tick Time: tempo medio per tick in millisecondi, ottenuto via RCON (forge tps, tps, debug) con fallback simulato
-        // Players: ottenuti via RCON (list command) con fallback simulato
+        cpu: Math.round(cpuAvg * 10) / 10, // una cifra decimale
+        memMB,
       }
     } catch {
       return { ...base, cpu: 0, memMB: 0 }

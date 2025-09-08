@@ -91,9 +91,9 @@ const DashboardPage = (): JSX.Element => {
     Error
   >({
     mutationFn: async () => {
+      // Non inviare Content-Type: application/json senza body: Fastify risponderebbe 400 (empty JSON body)
       const r = await fetch('/api/settings/enable-rcon', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
       })
       if (!r.ok) throw new Error('Failed to enable RCON')
       return await r.json()
