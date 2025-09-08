@@ -18,7 +18,6 @@ export const useUiSettings = () => {
         throw new Error('Failed to fetch UI settings')
       }
       const data = (await response.json()) as UiSettings
-      console.log('UiSettings fetched:', data) // Debug log
       setSettings(data)
     } catch (err) {
       setError((err as Error).message)
