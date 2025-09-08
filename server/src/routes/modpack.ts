@@ -9,6 +9,11 @@ import {
   type InstallRequest,
 } from '../minecraft/modpack.js'
 
+// Extended request type for user information
+type ExtendedRequest = {
+  user?: JwtPayload
+}
+
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
   // WebSocket per installazione modpack real-time
   fastify.get('/ws/modpack-install', { websocket: true }, async (socket: WebSocket, req) => {
@@ -20,7 +25,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         return
       }
       const payload = await fastify.jwt.verify<JwtPayload>(token)
-      ;(req as any).user = payload
+      ;(req as ExtendedRequest).user = payload
     } catch {
       socket.close(1008, 'Unauthorized')
       return
@@ -51,7 +56,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     {
       preHandler: fastify.authorize('user'),
     },
-    async (_req, reply) => {
+    async (_req, _reply) => {
       const versions = await getSupportedVersions()
       return { ok: true, versions }
     }

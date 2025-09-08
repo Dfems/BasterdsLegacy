@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# Husky v9: rimosso sourcing deprecato _/husky.sh (messaggio "husky - DEPRECATED").
+set -e
 
-npm run format
-npm run lint
+npx lint-staged
 npm run type-check
 npm run test

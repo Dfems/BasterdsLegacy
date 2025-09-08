@@ -11,6 +11,7 @@ import { authPlugin } from './lib/auth.js'
 import { CONFIG } from './lib/config.js'
 import { checkJavaBin } from './lib/java.js'
 import { loggerOptions } from './lib/logger.js'
+import { initAutoBackup } from './minecraft/auto-backup.js'
 import { authRoutes } from './routes/auth.js'
 import { backupRoutes } from './routes/backups.js'
 import { consoleRoutes } from './routes/console.js'
@@ -50,6 +51,9 @@ export const buildApp = () => {
   app.register(serverRoutes)
   app.register(settingsRoutes)
   app.register(usersRoutes)
+
+  // Inizializza il sistema di backup automatico
+  initAutoBackup()
 
   return app
 }

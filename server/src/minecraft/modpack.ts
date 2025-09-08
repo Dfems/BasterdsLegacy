@@ -6,6 +6,14 @@ import path from 'node:path'
 
 import { CONFIG } from '../lib/config.js'
 
+type ManifestVersion = {
+  id: string
+  type: string
+  url: string
+  time: string
+  releaseTime: string
+}
+
 export type InstallRequest = {
   mode: 'automatic' | 'manual'
   loader?: 'Vanilla' | 'Forge' | 'Fabric' | 'Quilt' | 'NeoForge'
@@ -105,7 +113,7 @@ const installVanilla = async (mcVersion: string, notes: string[]): Promise<void>
     )
     const manifest = await versionManifest.json()
 
-    const versionInfo = manifest.versions.find((v: any) => v.id === mcVersion)
+    const versionInfo = manifest.versions.find((v: ManifestVersion) => v.id === mcVersion)
     if (!versionInfo) {
       throw new Error(`Versione Minecraft ${mcVersion} non trovata`)
     }
@@ -228,7 +236,7 @@ const installFromCustomJar = async (jarFileName: string, notes: string[]): Promi
         notes.push(`Installato usando argomenti: ${args}`)
         installed = true
         break
-      } catch (e) {
+      } catch (_e) {
         notes.push(`Tentativo con argomenti '${args}' fallito`)
       }
     }
@@ -391,10 +399,15 @@ export const installModpack = async (
   return { ok: true, notes }
 }
 
+type WebSocketLike = {
+  send: (data: string) => void
+  close: () => void
+}
+
 // Versione con WebSocket per progresso real-time
 export const installModpackWithProgress = async (
   req: InstallRequest,
-  ws: any // WebSocket type
+  ws: WebSocketLike
 ): Promise<void> => {
   const sendProgress = (message: string) => {
     try {
@@ -482,7 +495,7 @@ const installVanillaWithProgress = async (
     )
     const manifest = await versionManifest.json()
 
-    const versionInfo = manifest.versions.find((v: any) => v.id === mcVersion)
+    const versionInfo = manifest.versions.find((v: ManifestVersion) => v.id === mcVersion)
     if (!versionInfo) {
       throw new Error(`Versione Minecraft ${mcVersion} non trovata`)
     }
@@ -629,7 +642,7 @@ const installFromCustomJarWithProgress = async (
         sendProgress(`Installato usando argomenti: ${args}`)
         installed = true
         break
-      } catch (e) {
+      } catch (_e) {
         sendProgress(`Tentativo con argomenti '${args}' fallito`)
       }
     }

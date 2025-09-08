@@ -154,20 +154,23 @@ export default function SettingsPage(): JSX.Element {
         >
           <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
             <RadioGroup.Item value="system">
-              <RadioGroup.ItemControl />
+              <RadioGroup.ItemHiddenInput />
+              <RadioGroup.ItemIndicator />
               <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                 {settings.theme.system}
               </RadioGroup.ItemText>{' '}
               {/* Font size responsive */}
             </RadioGroup.Item>
             <RadioGroup.Item value="dark">
-              <RadioGroup.ItemControl />
+              <RadioGroup.ItemHiddenInput />
+              <RadioGroup.ItemIndicator />
               <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                 {settings.theme.dark}
               </RadioGroup.ItemText>
             </RadioGroup.Item>
             <RadioGroup.Item value="light">
-              <RadioGroup.ItemControl />
+              <RadioGroup.ItemHiddenInput />
+              <RadioGroup.ItemIndicator />
               <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
                 {settings.theme.light}
               </RadioGroup.ItemText>

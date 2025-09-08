@@ -112,7 +112,32 @@
     "crashed": "Crash",
     "unknown": "Sconosciuto",
     "operationStarted": "Operazione {action} avviata",
-    "operationError": "Errore {action}: {error}"
+    "operationError": "Errore {action}: {error}",
+    "systemMemory": "RAM del Sistema",
+    "diskStorage": "Archiviazione",
+    "tps": "TPS del Server",
+    "tickTime": "Tick del Server",
+    "playersOnline": "Giocatori Online",
+    "processMemory": "Memoria del Processo",
+    "used": "Usata",
+    "free": "Libera",
+    "total": "Totale",
+    "utilized": "utilizzata",
+    "utilized_masculine": "utilizzato",
+    "notAvailable": "Non disponibile",
+    "checkingSpace": "Controllo spazio...",
+    "perfect": "Perfetto",
+    "good": "Buono",
+    "acceptable": "Accettabile",
+    "slow": "Lento",
+    "online": "Online",
+    "offline": "Offline",
+    "rconRequired": "Richiede RCON",
+    "enableRcon": "Attiva RCON",
+    "rconEnabled": "RCON attivato con successo.",
+    "rconEnableError": "Errore nell'attivazione RCON: {error}",
+    "restartRequired": "Riavvio necessario per applicare le modifiche RCON",
+    "restartServer": "Riavvia Server"
   },
   "files": {
     "title": "File",
@@ -142,7 +167,75 @@
     "confirmDelete": "Eliminare il backup?",
     "creating": "Creazione backup...",
     "restoring": "Ripristino...",
-    "noBackups": "Nessun backup disponibile"
+    "noBackups": "Nessun backup disponibile",
+    "schedule": {
+      "title": "Backup Automatici",
+      "enabled": "Backup automatici abilitati",
+      "disabled": "Backup automatici disabilitati",
+      "frequency": "Frequenza",
+      "mode": "Modalità backup",
+      "time": "Orario",
+      "day": "Giorno",
+      "status": "Stato",
+      "nextRun": "Prossimo backup",
+      "lastRun": "Ultimo backup",
+      "configuration": "Configurazione",
+      "presets": "Preset",
+      "custom": "Personalizzata",
+      "enable": "Abilita",
+      "disable": "Disabilita",
+      "save": "Salva configurazione",
+      "preset": {
+        "disabled": "Disabilitato",
+        "daily_3am": "Giornaliero alle 03:00",
+        "daily_2am": "Giornaliero alle 02:00",
+        "every_2_days": "Ogni 2 giorni",
+        "every_3_days": "Ogni 3 giorni",
+        "weekly_monday": "Settimanale (Lunedì)",
+        "weekly_sunday": "Settimanale (Domenica)",
+        "triple_daily": "3 volte al giorno"
+      },
+      "frequency_options": {
+        "daily": "Giornaliero",
+        "every_2_days": "Ogni 2 giorni",
+        "every_3_days": "Ogni 3 giorni",
+        "weekly": "Settimanale",
+        "custom": "Personalizzato"
+      },
+      "mode_options": {
+        "full": "Backup completo",
+        "world": "Solo mondo"
+      },
+      "day_options": {
+        "0": "Domenica",
+        "1": "Lunedì",
+        "2": "Martedì",
+        "3": "Mercoledì",
+        "4": "Giovedì",
+        "5": "Venerdì",
+        "6": "Sabato"
+      },
+      "help": {
+        "frequency": "Scegli quanto spesso eseguire il backup automatico",
+        "mode": "Backup completo include tutto il server, Solo mondo include solo i file del mondo",
+        "time": "Orario di esecuzione del backup (formato 24h)",
+        "day": "Giorno della settimana per backup settimanali",
+        "custom": "Usa pattern cron personalizzato (es. '0 3 * * *' per ogni giorno alle 3:00)"
+      },
+      "validation": {
+        "timeRequired": "Orario richiesto",
+        "timeInvalid": "Orario non valido (usa formato HH:MM)",
+        "dayRequired": "Giorno richiesto per backup settimanali",
+        "cronRequired": "Pattern cron richiesto per configurazione personalizzata",
+        "cronInvalid": "Pattern cron non valido"
+      },
+      "messages": {
+        "loading": "Caricamento configurazione...",
+        "updateSuccess": "Configurazione backup aggiornata con successo",
+        "updateError": "Errore nell'aggiornamento della configurazione",
+        "loadError": "Errore nel caricamento della configurazione"
+      }
+    }
   },
   "settings": {
     "title": "Impostazioni",
