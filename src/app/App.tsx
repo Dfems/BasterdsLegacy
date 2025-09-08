@@ -8,7 +8,7 @@ import AuthProvider from '@/entities/user/AuthProvider'
 import ProtectedRoute from '@/features/auth/ProtectedRoute'
 import HomePage from '@/pages/HomePage'
 import Login from '@/pages/auth/LoginPage'
-import { ConsoleProvider } from '@/shared/contexts/ConsoleContext'
+import { ConsoleProvider } from '@/shared/contexts/ConsoleProvider'
 import MainLayout from '@/widgets/layout/MainLayout'
 
 import AppRoutes from './routing/AppRoutes'

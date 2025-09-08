@@ -2,6 +2,7 @@
   "name": "basterdslegacy",
   "version": "0.0.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
     "build": "tsc -b && vite build",
@@ -17,9 +18,12 @@
     "type-check": "tsc --project tsconfig.app.json --noEmit && tsc --project tsconfig.node.json --noEmit"
   },
   "lint-staged": {
-    "**/*.{ts,tsx,js,jsx,css,md,json}": [
+    "**/*.{ts,tsx,js,jsx}": [
       "prettier --write",
       "eslint --fix --max-warnings=0"
+    ],
+    "**/*.{md,json,css}": [
+      "prettier --write"
     ]
   },
   "dependencies": {
