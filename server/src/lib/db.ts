@@ -86,6 +86,10 @@ try {
         }
         return null
       },
+      count: async () => {
+        console.log('Mock DB: user.count')
+        return 1 // Simula che esiste almeno un utente
+      },
       findMany: async () => {
         console.log('Mock DB: user.findMany')
         return []
@@ -131,11 +135,20 @@ try {
     setting: {
       findUnique: async (options: SettingFindUniqueOptions) => {
         console.log('Mock DB: setting.findUnique', options)
+        // Simula che non ci sia background impostato inizialmente
         return null
       },
       upsert: async (data: SettingUpsertOptions) => {
         console.log('Mock DB: setting.upsert', data)
-        return { ...data.create }
+        const resolved = {
+          key: data.where.key,
+          value: data.update?.value ?? data.create.value,
+        }
+        return resolved
+      },
+  deleteMany: async (options: { where?: { key?: string } }) => {
+        console.log('Mock DB: setting.deleteMany', options)
+        return { count: 1 }
       }
     }
   }
