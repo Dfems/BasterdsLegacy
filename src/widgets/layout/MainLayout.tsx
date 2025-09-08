@@ -25,6 +25,13 @@ export default function MainLayout(): JSX.Element {
       }
     : {}
 
+  // Debug log
+  console.log('MainLayout background settings:', {
+    backgroundImage: settings.backgroundImage,
+    backgroundUrl: settings.backgroundImage ? getBackgroundImageUrl(settings.backgroundImage) : null,
+    hasBackgroundStyle: Object.keys(backgroundStyle).length > 0,
+  })
+
   return (
     <div style={backgroundStyle}>
       {/* Overlay for better readability when background is set */}
