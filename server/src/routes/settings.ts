@@ -1,10 +1,8 @@
 import multipart from '@fastify/multipart'
 import staticPlugin from '@fastify/static'
 import type { FastifyInstance, FastifyPluginCallback } from 'fastify'
-
-import { createWriteStream } from 'node:fs'
-import { mkdir, unlink, access } from 'node:fs/promises'
-import fs from 'node:fs'
+import fs, { createWriteStream } from 'node:fs'
+import { mkdir, unlink } from 'node:fs/promises'
 import path from 'node:path'
 import { pipeline } from 'node:stream'
 import { promisify } from 'node:util'
@@ -123,7 +121,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
   fastify.put(
     '/api/settings/ui',
     { preHandler: fastify.authorize('owner') },
-    async (req, reply) => {
+    async (req, _reply) => {
       const body = (await req.body) as { backgroundImage?: string | null }
 
       if (body.backgroundImage !== undefined) {
@@ -238,6 +236,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           return reply.status(400).send({ error: 'File too large. Maximum size is 5MB.' })
         }
         return reply.status(500).send({ error: 'Failed to upload image' })
+      }
+    }
+  )
 
   // API per attivare RCON nel server.properties
   fastify.post(
@@ -271,7 +272,6 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       } catch (error) {
         reply.status(500)
         return { success: false, error: (error as Error).message }
-
       }
     }
   )
