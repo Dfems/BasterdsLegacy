@@ -1,7 +1,8 @@
 import { useCallback, useRef, useState, type JSX } from 'react'
 
-import { Box, Button, HStack, Image, Text, VStack } from '@chakra-ui/react'
+import { Box, HStack, Image, Text, VStack } from '@chakra-ui/react'
 
+import { GlassButton } from '@/shared/components/GlassButton'
 import { useUiSettings } from '@/shared/hooks'
 
 import { GlassCard } from './GlassCard'
@@ -122,7 +123,7 @@ export const BackgroundUpload = ({ onUploadSuccess, onUploadError }: Props): JSX
             disabled={uploading}
           />
 
-          <Button
+          <GlassButton
             onClick={handleUploadClick}
             variant="outline"
             size={{ base: 'sm', md: 'md' }}
@@ -130,10 +131,10 @@ export const BackgroundUpload = ({ onUploadSuccess, onUploadError }: Props): JSX
             disabled={uploading}
           >
             {uploading ? 'Caricamento...' : 'Carica Immagine'}
-          </Button>
+          </GlassButton>
 
           {settings.backgroundImage && (
-            <Button
+            <GlassButton
               onClick={handleRemoveBackground}
               variant="outline"
               size={{ base: 'sm', md: 'md' }}
@@ -141,7 +142,7 @@ export const BackgroundUpload = ({ onUploadSuccess, onUploadError }: Props): JSX
               disabled={uploading}
             >
               Rimuovi Sfondo
-            </Button>
+            </GlassButton>
           )}
         </HStack>
 

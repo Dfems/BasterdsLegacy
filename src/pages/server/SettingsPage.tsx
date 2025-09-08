@@ -54,6 +54,7 @@ export default function SettingsPage(): JSX.Element {
       {!s && !err && <Text fontSize={{ base: 'sm', md: 'md' }}>{settings.loading}</Text>}
       {s && (
         <GlassCard
+          inset
           as="dl"
           display="grid"
           gap={3} // Aumentato gap per mobile

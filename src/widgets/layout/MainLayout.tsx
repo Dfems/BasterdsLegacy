@@ -16,33 +16,24 @@ export default function MainLayout(): JSX.Element {
   const isLoggedIn = Boolean(token)
 
   const backgroundStyle = settings.backgroundImage
-    ? {
-        backgroundImage: `url(${getBackgroundImageUrl(settings.backgroundImage)})`,
+    ? ({
+        minHeight: '100vh',
+        backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${getBackgroundImageUrl(settings.backgroundImage)})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
-      }
-    : {}
+        position: 'relative',
+      } as const)
+    : ({ minHeight: '100vh', position: 'relative' } as const)
 
   return (
     <div style={backgroundStyle}>
-      {/* Overlay for better readability when background is set */}
-      {settings.backgroundImage && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            zIndex: -1,
-          }}
-        />
-      )}
-      <Navbar isLoggedIn={isLoggedIn} onLogout={logout} />
-      <div style={{ paddingTop: 56, paddingBottom: 64 }}>
+      {/* Overlay rimosso: l'oscuramento è applicato via linear-gradient nello sfondo */}
+      <div style={{ position: 'relative' }}>
+        <Navbar isLoggedIn={isLoggedIn} onLogout={logout} />
+      </div>
+      <div style={{ paddingTop: 56, paddingBottom: 64, position: 'relative' }}>
         <div
           style={{
             maxWidth: 1200,
