@@ -140,13 +140,13 @@ try {
       },
       upsert: async (data: SettingUpsertOptions) => {
         console.log('Mock DB: setting.upsert', data)
-        return { 
+        const resolved = {
           key: data.where.key,
-          value: data.create.value || data.update.value,
-          ...data.create 
+          value: data.update?.value ?? data.create.value,
         }
+        return resolved
       },
-      deleteMany: async (options: any) => {
+  deleteMany: async (options: { where?: { key?: string } }) => {
         console.log('Mock DB: setting.deleteMany', options)
         return { count: 1 }
       }

@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   // Ignora solo artefatti di build e runtime, NON il codice sorgente server/src
-  { ignores: ['dist', 'server-old/**', 'server/server/**', 'server/runtime/**'] },
+  { ignores: ['dist', 'server/dist/**', 'server-old/**', 'server/server/**', 'server/runtime/**'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [...tseslint.configs.recommended],
