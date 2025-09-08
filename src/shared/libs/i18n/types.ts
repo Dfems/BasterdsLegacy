@@ -116,6 +116,31 @@ export type TranslationKey = {
     unknown: string
     operationStarted: string
     operationError: string
+    systemMemory: string
+    diskStorage: string
+    tps: string
+    tickTime: string
+    playersOnline: string
+    processMemory: string
+    used: string
+    free: string
+    total: string
+    utilized: string
+    utilized_masculine: string
+    notAvailable: string
+    checkingSpace: string
+    perfect: string
+    good: string
+    acceptable: string
+    slow: string
+    online: string
+    offline: string
+    rconRequired: string
+    enableRcon: string
+    rconEnabled: string
+    rconEnableError: string
+    restartRequired: string
+    restartServer: string
   }
   files: {
     title: string

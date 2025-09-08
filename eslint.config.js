@@ -5,7 +5,8 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'server-old/**', 'server/**'] },
+  // Ignora solo artefatti di build e runtime, NON il codice sorgente server/src
+  { ignores: ['dist', 'server-old/**', 'server/server/**', 'server/runtime/**'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [...tseslint.configs.recommended],
@@ -21,6 +22,14 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
   {

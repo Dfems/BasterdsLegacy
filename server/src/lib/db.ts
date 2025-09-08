@@ -1,5 +1,61 @@
 import { PrismaClient } from '@prisma/client'
 
+// Types for mock database operations
+type FindUniqueOptions = {
+  where?: {
+    id?: string
+    email?: string
+  }
+}
+
+type CreateOptions = {
+  data: {
+    email: string
+    passHash: string
+    role: string
+  }
+}
+
+type DeleteOptions = {
+  where: {
+    id: string
+  }
+}
+
+type CommandHistoryCreateOptions = {
+  data: {
+    user: string
+    command: string
+  }
+}
+
+type BackupCreateOptions = {
+  data: {
+    name: string
+    path: string
+    size: number
+  }
+}
+
+type SettingFindUniqueOptions = {
+  where: {
+    key: string
+  }
+}
+
+type SettingUpsertOptions = {
+  where: {
+    key: string
+  }
+  create: {
+    key: string
+    value: string
+  }
+  update: {
+    value: string
+  }
+}
+
 // Configurazione Prisma con gestione automatica errori
 let db: PrismaClient
 
@@ -16,7 +72,7 @@ try {
   
   const mockDb = {
     user: {
-      findUnique: async (options: any) => {
+      findUnique: async (options: FindUniqueOptions) => {
         console.log('Mock DB: user.findUnique', options)
         if (options?.where?.email === 'admin@test.com') {
           return {
@@ -34,7 +90,7 @@ try {
         console.log('Mock DB: user.findMany')
         return []
       },
-      create: async (data: any) => {
+      create: async (data: CreateOptions) => {
         console.log('Mock DB: user.create', data)
         return { 
           id: `mock-${Date.now()}`, 
@@ -43,13 +99,13 @@ try {
           ...data.data 
         }
       },
-      delete: async (options: any) => {
+      delete: async (options: DeleteOptions) => {
         console.log('Mock DB: user.delete', options)
         return { id: options.where.id }
       }
     },
     commandHistory: {
-      create: async (data: any) => {
+      create: async (data: CommandHistoryCreateOptions) => {
         console.log('Mock DB: commandHistory.create', data)
         return { 
           id: `mock-cmd-${Date.now()}`, 
@@ -63,7 +119,7 @@ try {
         console.log('Mock DB: backup.findMany')
         return []
       },
-      create: async (data: any) => {
+      create: async (data: BackupCreateOptions) => {
         console.log('Mock DB: backup.create', data)
         return { 
           id: `mock-backup-${Date.now()}`, 
@@ -73,18 +129,19 @@ try {
       }
     },
     setting: {
-      findUnique: async (options: any) => {
+      findUnique: async (options: SettingFindUniqueOptions) => {
         console.log('Mock DB: setting.findUnique', options)
         return null
       },
-      upsert: async (data: any) => {
+      upsert: async (data: SettingUpsertOptions) => {
         console.log('Mock DB: setting.upsert', data)
         return { ...data.create }
       }
     }
   }
   
-  db = mockDb as any
+  // Cast to PrismaClient type for compatibility
+  db = mockDb as unknown as PrismaClient
 }
 
 export { db }

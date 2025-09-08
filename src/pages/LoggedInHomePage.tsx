@@ -120,7 +120,7 @@ const LoggedInHomePage = (): JSX.Element => {
               <>
                 <HStack mb={2} justify="space-between">
                   <Text fontSize={{ base: 'sm', md: 'md' }}>{home.loggedIn?.cpu ?? 'CPU'}:</Text>
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{(status.cpu * 100).toFixed(1)}%</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>{status.cpu.toFixed(1)}%</Text>
                 </HStack>
                 <HStack mb={2} justify="space-between">
                   <Text fontSize={{ base: 'sm', md: 'md' }}>
