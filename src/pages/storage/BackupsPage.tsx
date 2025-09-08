@@ -11,7 +11,7 @@ import useLanguage from '@/shared/hooks/useLanguage'
 type Backup = { id: string; size: number; createdAt: number }
 
 export default function BackupsPage(): JSX.Element {
-  const { backups } = useLanguage()
+  const { backups, common } = useLanguage()
   const qc = useQueryClient()
   const { data, isLoading } = useQuery<Backup[]>({
     queryKey: ['backups'],
@@ -121,12 +121,12 @@ export default function BackupsPage(): JSX.Element {
               <Table.Root data-variant="glass">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeader color="brand.primary">ID</Table.ColumnHeader>
-                    <Table.ColumnHeader color="brand.primary">Creato</Table.ColumnHeader>
+                    <Table.ColumnHeader color="brand.primary">{common.id}</Table.ColumnHeader>
+                    <Table.ColumnHeader color="brand.primary">{common.created}</Table.ColumnHeader>
                     <Table.ColumnHeader textAlign="end" color="brand.primary">
-                      Dimensione
+                      {common.size}
                     </Table.ColumnHeader>
-                    <Table.ColumnHeader color="brand.primary">Azioni</Table.ColumnHeader>
+                    <Table.ColumnHeader color="brand.primary">{common.actions}</Table.ColumnHeader>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>

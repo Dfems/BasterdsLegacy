@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, type JSX } from 'react'
 
 import { Box, HStack, Image, Text, VStack } from '@chakra-ui/react'
 
+import { useTranslation } from '@/shared/libs/i18n'
 import { GlassButton } from '@/shared/components/GlassButton'
 import { useUiSettings } from '@/shared/hooks'
 
@@ -13,6 +14,7 @@ type Props = {
 }
 
 export const BackgroundUpload = ({ onUploadSuccess, onUploadError }: Props): JSX.Element => {
+  const { t } = useTranslation()
   const { uploadBackgroundImage, updateBackgroundImage, getBackgroundImageUrl, settings, isOwner } =
     useUiSettings()
   const [uploading, setUploading] = useState(false)
@@ -130,7 +132,7 @@ export const BackgroundUpload = ({ onUploadSuccess, onUploadError }: Props): JSX
             loading={uploading}
             disabled={uploading}
           >
-            {uploading ? 'Caricamento...' : 'Carica Immagine'}
+            {uploading ? t.common.loading : t.common.uploadImage}
           </GlassButton>
 
           {settings.backgroundImage && (

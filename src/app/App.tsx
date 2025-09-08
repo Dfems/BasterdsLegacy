@@ -3,11 +3,12 @@ import { Suspense, type JSX } from 'react'
 
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 
-import LanguageProvider from '@/entities/language/LanguageProvider'
+import { I18nProvider } from '@/shared/libs/i18n'
 import AuthProvider from '@/entities/user/AuthProvider'
 import ProtectedRoute from '@/features/auth/ProtectedRoute'
 import HomePage from '@/pages/HomePage'
 import Login from '@/pages/auth/LoginPage'
+import LoadingFallback from '@/shared/components/LoadingFallback'
 import { ConsoleProvider } from '@/shared/contexts/ConsoleContext'
 import MainLayout from '@/widgets/layout/MainLayout'
 
@@ -16,7 +17,7 @@ import AppRoutes from './routing/AppRoutes'
 export default function App(): JSX.Element {
   return (
     <AuthProvider>
-      <LanguageProvider>
+      <I18nProvider>
         <ConsoleProvider>
           <BrowserRouter>
             <Routes>
@@ -32,7 +33,7 @@ export default function App(): JSX.Element {
                   element={
                     <ProtectedRoute>
                       {/* Outlet farà il render delle sotto‐route protette */}
-                      <Suspense fallback={<div style={{ padding: 16 }}>Caricamento…</div>}>
+                      <Suspense fallback={<LoadingFallback />}>
                         <Outlet />
                       </Suspense>
                     </ProtectedRoute>
@@ -45,7 +46,7 @@ export default function App(): JSX.Element {
             </Routes>
           </BrowserRouter>
         </ConsoleProvider>
-      </LanguageProvider>
+      </I18nProvider>
     </AuthProvider>
   )
 }

@@ -57,7 +57,7 @@ export const BackupScheduler = (): JSX.Element => {
     queryKey: ['backup-schedule'],
     queryFn: async () => {
       const r = await fetch('/api/backups/schedule')
-      if (!r.ok) throw new Error('Failed to load schedule')
+      if (!r.ok) throw new Error('Errore nel caricamento della configurazione backup')
       return (await r.json()) as ScheduleResponse
     },
     staleTime: 10_000,
@@ -68,7 +68,7 @@ export const BackupScheduler = (): JSX.Element => {
     queryKey: ['backup-presets'],
     queryFn: async () => {
       const r = await fetch('/api/backups/presets')
-      if (!r.ok) throw new Error('Failed to load presets')
+      if (!r.ok) throw new Error('Errore nel caricamento dei preset')
       return (await r.json()) as { presets: Preset[] }
     },
     staleTime: 60_000,
