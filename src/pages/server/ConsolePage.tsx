@@ -13,7 +13,7 @@ import { Badge, Box, HStack, Heading, Input, Stack, Text, Textarea } from '@chak
 import AuthContext from '@/entities/user/AuthContext'
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
-import { useConsoleContext } from '@/shared/contexts/ConsoleContext'
+import { useConsoleContext } from '@/shared/contexts/useConsoleContext'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
@@ -60,7 +60,7 @@ export default function ConsolePage(): JSX.Element {
         try {
           const msg = JSON.parse(ev.data as string) as WsMsg
           if (msg.type === 'log' && typeof msg.data === 'string') {
-            setOutput((o) => o + msg.data + '\n')
+            setOutput((o: string) => o + msg.data + '\n')
           } else if (msg.type === 'status' && msg.data && typeof msg.data === 'object') {
             const running = (msg.data as { running?: boolean }).running
             if (typeof running === 'boolean') setServerRunning(running)
@@ -85,7 +85,7 @@ export default function ConsolePage(): JSX.Element {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
       const payload = JSON.stringify({ type: 'cmd', data: cmd })
       wsRef.current.send(payload)
-      setOutput((o) => o + `> ${cmd}\n`)
+      setOutput((o: string) => o + `> ${cmd}\n`)
     },
     [setOutput]
   )
@@ -105,7 +105,7 @@ export default function ConsolePage(): JSX.Element {
         // Controllo aggiuntivo: non permettere start se non c'è JAR
         if (action === 'start' && (!jarStatus?.canStart || !jarStatus?.hasJar)) {
           setOutput(
-            (o) =>
+            (o: string) =>
               o + 'Errore: Nessun JAR del server trovato. Installa un modpack prima di avviare.\n'
           )
           return
@@ -116,12 +116,14 @@ export default function ConsolePage(): JSX.Element {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action }),
         })
-        if (action === 'start') setOutput((o) => o + server.startingMessage + '\n')
-        if (action === 'stop') setOutput((o) => o + server.stoppingMessage + '\n')
-        if (action === 'restart') setOutput((o) => o + server.restartingMessage + '\n')
+        if (action === 'start') setOutput((o: string) => o + server.startingMessage + '\n')
+        if (action === 'stop') setOutput((o: string) => o + server.stoppingMessage + '\n')
+        if (action === 'restart') setOutput((o: string) => o + server.restartingMessage + '\n')
         await fetchStatus()
       } catch (e) {
-        setOutput((o) => o + server.powerError.replace('{error}', (e as Error).message) + '\n')
+        setOutput(
+          (o: string) => o + server.powerError.replace('{error}', (e as Error).message) + '\n'
+        )
       } finally {
         setBusy(false)
       }

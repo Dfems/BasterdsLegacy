@@ -40,6 +40,10 @@ npm run dev:mock
 
 Il server sarà disponibile su `http://localhost:3000`
 
+## Licenza e Contributi
+
+Questo pacchetto è parte del repository principale e ricade sotto la stessa licenza proprietaria. Consulta il file `../LICENSE` per i termini completi. Per contribuire, fai riferimento a `../CONTRIBUTING.md`.
+
 ## 🎯 Flusso Prisma Lineare
 
 ### ✅ Setup Completamente Automatico

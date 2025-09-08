@@ -115,6 +115,12 @@ Pannello di controllo per server Minecraft con installazione automatica modpack 
 
 Proxy Vite: `/api` → `http://localhost:3000`
 
+## Licenza e Contributi
+
+Questo progetto è rilasciato con una licenza proprietaria. Per i termini completi consulta `LICENSE` alla radice del repository. Se desideri contribuire, leggi le linee guida in `CONTRIBUTING.md`.
+
+Nota: nei file `package.json` è specificato "license": "SEE LICENSE IN LICENSE" in conformità alla licenza.
+
 ## Configurazione Server
 
 Il sistema gestisce automaticamente:
