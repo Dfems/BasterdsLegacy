@@ -1,8 +1,9 @@
 import { useState, type JSX } from 'react'
 
-import { Box, Button, Field, Heading, Input, RadioGroup, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Field, Heading, Input, Stack, Text } from '@chakra-ui/react'
 
 import { GlassCard } from '@/shared/components/GlassCard'
+import useLanguage from '@/shared/hooks/useLanguage'
 
 type EnvironmentConfig = {
   javaBin: string
@@ -12,12 +13,6 @@ type EnvironmentConfig = {
   rconHost: string
   rconPort: number
   rconPass: string
-  backupCron: string
-  retentionDays: number
-  retentionWeeks: number
-  autoBackupEnabled: boolean
-  autoBackupCron: string
-  autoBackupMode: 'full' | 'world'
 }
 
 type EnvironmentConfigFormProps = {
@@ -31,6 +26,7 @@ export const EnvironmentConfigForm = ({
   onSave,
   loading = false,
 }: EnvironmentConfigFormProps): JSX.Element => {
+  const { settings } = useLanguage()
   const [config, setConfig] = useState<EnvironmentConfig>(initialConfig)
   const [submitting, setSubmitting] = useState(false)
 
@@ -50,17 +46,6 @@ export const EnvironmentConfigForm = ({
       if (config.rconHost !== initialConfig.rconHost) changes.rconHost = config.rconHost
       if (config.rconPort !== initialConfig.rconPort) changes.rconPort = config.rconPort
       if (config.rconPass !== initialConfig.rconPass) changes.rconPass = config.rconPass
-      if (config.backupCron !== initialConfig.backupCron) changes.backupCron = config.backupCron
-      if (config.retentionDays !== initialConfig.retentionDays)
-        changes.retentionDays = config.retentionDays
-      if (config.retentionWeeks !== initialConfig.retentionWeeks)
-        changes.retentionWeeks = config.retentionWeeks
-      if (config.autoBackupEnabled !== initialConfig.autoBackupEnabled)
-        changes.autoBackupEnabled = config.autoBackupEnabled
-      if (config.autoBackupCron !== initialConfig.autoBackupCron)
-        changes.autoBackupCron = config.autoBackupCron
-      if (config.autoBackupMode !== initialConfig.autoBackupMode)
-        changes.autoBackupMode = config.autoBackupMode
 
       await onSave(changes)
     } finally {
@@ -75,7 +60,7 @@ export const EnvironmentConfigForm = ({
   if (loading) {
     return (
       <GlassCard inset p={{ base: 4, md: 6 }}>
-        <Text fontSize={{ base: 'sm', md: 'md' }}>Caricamento...</Text>
+        <Text fontSize={{ base: 'sm', md: 'md' }}>{settings.loading}</Text>
       </GlassCard>
     )
   }
@@ -83,10 +68,10 @@ export const EnvironmentConfigForm = ({
   return (
     <GlassCard inset p={{ base: 4, md: 6 }}>
       <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
-        Configurazioni Ambiente
+        {settings.environment.title}
       </Heading>
       <Text color="textMuted" fontSize={{ base: 'sm', md: 'md' }} mb={6}>
-        Configura le variabili d'ambiente del server (solo per proprietari)
+        {settings.environment.description}
       </Text>
 
       <Box as="form" onSubmit={handleSubmit}>
@@ -94,14 +79,16 @@ export const EnvironmentConfigForm = ({
           {/* Java Configuration */}
           <Box>
             <Field.Root>
-              <Field.Label fontSize={{ base: 'sm', md: 'md' }}>JAVA_BIN</Field.Label>
+              <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                {settings.environment.javaBin.label}
+              </Field.Label>
               <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                Percorso dell'eseguibile Java
+                {settings.environment.javaBin.description}
               </Field.HelperText>
               <Input
                 value={config.javaBin}
                 onChange={(e) => setConfig((prev) => ({ ...prev, javaBin: e.target.value }))}
-                placeholder="java"
+                placeholder={settings.environment.javaBin.placeholder}
                 fontSize={{ base: 'sm', md: 'md' }}
               />
             </Field.Root>
@@ -110,27 +97,31 @@ export const EnvironmentConfigForm = ({
           {/* Directory Configuration */}
           <Stack gap={4}>
             <Field.Root>
-              <Field.Label fontSize={{ base: 'sm', md: 'md' }}>MC_DIR</Field.Label>
+              <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                {settings.environment.mcDir.label}
+              </Field.Label>
               <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                Directory del server Minecraft
+                {settings.environment.mcDir.description}
               </Field.HelperText>
               <Input
                 value={config.mcDir}
                 onChange={(e) => setConfig((prev) => ({ ...prev, mcDir: e.target.value }))}
-                placeholder="./server/runtime"
+                placeholder={settings.environment.mcDir.placeholder}
                 fontSize={{ base: 'sm', md: 'md' }}
               />
             </Field.Root>
 
             <Field.Root>
-              <Field.Label fontSize={{ base: 'sm', md: 'md' }}>BACKUP_DIR</Field.Label>
+              <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                {settings.environment.backupDir.label}
+              </Field.Label>
               <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                Directory dei backup
+                {settings.environment.backupDir.description}
               </Field.HelperText>
               <Input
                 value={config.backupDir}
                 onChange={(e) => setConfig((prev) => ({ ...prev, backupDir: e.target.value }))}
-                placeholder="./server/runtime/backups"
+                placeholder={settings.environment.backupDir.placeholder}
                 fontSize={{ base: 'sm', md: 'md' }}
               />
             </Field.Root>
@@ -139,7 +130,7 @@ export const EnvironmentConfigForm = ({
           {/* RCON Configuration */}
           <Box>
             <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-              Configurazione RCON
+              {settings.environment.rcon.title}
             </Heading>
             <Stack gap={4}>
               <Field.Root>
@@ -152,7 +143,7 @@ export const EnvironmentConfigForm = ({
                     }
                   />
                   <Text as="span" ml={2} fontSize={{ base: 'sm', md: 'md' }}>
-                    RCON Abilitato
+                    {settings.environment.rcon.enabled}
                   </Text>
                 </label>
               </Field.Root>
@@ -160,17 +151,21 @@ export const EnvironmentConfigForm = ({
               {config.rconEnabled && (
                 <>
                   <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Host RCON</Field.Label>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                      {settings.environment.rcon.host.label}
+                    </Field.Label>
                     <Input
                       value={config.rconHost}
                       onChange={(e) => setConfig((prev) => ({ ...prev, rconHost: e.target.value }))}
-                      placeholder="127.0.0.1"
+                      placeholder={settings.environment.rcon.host.placeholder}
                       fontSize={{ base: 'sm', md: 'md' }}
                     />
                   </Field.Root>
 
                   <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Porta RCON</Field.Label>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                      {settings.environment.rcon.port.label}
+                    </Field.Label>
                     <Input
                       type="number"
                       value={config.rconPort.toString()}
@@ -184,9 +179,11 @@ export const EnvironmentConfigForm = ({
                   </Field.Root>
 
                   <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Password RCON</Field.Label>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                      {settings.environment.rcon.password.label}
+                    </Field.Label>
                     <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                      Lascia vuoto per generare automaticamente
+                      {settings.environment.rcon.password.placeholder}
                     </Field.HelperText>
                     <Input
                       type="password"
@@ -194,130 +191,6 @@ export const EnvironmentConfigForm = ({
                       onChange={(e) => setConfig((prev) => ({ ...prev, rconPass: e.target.value }))}
                       fontSize={{ base: 'sm', md: 'md' }}
                     />
-                  </Field.Root>
-                </>
-              )}
-            </Stack>
-          </Box>
-
-          {/* Backup Configuration */}
-          <Box>
-            <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-              Configurazione Backup
-            </Heading>
-            <Stack gap={4}>
-              <Field.Root>
-                <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
-                  Schedule Backup (CRON)
-                </Field.Label>
-                <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                  Formato: minuto ora giorno mese giornoSettimana
-                </Field.HelperText>
-                <Input
-                  value={config.backupCron}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, backupCron: e.target.value }))}
-                  placeholder="0 3 * * *"
-                  fontSize={{ base: 'sm', md: 'md' }}
-                />
-              </Field.Root>
-
-              <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
-                <Field.Root>
-                  <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Giorni di retention</Field.Label>
-                  <Input
-                    type="number"
-                    value={config.retentionDays.toString()}
-                    onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, retentionDays: Number(e.target.value) }))
-                    }
-                    min={0}
-                    fontSize={{ base: 'sm', md: 'md' }}
-                  />
-                </Field.Root>
-
-                <Field.Root>
-                  <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
-                    Settimane di retention
-                  </Field.Label>
-                  <Input
-                    type="number"
-                    value={config.retentionWeeks.toString()}
-                    onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, retentionWeeks: Number(e.target.value) }))
-                    }
-                    min={0}
-                    fontSize={{ base: 'sm', md: 'md' }}
-                  />
-                </Field.Root>
-              </Stack>
-            </Stack>
-          </Box>
-
-          {/* Auto Backup Configuration */}
-          <Box>
-            <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-              Backup Automatici
-            </Heading>
-            <Stack gap={4}>
-              <Field.Root>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={config.autoBackupEnabled}
-                    onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, autoBackupEnabled: e.target.checked }))
-                    }
-                  />
-                  <Text as="span" ml={2} fontSize={{ base: 'sm', md: 'md' }}>
-                    Backup Automatici Abilitati
-                  </Text>
-                </label>
-              </Field.Root>
-
-              {config.autoBackupEnabled && (
-                <>
-                  <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
-                      Schedule Backup Automatici (CRON)
-                    </Field.Label>
-                    <Input
-                      value={config.autoBackupCron}
-                      onChange={(e) =>
-                        setConfig((prev) => ({ ...prev, autoBackupCron: e.target.value }))
-                      }
-                      placeholder="0 3 * * *"
-                      fontSize={{ base: 'sm', md: 'md' }}
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Modalità Backup</Field.Label>
-                    <RadioGroup.Root
-                      value={config.autoBackupMode}
-                      onValueChange={(details) =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          autoBackupMode: details.value as 'full' | 'world',
-                        }))
-                      }
-                    >
-                      <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
-                        <RadioGroup.Item value="full">
-                          <RadioGroup.ItemHiddenInput />
-                          <RadioGroup.ItemIndicator />
-                          <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
-                            Completo
-                          </RadioGroup.ItemText>
-                        </RadioGroup.Item>
-                        <RadioGroup.Item value="world">
-                          <RadioGroup.ItemHiddenInput />
-                          <RadioGroup.ItemIndicator />
-                          <RadioGroup.ItemText fontSize={{ base: 'sm', md: 'md' }}>
-                            Solo Mondo
-                          </RadioGroup.ItemText>
-                        </RadioGroup.Item>
-                      </Stack>
-                    </RadioGroup.Root>
                   </Field.Root>
                 </>
               )}
@@ -332,7 +205,7 @@ export const EnvironmentConfigForm = ({
               loading={submitting}
               fontSize={{ base: 'sm', md: 'md' }}
             >
-              Salva
+              {settings.save}
             </Button>
             <Button
               type="button"
@@ -341,7 +214,7 @@ export const EnvironmentConfigForm = ({
               disabled={submitting}
               fontSize={{ base: 'sm', md: 'md' }}
             >
-              Ripristina
+              {settings.reset}
             </Button>
           </Stack>
         </Stack>

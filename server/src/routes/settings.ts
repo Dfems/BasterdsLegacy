@@ -119,12 +119,6 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       rconHost: config.RCON_HOST,
       rconPort: config.RCON_PORT,
       rconPass: config.RCON_PASS,
-      backupCron: config.BACKUP_CRON,
-      retentionDays: config.RETENTION_DAYS,
-      retentionWeeks: config.RETENTION_WEEKS,
-      autoBackupEnabled: config.AUTO_BACKUP_ENABLED,
-      autoBackupCron: config.AUTO_BACKUP_CRON,
-      autoBackupMode: config.AUTO_BACKUP_MODE,
     }
   })
 
@@ -142,12 +136,6 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           rconHost?: string
           rconPort?: number
           rconPass?: string
-          backupCron?: string
-          retentionDays?: number
-          retentionWeeks?: number
-          autoBackupEnabled?: boolean
-          autoBackupCron?: string
-          autoBackupMode?: 'full' | 'world'
         }
 
         const updates: Array<{ key: string; value: string }> = []
@@ -204,68 +192,6 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           updates.push({ key: 'env.RCON_PASS', value: body.rconPass })
         }
 
-        if (body.backupCron !== undefined) {
-          if (typeof body.backupCron !== 'string' || body.backupCron.trim().length === 0) {
-            return reply.status(400).send({ error: 'BACKUP_CRON must be a non-empty string' })
-          }
-          // Validazione basic del formato cron (5 campi separati da spazi)
-          const cronParts = body.backupCron.trim().split(/\s+/)
-          if (cronParts.length !== 5) {
-            return reply
-              .status(400)
-              .send({ error: 'BACKUP_CRON must be a valid cron expression (5 fields)' })
-          }
-          updates.push({ key: 'env.BACKUP_CRON', value: body.backupCron.trim() })
-        }
-
-        if (body.retentionDays !== undefined) {
-          if (!Number.isInteger(body.retentionDays) || body.retentionDays < 0) {
-            return reply
-              .status(400)
-              .send({ error: 'RETENTION_DAYS must be a non-negative integer' })
-          }
-          updates.push({ key: 'env.RETENTION_DAYS', value: body.retentionDays.toString() })
-        }
-
-        if (body.retentionWeeks !== undefined) {
-          if (!Number.isInteger(body.retentionWeeks) || body.retentionWeeks < 0) {
-            return reply
-              .status(400)
-              .send({ error: 'RETENTION_WEEKS must be a non-negative integer' })
-          }
-          updates.push({ key: 'env.RETENTION_WEEKS', value: body.retentionWeeks.toString() })
-        }
-
-        if (body.autoBackupEnabled !== undefined) {
-          if (typeof body.autoBackupEnabled !== 'boolean') {
-            return reply.status(400).send({ error: 'AUTO_BACKUP_ENABLED must be a boolean' })
-          }
-          updates.push({ key: 'env.AUTO_BACKUP_ENABLED', value: body.autoBackupEnabled.toString() })
-        }
-
-        if (body.autoBackupCron !== undefined) {
-          if (typeof body.autoBackupCron !== 'string' || body.autoBackupCron.trim().length === 0) {
-            return reply.status(400).send({ error: 'AUTO_BACKUP_CRON must be a non-empty string' })
-          }
-          // Validazione basic del formato cron
-          const cronParts = body.autoBackupCron.trim().split(/\s+/)
-          if (cronParts.length !== 5) {
-            return reply
-              .status(400)
-              .send({ error: 'AUTO_BACKUP_CRON must be a valid cron expression (5 fields)' })
-          }
-          updates.push({ key: 'env.AUTO_BACKUP_CRON', value: body.autoBackupCron.trim() })
-        }
-
-        if (body.autoBackupMode !== undefined) {
-          if (body.autoBackupMode !== 'full' && body.autoBackupMode !== 'world') {
-            return reply
-              .status(400)
-              .send({ error: 'AUTO_BACKUP_MODE must be either "full" or "world"' })
-          }
-          updates.push({ key: 'env.AUTO_BACKUP_MODE', value: body.autoBackupMode })
-        }
-
         // Aggiorna le impostazioni nel database
         for (const update of updates) {
           await db.setting.upsert({
@@ -291,12 +217,6 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
             rconHost: updatedConfig.RCON_HOST,
             rconPort: updatedConfig.RCON_PORT,
             rconPass: updatedConfig.RCON_PASS,
-            backupCron: updatedConfig.BACKUP_CRON,
-            retentionDays: updatedConfig.RETENTION_DAYS,
-            retentionWeeks: updatedConfig.RETENTION_WEEKS,
-            autoBackupEnabled: updatedConfig.AUTO_BACKUP_ENABLED,
-            autoBackupCron: updatedConfig.AUTO_BACKUP_CRON,
-            autoBackupMode: updatedConfig.AUTO_BACKUP_MODE,
           },
         }
       } catch (error) {

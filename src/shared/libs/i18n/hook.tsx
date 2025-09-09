@@ -280,6 +280,44 @@ export const useTranslation = (): UseTranslationReturnType => {
       maxPlayers: '',
       loading: '',
       errorLoad: '',
+      environment: {
+        title: '',
+        description: '',
+        javaBin: {
+          label: '',
+          description: '',
+          placeholder: '',
+        },
+        mcDir: {
+          label: '',
+          description: '',
+          placeholder: '',
+        },
+        backupDir: {
+          label: '',
+          description: '',
+          placeholder: '',
+        },
+        rcon: {
+          title: '',
+          enabled: '',
+          host: {
+            label: '',
+            placeholder: '',
+          },
+          port: {
+            label: '',
+            placeholder: '',
+          },
+          password: {
+            label: '',
+            placeholder: '',
+          },
+        },
+        success: '',
+        error: '',
+        validationError: '',
+      },
       sftp: {
         title: '',
         description: '',

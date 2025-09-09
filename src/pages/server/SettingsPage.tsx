@@ -27,12 +27,6 @@ type EnvironmentConfig = {
   rconHost: string
   rconPort: number
   rconPass: string
-  backupCron: string
-  retentionDays: number
-  retentionWeeks: number
-  autoBackupEnabled: boolean
-  autoBackupCron: string
-  autoBackupMode: 'full' | 'world'
 }
 
 export default function SettingsPage(): JSX.Element {
