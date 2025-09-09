@@ -78,7 +78,7 @@ const LoggedInHomePage = (): JSX.Element => {
 
             {/* Stato Server */}
             <HStack mb={3} justify="space-between" wrap="wrap">
-              <Text fontSize={{ base: 'sm', md: 'md' }}>Stato:</Text>
+              <Text fontSize={{ base: 'sm', md: 'md' }}>{common.status}:</Text>
               <Badge
                 colorPalette={isServerRunning ? 'green' : 'red'}
                 variant="solid"
@@ -93,7 +93,7 @@ const LoggedInHomePage = (): JSX.Element => {
             {/* Stato Modpack */}
             {jarStatus && (
               <HStack mb={3} justify="space-between" wrap="wrap">
-                <Text fontSize={{ base: 'sm', md: 'md' }}>Modpack:</Text>
+                <Text fontSize={{ base: 'sm', md: 'md' }}>{common.modpack}:</Text>
                 <HStack gap={2}>
                   <Badge
                     colorPalette={jarStatus.hasJar ? 'green' : 'orange'}

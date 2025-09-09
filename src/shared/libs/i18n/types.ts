@@ -24,7 +24,14 @@ export type TranslationKey = {
     confirm: string
     refresh: string
     upload: string
+    uploadImage: string
     download: string
+    status: string
+    modpack: string
+    created: string
+    size: string
+    actions: string
+    id: string
   }
   navigation: {
     home: string

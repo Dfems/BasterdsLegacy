@@ -21,7 +21,14 @@
     "confirm": "Confirm",
     "refresh": "Refresh",
     "upload": "Upload",
-    "download": "Download"
+    "uploadImage": "Upload Image",
+    "download": "Download",
+    "status": "Status",
+    "modpack": "Modpack",
+    "created": "Created",
+    "size": "Size",
+    "actions": "Actions",
+    "id": "ID"
   },
   "navigation": {
     "home": "Home",
