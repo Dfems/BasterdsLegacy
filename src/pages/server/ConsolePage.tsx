@@ -160,7 +160,7 @@ export default function ConsolePage(): JSX.Element {
       </HStack>
       {/* Stato JAR/Modpack */}
       {!jarLoading && jarStatus && (
-        <GlassCard mb={4} p={{ base: 3, md: 4 }}>
+        <GlassCard inset mb={4} p={{ base: 3, md: 4 }}>
           <HStack gap={3} align="center" wrap="wrap">
             <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">
               Stato Modpack:

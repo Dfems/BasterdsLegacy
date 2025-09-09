@@ -3,10 +3,10 @@ import { type JSX } from 'react'
 import {
   Badge,
   Box,
+  Link as ChakraLink,
   Grid,
   HStack,
   Heading,
-  Link as ChakraLink,
   Stack,
   Text,
 } from '@chakra-ui/react'
@@ -53,7 +53,7 @@ const LoggedInHomePage = (): JSX.Element => {
 
   return (
     <Box p={{ base: 4, md: 6 }}>
-      <GlassCard maxW="1200px" mx="auto" p={{ base: 4, md: 6 }}>
+      <GlassCard inset maxW="1200px" mx="auto" p={{ base: 4, md: 6 }}>
         {/* Header di benvenuto */}
         <Box textAlign="center" mb={6}>
           <Heading mb={3} fontSize={{ base: 'xl', md: '2xl' }}>
@@ -71,7 +71,7 @@ const LoggedInHomePage = (): JSX.Element => {
           mb={6}
         >
           {/* Panoramica Server */}
-          <GlassCard p={{ base: 4, md: 5 }}>
+          <GlassCard inset p={{ base: 4, md: 5 }}>
             <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
               🖥️ {home.loggedIn?.serverOverview ?? 'Panoramica Server'}
             </Heading>
@@ -145,7 +145,7 @@ const LoggedInHomePage = (): JSX.Element => {
           </GlassCard>
 
           {/* Azioni Rapide */}
-          <GlassCard p={{ base: 4, md: 5 }}>
+          <GlassCard inset p={{ base: 4, md: 5 }}>
             <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
               ⚡ {home.loggedIn?.quickActions ?? 'Azioni Rapide'}
             </Heading>
@@ -188,7 +188,7 @@ const LoggedInHomePage = (): JSX.Element => {
         </Grid>
 
         {/* Sezione Download & Supporto */}
-        <GlassCard p={{ base: 4, md: 5 }}>
+        <GlassCard inset p={{ base: 4, md: 5 }}>
           <Heading size={{ base: 'sm', md: 'md' }} mb={4} textAlign="center">
             📦 {home.loggedIn?.downloadSection ?? 'Download & Supporto'}
           </Heading>
