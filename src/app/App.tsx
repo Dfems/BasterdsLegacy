@@ -3,13 +3,13 @@ import { Suspense, type JSX } from 'react'
 
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 
-import { I18nProvider } from '@/shared/libs/i18n'
 import AuthProvider from '@/entities/user/AuthProvider'
 import ProtectedRoute from '@/features/auth/ProtectedRoute'
 import HomePage from '@/pages/HomePage'
 import Login from '@/pages/auth/LoginPage'
 import LoadingFallback from '@/shared/components/LoadingFallback'
 import { ConsoleProvider } from '@/shared/contexts/ConsoleProvider'
+import { I18nProvider } from '@/shared/libs/i18n'
 import MainLayout from '@/widgets/layout/MainLayout'
 
 import AppRoutes from './routing/AppRoutes'

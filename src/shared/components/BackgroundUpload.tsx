@@ -2,9 +2,9 @@ import { useCallback, useRef, useState, type JSX } from 'react'
 
 import { Box, HStack, Image, Text, VStack } from '@chakra-ui/react'
 
-import { useTranslation } from '@/shared/libs/i18n'
 import { GlassButton } from '@/shared/components/GlassButton'
 import { useUiSettings } from '@/shared/hooks'
+import { useTranslation } from '@/shared/libs/i18n'
 
 import { GlassCard } from './GlassCard'
 
