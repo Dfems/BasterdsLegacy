@@ -258,6 +258,44 @@ export type TranslationKey = {
     maxPlayers: string
     loading: string
     errorLoad: string
+    environment: {
+      title: string
+      description: string
+      javaBin: {
+        label: string
+        description: string
+        placeholder: string
+      }
+      mcDir: {
+        label: string
+        description: string
+        placeholder: string
+      }
+      backupDir: {
+        label: string
+        description: string
+        placeholder: string
+      }
+      rcon: {
+        title: string
+        enabled: string
+        host: {
+          label: string
+          placeholder: string
+        }
+        port: {
+          label: string
+          placeholder: string
+        }
+        password: {
+          label: string
+          placeholder: string
+        }
+      }
+      success: string
+      error: string
+      validationError: string
+    }
     sftp: {
       title: string
       description: string

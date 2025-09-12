@@ -255,6 +255,69 @@
     "maxPlayers": "Giocatori Massimi",
     "loading": "Caricamento…",
     "errorLoad": "Errore nel caricamento delle impostazioni",
+    "environment": {
+      "title": "Configurazioni Ambiente",
+      "description": "Configura le variabili d'ambiente del server (solo per proprietari)",
+      "javaBin": {
+        "label": "JAVA_BIN",
+        "description": "Percorso dell'eseguibile Java",
+        "placeholder": "java"
+      },
+      "mcDir": {
+        "label": "MC_DIR",
+        "description": "Directory del server Minecraft",
+        "placeholder": "./server/runtime"
+      },
+      "backupDir": {
+        "label": "BACKUP_DIR",
+        "description": "Directory dei backup",
+        "placeholder": "./server/runtime/backups"
+      },
+      "rcon": {
+        "title": "Configurazione RCON",
+        "enabled": "RCON Abilitato",
+        "host": {
+          "label": "Host RCON",
+          "placeholder": "127.0.0.1"
+        },
+        "port": {
+          "label": "Porta RCON",
+          "placeholder": "25575"
+        },
+        "password": {
+          "label": "Password RCON",
+          "placeholder": "Lascia vuoto per generare automaticamente"
+        }
+      },
+      "backup": {
+        "title": "Configurazione Backup",
+        "cron": {
+          "label": "Schedule Backup (CRON)",
+          "description": "Formato: minuto ora giorno mese giornoSettimana",
+          "placeholder": "0 3 * * *"
+        },
+        "retention": {
+          "days": "Giorni di retention",
+          "weeks": "Settimane di retention"
+        }
+      },
+      "autoBackup": {
+        "title": "Backup Automatici",
+        "enabled": "Backup Automatici Abilitati",
+        "cron": {
+          "label": "Schedule Backup Automatici (CRON)",
+          "placeholder": "0 3 * * *"
+        },
+        "mode": {
+          "label": "Modalità Backup",
+          "full": "Completo",
+          "world": "Solo Mondo"
+        }
+      },
+      "success": "Configurazioni aggiornate con successo",
+      "error": "Errore nell'aggiornamento delle configurazioni",
+      "validationError": "Errore di validazione"
+    },
     "sftp": {
       "title": "SFTP OS‑level",
       "description": "Usa OpenSSH di sistema con utente dedicato, come descritto nel README.",

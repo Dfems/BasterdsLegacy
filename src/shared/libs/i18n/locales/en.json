@@ -255,6 +255,69 @@
     "maxPlayers": "Max Players",
     "loading": "Loading…",
     "errorLoad": "Error loading settings",
+    "environment": {
+      "title": "Environment Configuration",
+      "description": "Configure server environment variables (owners only)",
+      "javaBin": {
+        "label": "JAVA_BIN",
+        "description": "Path to Java executable",
+        "placeholder": "java"
+      },
+      "mcDir": {
+        "label": "MC_DIR",
+        "description": "Minecraft server directory",
+        "placeholder": "./server/runtime"
+      },
+      "backupDir": {
+        "label": "BACKUP_DIR",
+        "description": "Backup directory",
+        "placeholder": "./server/runtime/backups"
+      },
+      "rcon": {
+        "title": "RCON Configuration",
+        "enabled": "RCON Enabled",
+        "host": {
+          "label": "RCON Host",
+          "placeholder": "127.0.0.1"
+        },
+        "port": {
+          "label": "RCON Port",
+          "placeholder": "25575"
+        },
+        "password": {
+          "label": "RCON Password",
+          "placeholder": "Leave empty to auto-generate"
+        }
+      },
+      "backup": {
+        "title": "Backup Configuration",
+        "cron": {
+          "label": "Backup Schedule (CRON)",
+          "description": "Format: minute hour day month dayOfWeek",
+          "placeholder": "0 3 * * *"
+        },
+        "retention": {
+          "days": "Retention days",
+          "weeks": "Retention weeks"
+        }
+      },
+      "autoBackup": {
+        "title": "Auto Backup",
+        "enabled": "Auto Backup Enabled",
+        "cron": {
+          "label": "Auto Backup Schedule (CRON)",
+          "placeholder": "0 3 * * *"
+        },
+        "mode": {
+          "label": "Backup Mode",
+          "full": "Full",
+          "world": "World Only"
+        }
+      },
+      "success": "Configuration updated successfully",
+      "error": "Error updating configuration",
+      "validationError": "Validation error"
+    },
     "sftp": {
       "title": "SFTP OS-level",
       "description": "Use system OpenSSH with dedicated user, as described in README.",

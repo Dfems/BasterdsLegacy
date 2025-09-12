@@ -2,10 +2,15 @@ import path from 'node:path'
 
 const env = (key: string, fallback: string): string => (process.env[key] ?? fallback).toString()
 
-export const CONFIG = {
+// Configurazioni di base che non possono essere modificate dalla UI per sicurezza
+const STATIC_CONFIG = {
   PORT: Number(env('PORT', '3000')),
   JWT_SECRET: env('JWT_SECRET', 'change_me'),
   JWT_EXPIRES: env('JWT_EXPIRES', '1h'),
+} as const
+
+// Configurazioni che possono essere override dal database
+const DYNAMIC_CONFIG_DEFAULTS = {
   MC_DIR: path.resolve(env('MC_DIR', './server/runtime')),
   BACKUP_DIR: path.resolve(env('BACKUP_DIR', './server/runtime/backups')),
   JAVA_BIN: env('JAVA_BIN', 'java'),
@@ -22,4 +27,98 @@ export const CONFIG = {
   AUTO_BACKUP_MODE: env('AUTO_BACKUP_MODE', 'world') as 'full' | 'world',
 } as const
 
-export type AppConfig = typeof CONFIG
+// Cache per le configurazioni del database
+let dbConfigCache: Partial<typeof DYNAMIC_CONFIG_DEFAULTS> | null = null
+let dbConfigCacheTime = 0
+const CACHE_TTL = 60000 // 1 minuto
+
+type ConfigType = typeof STATIC_CONFIG & typeof DYNAMIC_CONFIG_DEFAULTS
+
+// Funzione per ottenere le configurazioni con override dal database
+export const getConfig = async (): Promise<ConfigType> => {
+  // Se abbiamo cache valida, usiamola
+  if (dbConfigCache && Date.now() - dbConfigCacheTime < CACHE_TTL) {
+    return { ...STATIC_CONFIG, ...DYNAMIC_CONFIG_DEFAULTS, ...dbConfigCache }
+  }
+
+  try {
+    // Importazione dinamica per evitare dipendenze circolari
+    const { db } = await import('./db.js')
+    
+    const settings = await db.setting.findMany({
+      where: {
+        key: {
+          in: [
+            'env.MC_DIR',
+            'env.BACKUP_DIR', 
+            'env.JAVA_BIN',
+            'env.RCON_ENABLED',
+            'env.RCON_HOST',
+            'env.RCON_PORT',
+            'env.RCON_PASS',
+            'env.BACKUP_CRON',
+            'env.RETENTION_DAYS',
+            'env.RETENTION_WEEKS',
+            'env.AUTO_BACKUP_ENABLED',
+            'env.AUTO_BACKUP_CRON',
+            'env.AUTO_BACKUP_MODE',
+          ]
+        }
+      }
+    })
+
+    const overrides: Partial<typeof DYNAMIC_CONFIG_DEFAULTS> = {}
+    
+    for (const setting of settings) {
+      const key = setting.key.replace('env.', '') as keyof typeof DYNAMIC_CONFIG_DEFAULTS
+      const value = setting.value
+
+      switch (key) {
+        case 'MC_DIR':
+        case 'BACKUP_DIR':
+          (overrides as Record<string, unknown>)[key] = path.resolve(value)
+          break
+        case 'JAVA_BIN':
+        case 'RCON_HOST':
+        case 'RCON_PASS':
+        case 'BACKUP_CRON':
+        case 'AUTO_BACKUP_CRON':
+          (overrides as Record<string, unknown>)[key] = value
+          break
+        case 'RCON_ENABLED':
+        case 'AUTO_BACKUP_ENABLED':
+          (overrides as Record<string, unknown>)[key] = value === 'true'
+          break
+        case 'RCON_PORT':
+        case 'RETENTION_DAYS':
+        case 'RETENTION_WEEKS':
+          (overrides as Record<string, unknown>)[key] = Number(value)
+          break
+        case 'AUTO_BACKUP_MODE':
+          (overrides as Record<string, unknown>)[key] = value as 'full' | 'world'
+          break
+      }
+    }
+
+    dbConfigCache = overrides
+    dbConfigCacheTime = Date.now()
+    
+    return { ...STATIC_CONFIG, ...DYNAMIC_CONFIG_DEFAULTS, ...overrides }
+  } catch (error) {
+    // Se c'è un errore nel database, usa le configurazioni di default
+    console.warn('Failed to load config from database, using defaults:', error)
+    return { ...STATIC_CONFIG, ...DYNAMIC_CONFIG_DEFAULTS }
+  }
+}
+
+// Configurazione sincrona per compatibilità con il codice esistente
+export const CONFIG = { ...STATIC_CONFIG, ...DYNAMIC_CONFIG_DEFAULTS }
+
+// Funzione per invalidare la cache (utile quando si aggiornano le configurazioni)
+export const invalidateConfigCache = (): void => {
+  dbConfigCache = null
+  dbConfigCacheTime = 0
+}
+
+export type AppConfig = ConfigType
+export type DynamicConfigKey = keyof typeof DYNAMIC_CONFIG_DEFAULTS

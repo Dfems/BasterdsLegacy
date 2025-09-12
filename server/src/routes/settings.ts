@@ -7,7 +7,7 @@ import path from 'node:path'
 import { pipeline } from 'node:stream'
 import { promisify } from 'node:util'
 
-import { CONFIG } from '../lib/config.js'
+import { CONFIG, getConfig, invalidateConfigCache } from '../lib/config.js'
 import { db } from '../lib/db.js'
 
 const pump = promisify(pipeline)
@@ -95,16 +95,139 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
   })
 
   fastify.get('/api/settings', { preHandler: fastify.authorize('viewer') }, async () => {
+    // Usa getConfig per ottenere le configurazioni dal database se disponibili
+    const config = await getConfig()
     return {
-      javaBin: CONFIG.JAVA_BIN,
-      mcDir: CONFIG.MC_DIR,
-      backupDir: CONFIG.BACKUP_DIR,
-      rcon: { enabled: CONFIG.RCON_ENABLED, host: CONFIG.RCON_HOST, port: CONFIG.RCON_PORT },
-      backupCron: CONFIG.BACKUP_CRON,
-      retentionDays: CONFIG.RETENTION_DAYS,
-      retentionWeeks: CONFIG.RETENTION_WEEKS,
+      javaBin: config.JAVA_BIN,
+      mcDir: config.MC_DIR,
+      backupDir: config.BACKUP_DIR,
+      rcon: { enabled: config.RCON_ENABLED, host: config.RCON_HOST, port: config.RCON_PORT },
+      backupCron: config.BACKUP_CRON,
+      retentionDays: config.RETENTION_DAYS,
+      retentionWeeks: config.RETENTION_WEEKS,
     }
   })
+
+  // Get environment configurations (only owner can view sensitive settings)
+  fastify.get('/api/settings/environment', { preHandler: fastify.authorize('owner') }, async () => {
+    const config = await getConfig()
+    return {
+      javaBin: config.JAVA_BIN,
+      mcDir: config.MC_DIR,
+      backupDir: config.BACKUP_DIR,
+      rconEnabled: config.RCON_ENABLED,
+      rconHost: config.RCON_HOST,
+      rconPort: config.RCON_PORT,
+      rconPass: config.RCON_PASS,
+    }
+  })
+
+  // Update environment configurations (only owner can modify)
+  fastify.put(
+    '/api/settings/environment',
+    { preHandler: fastify.authorize('owner') },
+    async (req, reply) => {
+      try {
+        const body = req.body as {
+          javaBin?: string
+          mcDir?: string
+          backupDir?: string
+          rconEnabled?: boolean
+          rconHost?: string
+          rconPort?: number
+          rconPass?: string
+        }
+
+        const updates: Array<{ key: string; value: string }> = []
+
+        // Validazione e preparazione degli aggiornamenti
+        if (body.javaBin !== undefined) {
+          if (typeof body.javaBin !== 'string' || body.javaBin.trim().length === 0) {
+            return reply.status(400).send({ error: 'JAVA_BIN must be a non-empty string' })
+          }
+          updates.push({ key: 'env.JAVA_BIN', value: body.javaBin.trim() })
+        }
+
+        if (body.mcDir !== undefined) {
+          if (typeof body.mcDir !== 'string' || body.mcDir.trim().length === 0) {
+            return reply.status(400).send({ error: 'MC_DIR must be a non-empty string' })
+          }
+          updates.push({ key: 'env.MC_DIR', value: body.mcDir.trim() })
+        }
+
+        if (body.backupDir !== undefined) {
+          if (typeof body.backupDir !== 'string' || body.backupDir.trim().length === 0) {
+            return reply.status(400).send({ error: 'BACKUP_DIR must be a non-empty string' })
+          }
+          updates.push({ key: 'env.BACKUP_DIR', value: body.backupDir.trim() })
+        }
+
+        if (body.rconEnabled !== undefined) {
+          if (typeof body.rconEnabled !== 'boolean') {
+            return reply.status(400).send({ error: 'RCON_ENABLED must be a boolean' })
+          }
+          updates.push({ key: 'env.RCON_ENABLED', value: body.rconEnabled.toString() })
+        }
+
+        if (body.rconHost !== undefined) {
+          if (typeof body.rconHost !== 'string' || body.rconHost.trim().length === 0) {
+            return reply.status(400).send({ error: 'RCON_HOST must be a non-empty string' })
+          }
+          updates.push({ key: 'env.RCON_HOST', value: body.rconHost.trim() })
+        }
+
+        if (body.rconPort !== undefined) {
+          if (!Number.isInteger(body.rconPort) || body.rconPort < 1 || body.rconPort > 65535) {
+            return reply
+              .status(400)
+              .send({ error: 'RCON_PORT must be an integer between 1 and 65535' })
+          }
+          updates.push({ key: 'env.RCON_PORT', value: body.rconPort.toString() })
+        }
+
+        if (body.rconPass !== undefined) {
+          if (typeof body.rconPass !== 'string') {
+            return reply.status(400).send({ error: 'RCON_PASS must be a string' })
+          }
+          updates.push({ key: 'env.RCON_PASS', value: body.rconPass })
+        }
+
+        // Aggiorna le impostazioni nel database
+        for (const update of updates) {
+          await db.setting.upsert({
+            where: { key: update.key },
+            update: { value: update.value },
+            create: { key: update.key, value: update.value },
+          })
+        }
+
+        // Invalida la cache delle configurazioni
+        invalidateConfigCache()
+
+        // Restituisci la configurazione aggiornata
+        const updatedConfig = await getConfig()
+        return {
+          success: true,
+          message: `Updated ${updates.length} configuration(s)`,
+          config: {
+            javaBin: updatedConfig.JAVA_BIN,
+            mcDir: updatedConfig.MC_DIR,
+            backupDir: updatedConfig.BACKUP_DIR,
+            rconEnabled: updatedConfig.RCON_ENABLED,
+            rconHost: updatedConfig.RCON_HOST,
+            rconPort: updatedConfig.RCON_PORT,
+            rconPass: updatedConfig.RCON_PASS,
+          },
+        }
+      } catch (error) {
+        fastify.log.error(`Error updating environment settings: ${(error as Error).message}`)
+        return reply.status(500).send({
+          error: 'Failed to update environment settings',
+          details: (error as Error).message,
+        })
+      }
+    }
+  )
 
   // Get owner UI preferences (background, etc.)
   fastify.get('/api/settings/ui', { preHandler: fastify.authorize('viewer') }, async () => {
@@ -122,7 +245,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     '/api/settings/ui',
     { preHandler: fastify.authorize('owner') },
     async (req, _reply) => {
-      const body = (await req.body) as { backgroundImage?: string | null }
+      const body = req.body as { backgroundImage?: string | null }
 
       if (body.backgroundImage !== undefined) {
         if (body.backgroundImage === null) {
