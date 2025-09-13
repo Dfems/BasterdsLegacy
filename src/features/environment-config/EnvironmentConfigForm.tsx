@@ -231,10 +231,10 @@ export const EnvironmentConfigForm = ({
           {/* Logging Configuration */}
           <Box>
             <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-              Logging Configuration
+              {settings.environment.logging.title}
             </Heading>
             <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }} mb={4}>
-              Configure server logging behavior and retention policies
+              {settings.environment.logging.description}
             </Text>
             <Stack gap={4}>
               <Field.Root>
@@ -247,11 +247,11 @@ export const EnvironmentConfigForm = ({
                     }
                   />
                   <Text as="span" ml={2} fontSize={{ base: 'sm', md: 'md' }}>
-                    File Logging Enabled
+                    {settings.environment.logging.fileEnabled.label}
                   </Text>
                 </label>
                 <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                  Enable writing logs to files
+                  {settings.environment.logging.fileEnabled.description}
                 </Field.HelperText>
               </Field.Root>
 
@@ -332,22 +332,26 @@ export const EnvironmentConfigForm = ({
                   </Field.Root>
 
                   <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Log Directory</Field.Label>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                      {settings.environment.logging.dir.label}
+                    </Field.Label>
                     <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                      Directory where log files are stored
+                      {settings.environment.logging.dir.description}
                     </Field.HelperText>
                     <Input
                       value={config.logDir}
                       onChange={(e) => setConfig((prev) => ({ ...prev, logDir: e.target.value }))}
-                      placeholder="./logs"
+                      placeholder={settings.environment.logging.dir.placeholder}
                       fontSize={{ base: 'sm', md: 'md' }}
                     />
                   </Field.Root>
 
                   <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Retention Days</Field.Label>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                      {settings.environment.logging.retentionDays.label}
+                    </Field.Label>
                     <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                      Days to keep log files before cleanup
+                      {settings.environment.logging.retentionDays.description}
                     </Field.HelperText>
                     <Input
                       type="number"
@@ -357,15 +361,17 @@ export const EnvironmentConfigForm = ({
                       }
                       min={1}
                       max={365}
-                      placeholder="30"
+                      placeholder={settings.environment.logging.retentionDays.placeholder}
                       fontSize={{ base: 'sm', md: 'md' }}
                     />
                   </Field.Root>
 
                   <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Maximum Files</Field.Label>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                      {settings.environment.logging.maxFiles.label}
+                    </Field.Label>
                     <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                      Maximum number of log files to keep
+                      {settings.environment.logging.maxFiles.description}
                     </Field.HelperText>
                     <Input
                       type="number"
@@ -375,7 +381,7 @@ export const EnvironmentConfigForm = ({
                       }
                       min={1}
                       max={100}
-                      placeholder="10"
+                      placeholder={settings.environment.logging.maxFiles.placeholder}
                       fontSize={{ base: 'sm', md: 'md' }}
                     />
                   </Field.Root>
