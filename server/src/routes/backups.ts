@@ -58,6 +58,24 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         return b
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        
+        // Log dell'errore con audit
+        try {
+          await (
+            await import('../lib/audit.js')
+          ).auditLog({ 
+            type: 'backup', 
+            op: 'create', 
+            userId: req.user?.sub,
+            details: { 
+              error: errorMsg,
+              mode: (req.body as any)?.mode
+            }
+          })
+        } catch {
+          console.warn('Failed to log backup error audit')
+        }
+        
         console.error('Backup creation failed:', errorMsg)
         return reply.status(500).send({ error: errorMsg })
       }
@@ -93,6 +111,22 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         return { ok: true }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        
+        // Log dell'errore con audit
+        try {
+          await (
+            await import('../lib/audit.js')
+          ).auditLog({ 
+            type: 'backup', 
+            op: 'restore', 
+            id: (req.params as { id?: string }).id,
+            userId: req.user?.sub,
+            details: { error: errorMsg }
+          })
+        } catch {
+          console.warn('Failed to log backup restore error audit')
+        }
+        
         console.error('Backup restore failed:', errorMsg)
         return reply.status(500).send({ error: errorMsg })
       }

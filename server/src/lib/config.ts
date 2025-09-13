@@ -25,6 +25,12 @@ const DYNAMIC_CONFIG_DEFAULTS = {
   AUTO_BACKUP_ENABLED: env('AUTO_BACKUP_ENABLED', 'false') === 'true',
   AUTO_BACKUP_CRON: env('AUTO_BACKUP_CRON', '0 3 * * *'),
   AUTO_BACKUP_MODE: env('AUTO_BACKUP_MODE', 'world') as 'full' | 'world',
+  // Configurazione logging
+  LOG_LEVEL: env('LOG_LEVEL', 'info') as 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal',
+  LOG_DIR: path.resolve(env('LOG_DIR', './logs')),
+  LOG_FILE_ENABLED: env('LOG_FILE_ENABLED', 'true') === 'true',
+  LOG_RETENTION_DAYS: Number(env('LOG_RETENTION_DAYS', '30')),
+  LOG_MAX_FILES: Number(env('LOG_MAX_FILES', '10')),
 } as const
 
 // Cache per le configurazioni del database
@@ -62,6 +68,11 @@ export const getConfig = async (): Promise<ConfigType> => {
             'env.AUTO_BACKUP_ENABLED',
             'env.AUTO_BACKUP_CRON',
             'env.AUTO_BACKUP_MODE',
+            'env.LOG_LEVEL',
+            'env.LOG_DIR',
+            'env.LOG_FILE_ENABLED',
+            'env.LOG_RETENTION_DAYS',
+            'env.LOG_MAX_FILES',
           ]
         }
       }
@@ -76,6 +87,7 @@ export const getConfig = async (): Promise<ConfigType> => {
       switch (key) {
         case 'MC_DIR':
         case 'BACKUP_DIR':
+        case 'LOG_DIR':
           (overrides as Record<string, unknown>)[key] = path.resolve(value)
           break
         case 'JAVA_BIN':
@@ -83,15 +95,19 @@ export const getConfig = async (): Promise<ConfigType> => {
         case 'RCON_PASS':
         case 'BACKUP_CRON':
         case 'AUTO_BACKUP_CRON':
+        case 'LOG_LEVEL':
           (overrides as Record<string, unknown>)[key] = value
           break
         case 'RCON_ENABLED':
         case 'AUTO_BACKUP_ENABLED':
+        case 'LOG_FILE_ENABLED':
           (overrides as Record<string, unknown>)[key] = value === 'true'
           break
         case 'RCON_PORT':
         case 'RETENTION_DAYS':
         case 'RETENTION_WEEKS':
+        case 'LOG_RETENTION_DAYS':
+        case 'LOG_MAX_FILES':
           (overrides as Record<string, unknown>)[key] = Number(value)
           break
         case 'AUTO_BACKUP_MODE':

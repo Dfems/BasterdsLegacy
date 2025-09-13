@@ -11,7 +11,9 @@ import { authPlugin } from './lib/auth.js'
 import { CONFIG } from './lib/config.js'
 import { checkJavaBin } from './lib/java.js'
 import { loggerOptions } from './lib/logger.js'
+import { requestLoggerPlugin } from './lib/request-logger.js'
 import { initAutoBackup } from './minecraft/auto-backup.js'
+import { initLogCleanup } from './lib/log-jobs.js'
 import { authRoutes } from './routes/auth.js'
 import { backupRoutes } from './routes/backups.js'
 import { consoleRoutes } from './routes/console.js'
@@ -37,6 +39,7 @@ export const buildApp = () => {
   app.register(rateLimit, { max: 100, timeWindow: '1 minute' })
   app.register(jwt, { secret: CONFIG.JWT_SECRET, sign: { expiresIn: CONFIG.JWT_EXPIRES } })
   app.register(authPlugin)
+  app.register(requestLoggerPlugin)
   app.register(authRoutes)
   // Cross-platform: valida JAVA_BIN (best-effort)
   checkJavaBin(app)
@@ -52,8 +55,13 @@ export const buildApp = () => {
   app.register(settingsRoutes)
   app.register(usersRoutes)
 
-  // Inizializza il sistema di backup automatico
-  initAutoBackup()
+  // Inizializza il sistema di backup automatico (asincrono)
+  initAutoBackup().catch((error) => {
+    app.log.error(error, 'Failed to initialize automatic backup system')
+  })
+  
+  // Inizializza il sistema di pulizia log automatica
+  initLogCleanup()
 
   return app
 }
@@ -61,13 +69,52 @@ export const buildApp = () => {
 // Usa un confronto robusto tra URL del modulo ed argv (compatibile Windows)
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const app = buildApp()
+  
   app
     .listen({ port: CONFIG.PORT, host: '0.0.0.0' })
-    .then((address) => {
+    .then(async (address) => {
       app.log.info(`Server listening at ${address}`)
+      
+      // Log evento di startup server
+      try {
+        const { auditLog } = await import('./lib/audit.js')
+        await auditLog({
+          type: 'server',
+          op: 'startup',
+          details: { 
+            address,
+            port: CONFIG.PORT,
+            environment: process.env.NODE_ENV || 'development'
+          }
+        })
+      } catch (error) {
+        app.log.warn({ error }, 'Failed to log server startup event')
+      }
     })
     .catch((err) => {
       app.log.error(err)
       process.exit(1)
     })
+    
+  // Log evento di shutdown quando il processo termina
+  const gracefulShutdown = async (signal: string) => {
+    app.log.info(`Received ${signal}, shutting down gracefully...`)
+    
+    try {
+      const { auditLog } = await import('./lib/audit.js')
+      await auditLog({
+        type: 'server',
+        op: 'shutdown',
+        details: { signal }
+      })
+    } catch (error) {
+      app.log.warn({ error }, 'Failed to log server shutdown event')
+    }
+    
+    await app.close()
+    process.exit(0)
+  }
+  
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 }

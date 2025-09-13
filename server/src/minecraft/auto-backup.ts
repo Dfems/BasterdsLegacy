@@ -1,5 +1,6 @@
 import cron from 'node-cron'
 
+import { auditLog } from '../lib/audit.js'
 import { CONFIG } from '../lib/config.js'
 import { createBackup, applyRetention } from './backups.js'
 
@@ -121,28 +122,87 @@ export const configToCronPattern = (config: BackupScheduleConfig): string | null
 
 // Esegue il backup automatico
 const executeAutoBackup = async (): Promise<void> => {
+  const startTime = Date.now()
+  
   try {
     console.log(`Starting automatic backup (mode: ${currentSchedule.mode})...`)
+    
+    // Log inizio job
+    await auditLog({
+      type: 'job',
+      name: 'automatic-backup',
+      op: 'start',
+      details: { mode: currentSchedule.mode }
+    })
 
     const backup = await createBackup(currentSchedule.mode)
 
+    const duration = Date.now() - startTime
     console.log(
       `Automatic backup completed successfully: ${backup.id} (${(backup.size / 1024 / 1024).toFixed(2)} MB)`
     )
+    
+    // Log successo job
+    await auditLog({
+      type: 'job',
+      name: 'automatic-backup',
+      op: 'end',
+      durationMs: duration,
+      details: { 
+        backupId: backup.id,
+        size: backup.size,
+        mode: currentSchedule.mode,
+        sizeFormatted: `${(backup.size / 1024 / 1024).toFixed(2)} MB`
+      }
+    })
 
     // Applica retention policy dopo ogni backup automatico
     try {
+      await auditLog({
+        type: 'job',
+        name: 'backup-retention',
+        op: 'start'
+      })
+      
       await applyRetention()
       console.log('Retention policy applied successfully')
+      
+      await auditLog({
+        type: 'job',
+        name: 'backup-retention',
+        op: 'end'
+      })
     } catch (retentionError) {
       console.warn(
         'Failed to apply retention policy:',
         retentionError instanceof Error ? retentionError.message : retentionError
       )
+      
+      await auditLog({
+        type: 'job',
+        name: 'backup-retention',
+        op: 'error',
+        details: {
+          error: retentionError instanceof Error ? retentionError.message : 'Unknown error'
+        }
+      })
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error'
     console.error('Automatic backup failed:', errorMsg)
+    
+    // Log errore job
+    await auditLog({
+      type: 'job',
+      name: 'automatic-backup',
+      op: 'error',
+      durationMs: Date.now() - startTime,
+      details: { 
+        error: errorMsg,
+        mode: currentSchedule.mode
+      }
+    })
+    
     // Non rilanciamo l'errore per non interrompere il scheduler
   }
 }
@@ -209,8 +269,14 @@ export const updateScheduler = (config: BackupScheduleConfig): void => {
 }
 
 // Inizializza il sistema di backup automatico
-export const initAutoBackup = (): void => {
+export const initAutoBackup = async (): Promise<void> => {
   console.log('Initializing automatic backup system...')
+  
+  await auditLog({
+    type: 'server',
+    op: 'startup',
+    details: { component: 'automatic-backup-system' }
+  })
 
   // Carica configurazione da variabili ambiente
   if (CONFIG.AUTO_BACKUP_ENABLED) {

@@ -22,6 +22,12 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     return { sub: u.sub, role: u.role }
   })
 
+  // Logout (principalmente per logging, JWT è stateless)
+  fastify.post('/api/auth/logout', { preHandler: fastify.authenticate }, async (req) => {
+    await auditLog({ type: 'logout', userId: req.user?.sub })
+    return { ok: true }
+  })
+
   // Seed iniziale: crea owner se non esiste alcun utente
   fastify.post('/api/auth/seed-owner', async (req, reply) => {
     const { email, password } = (await req.body) as { email?: string; password?: string }
