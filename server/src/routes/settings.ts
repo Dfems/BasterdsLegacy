@@ -119,6 +119,12 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       rconHost: config.RCON_HOST,
       rconPort: config.RCON_PORT,
       rconPass: config.RCON_PASS,
+      // Configurazioni logging
+      logLevel: config.LOG_LEVEL,
+      logDir: config.LOG_DIR,
+      logFileEnabled: config.LOG_FILE_ENABLED,
+      logRetentionDays: config.LOG_RETENTION_DAYS,
+      logMaxFiles: config.LOG_MAX_FILES,
     }
   })
 
@@ -136,6 +142,12 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           rconHost?: string
           rconPort?: number
           rconPass?: string
+          // Configurazioni logging
+          logLevel?: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+          logDir?: string
+          logFileEnabled?: boolean
+          logRetentionDays?: number
+          logMaxFiles?: number
         }
 
         const updates: Array<{ key: string; value: string }> = []
@@ -192,6 +204,49 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           updates.push({ key: 'env.RCON_PASS', value: body.rconPass })
         }
 
+        // Validazione configurazioni logging
+        if (body.logLevel !== undefined) {
+          const validLevels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal']
+          if (!validLevels.includes(body.logLevel)) {
+            return reply.status(400).send({
+              error: `LOG_LEVEL must be one of: ${validLevels.join(', ')}`,
+            })
+          }
+          updates.push({ key: 'env.LOG_LEVEL', value: body.logLevel })
+        }
+
+        if (body.logDir !== undefined) {
+          if (typeof body.logDir !== 'string' || body.logDir.trim().length === 0) {
+            return reply.status(400).send({ error: 'LOG_DIR must be a non-empty string' })
+          }
+          updates.push({ key: 'env.LOG_DIR', value: body.logDir.trim() })
+        }
+
+        if (body.logFileEnabled !== undefined) {
+          if (typeof body.logFileEnabled !== 'boolean') {
+            return reply.status(400).send({ error: 'LOG_FILE_ENABLED must be a boolean' })
+          }
+          updates.push({ key: 'env.LOG_FILE_ENABLED', value: body.logFileEnabled.toString() })
+        }
+
+        if (body.logRetentionDays !== undefined) {
+          if (!Number.isInteger(body.logRetentionDays) || body.logRetentionDays < 1) {
+            return reply.status(400).send({
+              error: 'LOG_RETENTION_DAYS must be a positive integer',
+            })
+          }
+          updates.push({ key: 'env.LOG_RETENTION_DAYS', value: body.logRetentionDays.toString() })
+        }
+
+        if (body.logMaxFiles !== undefined) {
+          if (!Number.isInteger(body.logMaxFiles) || body.logMaxFiles < 1) {
+            return reply.status(400).send({
+              error: 'LOG_MAX_FILES must be a positive integer',
+            })
+          }
+          updates.push({ key: 'env.LOG_MAX_FILES', value: body.logMaxFiles.toString() })
+        }
+
         // Aggiorna le impostazioni nel database
         for (const update of updates) {
           await db.setting.upsert({
@@ -217,6 +272,12 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
             rconHost: updatedConfig.RCON_HOST,
             rconPort: updatedConfig.RCON_PORT,
             rconPass: updatedConfig.RCON_PASS,
+            // Configurazioni logging
+            logLevel: updatedConfig.LOG_LEVEL,
+            logDir: updatedConfig.LOG_DIR,
+            logFileEnabled: updatedConfig.LOG_FILE_ENABLED,
+            logRetentionDays: updatedConfig.LOG_RETENTION_DAYS,
+            logMaxFiles: updatedConfig.LOG_MAX_FILES,
           },
         }
       } catch (error) {

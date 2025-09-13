@@ -13,6 +13,12 @@ type EnvironmentConfig = {
   rconHost: string
   rconPort: number
   rconPass: string
+  // Configurazioni logging
+  logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+  logDir: string
+  logFileEnabled: boolean
+  logRetentionDays: number
+  logMaxFiles: number
 }
 
 type EnvironmentConfigFormProps = {
@@ -46,6 +52,14 @@ export const EnvironmentConfigForm = ({
       if (config.rconHost !== initialConfig.rconHost) changes.rconHost = config.rconHost
       if (config.rconPort !== initialConfig.rconPort) changes.rconPort = config.rconPort
       if (config.rconPass !== initialConfig.rconPass) changes.rconPass = config.rconPass
+      // Configurazioni logging
+      if (config.logLevel !== initialConfig.logLevel) changes.logLevel = config.logLevel
+      if (config.logDir !== initialConfig.logDir) changes.logDir = config.logDir
+      if (config.logFileEnabled !== initialConfig.logFileEnabled)
+        changes.logFileEnabled = config.logFileEnabled
+      if (config.logRetentionDays !== initialConfig.logRetentionDays)
+        changes.logRetentionDays = config.logRetentionDays
+      if (config.logMaxFiles !== initialConfig.logMaxFiles) changes.logMaxFiles = config.logMaxFiles
 
       await onSave(changes)
     } finally {
@@ -189,6 +203,119 @@ export const EnvironmentConfigForm = ({
                       type="password"
                       value={config.rconPass}
                       onChange={(e) => setConfig((prev) => ({ ...prev, rconPass: e.target.value }))}
+                      fontSize={{ base: 'sm', md: 'md' }}
+                    />
+                  </Field.Root>
+                </>
+              )}
+            </Stack>
+          </Box>
+
+          {/* Logging Configuration */}
+          <Box>
+            <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
+              Logging Configuration
+            </Heading>
+            <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }} mb={4}>
+              Configure server logging behavior and retention policies
+            </Text>
+            <Stack gap={4}>
+              <Field.Root>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={config.logFileEnabled}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, logFileEnabled: e.target.checked }))
+                    }
+                  />
+                  <Text as="span" ml={2} fontSize={{ base: 'sm', md: 'md' }}>
+                    File Logging Enabled
+                  </Text>
+                </label>
+                <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                  Enable writing logs to files
+                </Field.HelperText>
+              </Field.Root>
+
+              {config.logFileEnabled && (
+                <>
+                  <Field.Root>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Log Level</Field.Label>
+                    <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                      Minimum log level to record
+                    </Field.HelperText>
+                    <select
+                      value={config.logLevel}
+                      onChange={(e) => {
+                        const value = e.target.value as EnvironmentConfig['logLevel']
+                        setConfig((prev) => ({ ...prev, logLevel: value }))
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        color: 'inherit',
+                        fontSize: 'inherit',
+                        fontFamily: 'inherit',
+                        width: '100%',
+                      }}
+                    >
+                      <option value="trace">Trace (very verbose)</option>
+                      <option value="debug">Debug (verbose)</option>
+                      <option value="info">Info (normal)</option>
+                      <option value="warn">Warning (important)</option>
+                      <option value="error">Error (problems)</option>
+                      <option value="fatal">Fatal (critical)</option>
+                    </select>
+                  </Field.Root>
+
+                  <Field.Root>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Log Directory</Field.Label>
+                    <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                      Directory where log files are stored
+                    </Field.HelperText>
+                    <Input
+                      value={config.logDir}
+                      onChange={(e) => setConfig((prev) => ({ ...prev, logDir: e.target.value }))}
+                      placeholder="./logs"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                    />
+                  </Field.Root>
+
+                  <Field.Root>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Retention Days</Field.Label>
+                    <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                      Days to keep log files before cleanup
+                    </Field.HelperText>
+                    <Input
+                      type="number"
+                      value={config.logRetentionDays.toString()}
+                      onChange={(e) =>
+                        setConfig((prev) => ({ ...prev, logRetentionDays: Number(e.target.value) }))
+                      }
+                      min={1}
+                      max={365}
+                      placeholder="30"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                    />
+                  </Field.Root>
+
+                  <Field.Root>
+                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>Maximum Files</Field.Label>
+                    <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                      Maximum number of log files to keep
+                    </Field.HelperText>
+                    <Input
+                      type="number"
+                      value={config.logMaxFiles.toString()}
+                      onChange={(e) =>
+                        setConfig((prev) => ({ ...prev, logMaxFiles: Number(e.target.value) }))
+                      }
+                      min={1}
+                      max={100}
+                      placeholder="10"
                       fontSize={{ base: 'sm', md: 'md' }}
                     />
                   </Field.Root>
