@@ -27,6 +27,7 @@ const DYNAMIC_CONFIG_DEFAULTS = {
   AUTO_BACKUP_MODE: env('AUTO_BACKUP_MODE', 'world') as 'full' | 'world',
   // Configurazione logging
   LOG_LEVEL: env('LOG_LEVEL', 'info') as 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal',
+  LOG_LEVELS: env('LOG_LEVELS', 'info').split(',').map(level => level.trim()) as ('trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal')[],
   LOG_DIR: path.resolve(env('LOG_DIR', './logs')),
   LOG_FILE_ENABLED: env('LOG_FILE_ENABLED', 'true') === 'true',
   LOG_RETENTION_DAYS: Number(env('LOG_RETENTION_DAYS', '30')),
@@ -69,6 +70,7 @@ export const getConfig = async (): Promise<ConfigType> => {
             'env.AUTO_BACKUP_CRON',
             'env.AUTO_BACKUP_MODE',
             'env.LOG_LEVEL',
+            'env.LOG_LEVELS',
             'env.LOG_DIR',
             'env.LOG_FILE_ENABLED',
             'env.LOG_RETENTION_DAYS',
@@ -97,6 +99,9 @@ export const getConfig = async (): Promise<ConfigType> => {
         case 'AUTO_BACKUP_CRON':
         case 'LOG_LEVEL':
           (overrides as Record<string, unknown>)[key] = value
+          break
+        case 'LOG_LEVELS':
+          (overrides as Record<string, unknown>)[key] = value.split(',').map((level: string) => level.trim())
           break
         case 'RCON_ENABLED':
         case 'AUTO_BACKUP_ENABLED':

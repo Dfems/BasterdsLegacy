@@ -121,6 +121,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       rconPass: config.RCON_PASS,
       // Configurazioni logging
       logLevel: config.LOG_LEVEL,
+      logLevels: config.LOG_LEVELS,
       logDir: config.LOG_DIR,
       logFileEnabled: config.LOG_FILE_ENABLED,
       logRetentionDays: config.LOG_RETENTION_DAYS,
@@ -144,6 +145,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           rconPass?: string
           // Configurazioni logging
           logLevel?: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+          logLevels?: ('trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal' | 'all')[]
           logDir?: string
           logFileEnabled?: boolean
           logRetentionDays?: number
@@ -215,6 +217,29 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           updates.push({ key: 'env.LOG_LEVEL', value: body.logLevel })
         }
 
+        if (body.logLevels !== undefined) {
+          const validLevels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'all']
+          if (!Array.isArray(body.logLevels)) {
+            return reply.status(400).send({ error: 'LOG_LEVELS must be an array' })
+          }
+
+          for (const level of body.logLevels) {
+            if (!validLevels.includes(level)) {
+              return reply.status(400).send({
+                error: `LOG_LEVELS must contain only: ${validLevels.join(', ')}`,
+              })
+            }
+          }
+
+          // Se contiene 'all', sostituisci con tutti i levels
+          let levelsToStore = body.logLevels
+          if (body.logLevels.includes('all')) {
+            levelsToStore = ['all']
+          }
+
+          updates.push({ key: 'env.LOG_LEVELS', value: levelsToStore.join(',') })
+        }
+
         if (body.logDir !== undefined) {
           if (typeof body.logDir !== 'string' || body.logDir.trim().length === 0) {
             return reply.status(400).send({ error: 'LOG_DIR must be a non-empty string' })
@@ -274,6 +299,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
             rconPass: updatedConfig.RCON_PASS,
             // Configurazioni logging
             logLevel: updatedConfig.LOG_LEVEL,
+            logLevels: updatedConfig.LOG_LEVELS,
             logDir: updatedConfig.LOG_DIR,
             logFileEnabled: updatedConfig.LOG_FILE_ENABLED,
             logRetentionDays: updatedConfig.LOG_RETENTION_DAYS,

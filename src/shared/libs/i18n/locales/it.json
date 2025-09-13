@@ -302,6 +302,17 @@
           "error": "Error (problemi)",
           "fatal": "Fatal (critico)"
         },
+        "levels": {
+          "label": "Livelli Log",
+          "description": "Seleziona quali livelli di log registrare (selezione multipla o TUTTI)",
+          "all": "TUTTI (tutti i livelli)",
+          "trace": "Trace (molto verboso)",
+          "debug": "Debug (verboso)",
+          "info": "Info (normale)",
+          "warn": "Warning (importante)",
+          "error": "Error (problemi)",
+          "fatal": "Fatal (critico)"
+        },
         "dir": {
           "label": "Directory Log",
           "description": "Directory dove vengono salvati i file di log",

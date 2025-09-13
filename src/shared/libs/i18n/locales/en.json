@@ -302,6 +302,17 @@
           "error": "Error (problems)",
           "fatal": "Fatal (critical)"
         },
+        "levels": {
+          "label": "Log Levels",
+          "description": "Select which log levels to record (select multiple or ALL)",
+          "all": "ALL (all levels)",
+          "trace": "Trace (very verbose)",
+          "debug": "Debug (verbose)",
+          "info": "Info (normal)",
+          "warn": "Warning (important)",
+          "error": "Error (problems)",
+          "fatal": "Fatal (critical)"
+        },
         "dir": {
           "label": "Log Directory",
           "description": "Directory where log files are stored",

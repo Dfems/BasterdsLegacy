@@ -130,6 +130,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           maxFiles: CONFIG.LOG_MAX_FILES,
           logFileEnabled: CONFIG.LOG_FILE_ENABLED,
           logLevel: CONFIG.LOG_LEVEL,
+          logLevels: CONFIG.LOG_LEVELS,
           files: stats.files.map((file) => ({
             ...file,
             sizeFormatted: `${(file.size / 1024).toFixed(1)} KB`,
