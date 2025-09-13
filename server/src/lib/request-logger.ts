@@ -21,7 +21,7 @@ const formatDuration = (ms: number): string => {
 }
 
 // Determina se la richiesta è un'operazione significativa che dovrebbe essere loggata
-const shouldLogRequest = (url: string, method: string): boolean => {
+const shouldLogRequest = (url: string, _method: string): boolean => {
   // Non loggare richieste di health check, websocket, asset statici
   if (url.includes('/health') || url.includes('/ws') || url.startsWith('/static/')) {
     return false
@@ -37,7 +37,7 @@ const shouldLogRequest = (url: string, method: string): boolean => {
 
 export const requestLoggerPlugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
   // Hook per loggare l'inizio delle richieste
-  fastify.addHook('onRequest', async (request, reply) => {
+  fastify.addHook('onRequest', async (request, _reply) => {
     const startTime = Date.now()
     
     // Salva il tempo di inizio nel request per calcolare la durata dopo

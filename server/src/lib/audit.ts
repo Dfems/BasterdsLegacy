@@ -19,7 +19,11 @@ export type AuditEvent =
   | { type: 'whitelist'; op: 'add' | 'remove'; playerName: string; userId?: string | undefined; details?: Record<string, unknown> | undefined }
 
 // Logger centralizzato per log strutturati - sarà importato dinamicamente per evitare dipendenze circolari
-let appLogger: any = null
+let appLogger: {
+  info: (obj: unknown, msg?: string) => void;
+  error: (obj: unknown, msg?: string) => void;
+  warn: (obj: unknown, msg?: string) => void;
+} | null = null
 
 const getLogger = async () => {
   if (!appLogger) {
@@ -90,7 +94,7 @@ const getHumanMessage = (evt: AuditEvent): string => {
     }
   }
   
-  return `${(evt as any).type} operation completed`
+  return `${(evt as { type: string }).type} operation completed`
 }
 
 export const auditLog = async (evt: AuditEvent) => {
@@ -127,11 +131,11 @@ export const auditLog = async (evt: AuditEvent) => {
     
     // Usa il livello appropriato basato sul tipo di evento
     if (evt.type === 'job' && evt.op === 'error') {
-      logger.error(logData, `❌ ${message}`)
+      logger?.error(logData, `❌ ${message}`)
     } else if (evt.type === 'power' || evt.type === 'server') {
-      logger.warn(logData, `⚡ ${message}`)
+      logger?.warn(logData, `⚡ ${message}`)
     } else {
-      logger.info(logData, `📝 ${message}`)
+      logger?.info(logData, `📝 ${message}`)
     }
     
   } catch (error) {

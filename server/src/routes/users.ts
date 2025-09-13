@@ -24,43 +24,43 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       const passHash = await bcrypt.hash(password, 10)
 
       const user = await db.user.create({ data: { email, passHash, role } })
-      
+
       // Log dell'evento di creazione utente
       try {
         await (
           await import('../lib/audit.js')
-        ).auditLog({ 
-          type: 'user', 
-          op: 'create', 
+        ).auditLog({
+          type: 'user',
+          op: 'create',
           targetUserId: user.id,
           userId: req.user?.sub,
-          details: { email: user.email, role: user.role }
+          details: { email: user.email, role: user.role },
         })
       } catch {
         console.warn('Failed to log user creation audit')
       }
-      
+
       return { id: user.id, email: user.email, role: user.role }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error'
-      
+
       // Log dell'errore
       try {
         await (
           await import('../lib/audit.js')
-        ).auditLog({ 
-          type: 'user', 
-          op: 'create', 
+        ).auditLog({
+          type: 'user',
+          op: 'create',
           userId: req.user?.sub,
-          details: { 
+          details: {
             error: errorMsg,
-            attempted_email: (req.body as any)?.email
-          }
+            attempted_email: (req.body as { email?: string })?.email,
+          },
         })
       } catch {
         console.warn('Failed to log user creation error audit')
       }
-      
+
       console.error('User creation failed:', errorMsg)
       return reply.status(500).send({ error: 'Failed to create user' })
     }
