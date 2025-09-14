@@ -113,7 +113,7 @@ describe('Settings and Dashboard render basics', () => {
     render(wrap(<SettingsPage />))
     // titolo campo statico e valore da fetch mockato
     expect(screen.getByText(/Settings/i)).toBeInTheDocument()
-    expect(await screen.findByText(/JAVA_BIN/i)).toBeInTheDocument()
+    expect(await screen.findByText(/Eseguibile Java/i)).toBeInTheDocument()
     expect(await screen.findByText('java')).toBeInTheDocument()
   })
 

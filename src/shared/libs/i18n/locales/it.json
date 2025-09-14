@@ -259,6 +259,58 @@
     "maxPlayers": "Giocatori Massimi",
     "loading": "Caricamento…",
     "errorLoad": "Errore nel caricamento delle impostazioni",
+    "sections": {
+      "serverInfo": "📊 Informazioni Server",
+      "environment": "⚙️ Configurazioni Ambiente",
+      "userInterface": "🎨 Interfaccia Utente",
+      "advanced": "🛠️ Impostazioni Avanzate"
+    },
+    "serverInfo": {
+      "title": "Informazioni Server",
+      "description": "Configurazioni attualmente attive del server (sola lettura)",
+      "javaBinLabel": "Eseguibile Java",
+      "mcDirLabel": "Directory Server",
+      "backupDirLabel": "Directory Backup",
+      "rconLabel": "RCON",
+      "rconEnabled": "Abilitato",
+      "rconDisabled": "Disabilitato",
+      "backupScheduleLabel": "Schedule Backup",
+      "retentionLabel": "Retention Policy"
+    },
+    "userInterface": {
+      "title": "Interfaccia Utente",
+      "description": "Personalizza l'aspetto e il comportamento dell'interfaccia",
+      "backgroundUpload": {
+        "title": "Sfondo Personalizzato",
+        "description": "Carica un'immagine di sfondo personalizzata per l'interfaccia (solo proprietario)",
+        "uploadButton": "Carica Immagine",
+        "removeButton": "Rimuovi Sfondo",
+        "supportedFormats": "Formati supportati: JPEG, PNG, WebP, GIF (max 5MB)"
+      }
+    },
+    "serverInfo": {
+      "title": "Informazioni Server",
+      "description": "Configurazioni attualmente attive del server (sola lettura)",
+      "javaBinLabel": "Eseguibile Java",
+      "mcDirLabel": "Directory Server",
+      "backupDirLabel": "Directory Backup",
+      "rconLabel": "RCON",
+      "rconEnabled": "Abilitato",
+      "rconDisabled": "Disabilitato",
+      "backupScheduleLabel": "Schedule Backup",
+      "retentionLabel": "Retention Policy"
+    },
+    "userInterface": {
+      "title": "Interfaccia Utente",
+      "description": "Personalizza l'aspetto e il comportamento dell'interfaccia",
+      "backgroundUpload": {
+        "title": "Sfondo Personalizzato",
+        "description": "Carica un'immagine di sfondo personalizzata per l'interfaccia (solo proprietario)",
+        "uploadButton": "Carica Immagine",
+        "removeButton": "Rimuovi Sfondo",
+        "supportedFormats": "Formati supportati: JPEG, PNG, WebP, GIF (max 5MB)"
+      }
+    },
     "environment": {
       "title": "Configurazioni Ambiente",
       "description": "Configura le variabili d'ambiente del server (solo per proprietari)",
