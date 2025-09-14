@@ -20,7 +20,7 @@ const HomePage = (): JSX.Element => {
   // Versione per utenti non loggati (rimane invariata come richiesto)
   return (
     <Box p={{ base: 4, md: 6 }}>
-      <GlassCard maxW="720px" mx="auto" textAlign="center" p={{ base: 4, md: 6 }}>
+      <GlassCard inset maxW="720px" mx="auto" textAlign="center" p={{ base: 4, md: 6 }}>
         <Heading mb={3} fontSize={{ base: 'lg', md: 'xl' }}>
           {t.title}
         </Heading>
