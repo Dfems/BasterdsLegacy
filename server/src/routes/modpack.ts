@@ -3,9 +3,9 @@ import type { RawData, WebSocket } from 'ws'
 
 import type { JwtPayload } from '../lib/auth.js'
 import {
+  getSupportedVersions,
   installModpack,
   installModpackWithProgress,
-  getSupportedVersions,
   loadInstallationInfo,
   type InstallRequest,
 } from '../minecraft/modpack.js'
@@ -134,7 +134,8 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         }
       }
     } catch (error) {
-      fastify.log.error('Errore nel caricamento informazioni modpack:', error)
+      const err = error instanceof Error ? error : new Error(String(error))
+      fastify.log.error({ err }, 'Errore nel caricamento informazioni modpack')
       return reply.status(500).send({ error: 'Errore nel caricamento informazioni modpack' })
     }
   })
