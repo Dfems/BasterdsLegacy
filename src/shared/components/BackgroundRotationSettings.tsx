@@ -89,16 +89,23 @@ export const BackgroundRotationSettings = (): JSX.Element => {
       })
       if (!r.ok) throw new Error('Failed to save rotation seconds')
       const body = (await r.json()) as { seconds: number; enabled: boolean }
-      // Update local immediate effect SOLO dopo click Salva
+      
+      // Update local storage immediately after successful server save
       writeSeconds(body.seconds)
       writeEnabled(Boolean(body.enabled))
+      
+      // Update state to reflect server response
       setServerValue(body.seconds)
       setServerEnabled(Boolean(body.enabled))
+      setValue(String(body.seconds))
+      setEnabled(Boolean(body.enabled))
+      
       setSavedMsg(t.settings.environment.success)
       // auto-hide message
       window.setTimeout(() => setSavedMsg(null), 2000)
-    } catch {
-      // noop basic
+    } catch (error) {
+      setSavedMsg(`Errore: ${(error as Error).message}`)
+      window.setTimeout(() => setSavedMsg(null), 3000)
     } finally {
       setSaving(false)
     }
@@ -123,7 +130,7 @@ export const BackgroundRotationSettings = (): JSX.Element => {
             aria-label={t.settings.backgroundRotation.toggle}
           />
           <Text fontSize={{ base: 'xs', md: 'sm' }}>
-            {enabled ? t.backups.schedule.enabled : t.backups.schedule.disabled}
+            {enabled ? t.settings.backgroundRotation.enabled : t.settings.backgroundRotation.disabled}
           </Text>
         </HStack>
         <HStack gap={2}>
@@ -143,7 +150,8 @@ export const BackgroundRotationSettings = (): JSX.Element => {
             loading={saving}
             disabled={
               saving ||
-              (serverValue !== null && current === serverValue && serverEnabled === enabled)
+              (serverValue !== null && serverEnabled !== null &&
+               current === serverValue && enabled === serverEnabled)
             }
           >
             {t.common.save}

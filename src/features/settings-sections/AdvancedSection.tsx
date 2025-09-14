@@ -44,13 +44,26 @@ export const AdvancedSection = ({
 
   return (
     <Stack direction="column" gap={6}>
+      {/* Header sezione avanzate */}
+      <Box>
+        <Heading size={{ base: 'sm', md: 'md' }} mb={2}>
+          🛠️ Impostazioni Avanzate
+        </Heading>
+        <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
+          Configurazioni di sistema avanzate riservate al proprietario
+        </Text>
+      </Box>
+
       {/* Configurazioni Ambiente */}
       <GlassCard inset p={{ base: 4, md: 6 }}>
         <Stack direction="column" gap={4}>
           <Box>
-            <Heading size={{ base: 'sm', md: 'md' }} mb={2}>
-              ⚙️ Configurazioni Ambiente
-            </Heading>
+            <HStack gap={2} align="center" mb={2}>
+              <Text fontSize="lg">⚙️</Text>
+              <Heading size={{ base: 'xs', md: 'sm' }}>
+                Configurazioni Ambiente
+              </Heading>
+            </HStack>
             <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
               {t.environment.description}
             </Text>
@@ -76,9 +89,12 @@ export const AdvancedSection = ({
       <GlassCard inset p={{ base: 4, md: 6 }}>
         <Stack direction="column" gap={3}>
           <Box>
-            <Heading size="xs" mb={2} color="textPrimary">
-              🔐 {t.sftp.title}
-            </Heading>
+            <HStack gap={2} align="center" mb={2}>
+              <Text fontSize="lg">🔐</Text>
+              <Heading size={{ base: 'xs', md: 'sm' }}>
+                {t.sftp.title}
+              </Heading>
+            </HStack>
             <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted" mb={3}>
               {t.sftp.description}
             </Text>

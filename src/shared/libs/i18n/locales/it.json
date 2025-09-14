@@ -423,7 +423,9 @@
       "description": "Imposta l'intervallo (in secondi) per la rotazione degli sfondi pubblici in src/assets/background. Minimo 3 secondi. Si applica a tutti gli utenti non‑owner e ai visitatori non autenticati.",
       "toggle": "Abilita rotazione sfondi",
       "secondsLabel": "Intervallo rotazione (secondi)",
-      "current": "Attuale: {seconds}s"
+      "current": "Attuale: {seconds}s",
+      "enabled": "Rotazione sfondi abilitata",
+      "disabled": "Rotazione sfondi disabilitata"
     },
     "sftp": {
       "title": "SFTP OS‑level",

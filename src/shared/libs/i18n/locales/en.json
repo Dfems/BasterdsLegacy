@@ -371,7 +371,9 @@
       "description": "Set the interval (in seconds) for rotating public backgrounds in src/assets/background. Minimum 3 seconds. Applies to all non-owner users and unauthenticated visitors.",
       "toggle": "Enable background rotation",
       "secondsLabel": "Rotation interval (seconds)",
-      "current": "Current: {seconds}s"
+      "current": "Current: {seconds}s",
+      "enabled": "Background rotation enabled",
+      "disabled": "Background rotation disabled"
     },
     "sftp": {
       "title": "SFTP OS-level",

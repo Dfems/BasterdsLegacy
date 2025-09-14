@@ -124,31 +124,30 @@ export const EnvironmentConfigForm = ({
   }
 
   return (
-    <GlassCard inset p={{ base: 4, md: 6 }}>
-      <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
-        {settings.environment.title}
-      </Heading>
-      <Text color="textMuted" fontSize={{ base: 'sm', md: 'md' }} mb={6}>
-        {settings.environment.description}
-      </Text>
+    <Box as="form" onSubmit={handleSubmit}>
+      <Stack gap={6}>
+        {/* Save Status Alert */}
+        {saveStatus && saveMessage && (
+          <Alert.Root
+            status={saveStatus === 'success' ? 'success' : 'error'}
+            mb={4}
+            fontSize={{ base: 'sm', md: 'md' }}
+          >
+            <Alert.Indicator />
+            <Alert.Title>{saveStatus === 'success' ? common.success : common.error}</Alert.Title>
+            <Alert.Description>{saveMessage}</Alert.Description>
+          </Alert.Root>
+        )}
 
-      {/* Save Status Alert */}
-      {saveStatus && saveMessage && (
-        <Alert.Root
-          status={saveStatus === 'success' ? 'success' : 'error'}
-          mb={4}
-          fontSize={{ base: 'sm', md: 'md' }}
-        >
-          <Alert.Indicator />
-          <Alert.Title>{saveStatus === 'success' ? common.success : common.error}</Alert.Title>
-          <Alert.Description>{saveMessage}</Alert.Description>
-        </Alert.Root>
-      )}
-
-      <Box as="form" onSubmit={handleSubmit}>
-        <Stack gap={6}>
-          {/* Java Configuration */}
-          <Box>
+        {/* Java Configuration */}
+        <GlassCard inset p={4}>
+          <Stack gap={4}>
+            <Box>
+              <HStack gap={2} align="center" mb={2}>
+                <Text fontSize="md">☕</Text>
+                <Heading size="xs" color="textPrimary">Configurazione Java</Heading>
+              </HStack>
+            </Box>
             <Field.Root>
               <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
                 {settings.environment.javaBin.label}
@@ -163,46 +162,61 @@ export const EnvironmentConfigForm = ({
                 fontSize={{ base: 'sm', md: 'md' }}
               />
             </Field.Root>
-          </Box>
-
-          {/* Directory Configuration */}
-          <Stack gap={4}>
-            <Field.Root>
-              <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
-                {settings.environment.mcDir.label}
-              </Field.Label>
-              <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                {settings.environment.mcDir.description}
-              </Field.HelperText>
-              <Input
-                value={config.mcDir}
-                onChange={(e) => setConfig((prev) => ({ ...prev, mcDir: e.target.value }))}
-                placeholder={settings.environment.mcDir.placeholder}
-                fontSize={{ base: 'sm', md: 'md' }}
-              />
-            </Field.Root>
-
-            <Field.Root>
-              <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
-                {settings.environment.backupDir.label}
-              </Field.Label>
-              <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                {settings.environment.backupDir.description}
-              </Field.HelperText>
-              <Input
-                value={config.backupDir}
-                onChange={(e) => setConfig((prev) => ({ ...prev, backupDir: e.target.value }))}
-                placeholder={settings.environment.backupDir.placeholder}
-                fontSize={{ base: 'sm', md: 'md' }}
-              />
-            </Field.Root>
           </Stack>
+        </GlassCard>
 
-          {/* RCON Configuration */}
-          <Box>
-            <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-              {settings.environment.rcon.title}
-            </Heading>
+        {/* Directory Configuration */}
+        <GlassCard inset p={4}>
+          <Stack gap={4}>
+            <Box>
+              <HStack gap={2} align="center" mb={2}>
+                <Text fontSize="md">📁</Text>
+                <Heading size="xs" color="textPrimary">Configurazione Cartelle</Heading>
+              </HStack>
+            </Box>
+            <Stack gap={4}>
+              <Field.Root>
+                <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                  {settings.environment.mcDir.label}
+                </Field.Label>
+                <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                  {settings.environment.mcDir.description}
+                </Field.HelperText>
+                <Input
+                  value={config.mcDir}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, mcDir: e.target.value }))}
+                  placeholder={settings.environment.mcDir.placeholder}
+                  fontSize={{ base: 'sm', md: 'md' }}
+                />
+              </Field.Root>
+
+              <Field.Root>
+                <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                  {settings.environment.backupDir.label}
+                </Field.Label>
+                <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                  {settings.environment.backupDir.description}
+                </Field.HelperText>
+                <Input
+                  value={config.backupDir}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, backupDir: e.target.value }))}
+                  placeholder={settings.environment.backupDir.placeholder}
+                  fontSize={{ base: 'sm', md: 'md' }}
+                />
+              </Field.Root>
+            </Stack>
+          </Stack>
+        </GlassCard>
+
+        {/* RCON Configuration */}
+        <GlassCard inset p={4}>
+          <Stack gap={4}>
+            <Box>
+              <HStack gap={2} align="center" mb={2}>
+                <Text fontSize="md">🔗</Text>
+                <Heading size="xs" color="textPrimary">{settings.environment.rcon.title}</Heading>
+              </HStack>
+            </Box>
             <Stack gap={4}>
               <Field.Root>
                 <label>
@@ -220,7 +234,7 @@ export const EnvironmentConfigForm = ({
               </Field.Root>
 
               {config.rconEnabled && (
-                <>
+                <Stack gap={3} pl={4} borderLeft="2px solid" borderColor="gray.200">
                   <Field.Root>
                     <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
                       {settings.environment.rcon.host.label}
@@ -263,19 +277,24 @@ export const EnvironmentConfigForm = ({
                       fontSize={{ base: 'sm', md: 'md' }}
                     />
                   </Field.Root>
-                </>
+                </Stack>
               )}
             </Stack>
-          </Box>
+          </Stack>
+        </GlassCard>
 
-          {/* Logging Configuration */}
-          <Box>
-            <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-              {settings.environment.logging.title}
-            </Heading>
-            <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }} mb={4}>
-              {settings.environment.logging.description}
-            </Text>
+        {/* Logging Configuration */}
+        <GlassCard inset p={4}>
+          <Stack gap={4}>
+            <Box>
+              <HStack gap={2} align="center" mb={2}>
+                <Text fontSize="md">📝</Text>
+                <Heading size="xs" color="textPrimary">{settings.environment.logging.title}</Heading>
+              </HStack>
+              <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
+                {settings.environment.logging.description}
+              </Text>
+            </Box>
             <Stack gap={4}>
               <Field.Root>
                 <label>
@@ -296,7 +315,7 @@ export const EnvironmentConfigForm = ({
               </Field.Root>
 
               {config.logFileEnabled && (
-                <>
+                <Stack gap={4} pl={4} borderLeft="2px solid" borderColor="gray.200">
                   <Field.Root>
                     <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
                       {settings.environment.logging.levels.label}
@@ -327,47 +346,49 @@ export const EnvironmentConfigForm = ({
                       </label>
 
                       {/* Singoli levels */}
-                      {(['trace', 'debug', 'info', 'warn', 'error', 'fatal'] as const).map(
-                        (level) => (
-                          <label key={level} style={{ display: 'flex', alignItems: 'center' }}>
-                            <input
-                              type="checkbox"
-                              checked={
-                                config.logLevels.includes(level) &&
-                                !config.logLevels.includes('all')
-                              }
-                              disabled={config.logLevels.includes('all')}
-                              onChange={(e) => {
-                                setConfig((prev) => {
-                                  const newLevels = [...prev.logLevels.filter((l) => l !== 'all')]
-                                  if (e.target.checked) {
-                                    if (!newLevels.includes(level)) {
-                                      newLevels.push(level)
+                      <Stack gap={1} pl={4}>
+                        {(['trace', 'debug', 'info', 'warn', 'error', 'fatal'] as const).map(
+                          (level) => (
+                            <label key={level} style={{ display: 'flex', alignItems: 'center' }}>
+                              <input
+                                type="checkbox"
+                                checked={
+                                  config.logLevels.includes(level) &&
+                                  !config.logLevels.includes('all')
+                                }
+                                disabled={config.logLevels.includes('all')}
+                                onChange={(e) => {
+                                  setConfig((prev) => {
+                                    const newLevels = [...prev.logLevels.filter((l) => l !== 'all')]
+                                    if (e.target.checked) {
+                                      if (!newLevels.includes(level)) {
+                                        newLevels.push(level)
+                                      }
+                                    } else {
+                                      const index = newLevels.indexOf(level)
+                                      if (index > -1) {
+                                        newLevels.splice(index, 1)
+                                      }
                                     }
-                                  } else {
-                                    const index = newLevels.indexOf(level)
-                                    if (index > -1) {
-                                      newLevels.splice(index, 1)
+                                    // Se non ci sono levels selezionati, mantieni almeno info
+                                    return {
+                                      ...prev,
+                                      logLevels: newLevels.length > 0 ? newLevels : ['info'],
                                     }
-                                  }
-                                  // Se non ci sono levels selezionati, mantieni almeno info
-                                  return {
-                                    ...prev,
-                                    logLevels: newLevels.length > 0 ? newLevels : ['info'],
-                                  }
-                                })
-                              }}
-                              style={{ marginRight: '8px' }}
-                            />
-                            <Text
-                              fontSize={{ base: 'sm', md: 'md' }}
-                              color={config.logLevels.includes('all') ? 'gray.500' : 'inherit'}
-                            >
-                              {settings.environment.logging.levels[level]}
-                            </Text>
-                          </label>
-                        )
-                      )}
+                                  })
+                                }}
+                                style={{ marginRight: '8px' }}
+                              />
+                              <Text
+                                fontSize={{ base: 'sm', md: 'md' }}
+                                color={config.logLevels.includes('all') ? 'gray.500' : 'inherit'}
+                              >
+                                {settings.environment.logging.levels[level]}
+                              </Text>
+                            </label>
+                          )
+                        )}
+                      </Stack>
                     </Stack>
                   </Field.Root>
 
@@ -386,72 +407,74 @@ export const EnvironmentConfigForm = ({
                     />
                   </Field.Root>
 
-                  <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
-                      {settings.environment.logging.retentionDays.label}
-                    </Field.Label>
-                    <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                      {settings.environment.logging.retentionDays.description}
-                    </Field.HelperText>
-                    <Input
-                      type="number"
-                      value={config.logRetentionDays.toString()}
-                      onChange={(e) =>
-                        setConfig((prev) => ({ ...prev, logRetentionDays: Number(e.target.value) }))
-                      }
-                      min={1}
-                      max={365}
-                      placeholder={settings.environment.logging.retentionDays.placeholder}
-                      fontSize={{ base: 'sm', md: 'md' }}
-                    />
-                  </Field.Root>
+                  <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
+                    <Field.Root flex="1">
+                      <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                        {settings.environment.logging.retentionDays.label}
+                      </Field.Label>
+                      <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                        {settings.environment.logging.retentionDays.description}
+                      </Field.HelperText>
+                      <Input
+                        type="number"
+                        value={config.logRetentionDays.toString()}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, logRetentionDays: Number(e.target.value) }))
+                        }
+                        min={1}
+                        max={365}
+                        placeholder={settings.environment.logging.retentionDays.placeholder}
+                        fontSize={{ base: 'sm', md: 'md' }}
+                      />
+                    </Field.Root>
 
-                  <Field.Root>
-                    <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
-                      {settings.environment.logging.maxFiles.label}
-                    </Field.Label>
-                    <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
-                      {settings.environment.logging.maxFiles.description}
-                    </Field.HelperText>
-                    <Input
-                      type="number"
-                      value={config.logMaxFiles.toString()}
-                      onChange={(e) =>
-                        setConfig((prev) => ({ ...prev, logMaxFiles: Number(e.target.value) }))
-                      }
-                      min={1}
-                      max={100}
-                      placeholder={settings.environment.logging.maxFiles.placeholder}
-                      fontSize={{ base: 'sm', md: 'md' }}
-                    />
-                  </Field.Root>
-                </>
+                    <Field.Root flex="1">
+                      <Field.Label fontSize={{ base: 'sm', md: 'md' }}>
+                        {settings.environment.logging.maxFiles.label}
+                      </Field.Label>
+                      <Field.HelperText fontSize={{ base: 'xs', md: 'sm' }}>
+                        {settings.environment.logging.maxFiles.description}
+                      </Field.HelperText>
+                      <Input
+                        type="number"
+                        value={config.logMaxFiles.toString()}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, logMaxFiles: Number(e.target.value) }))
+                        }
+                        min={1}
+                        max={100}
+                        placeholder={settings.environment.logging.maxFiles.placeholder}
+                        fontSize={{ base: 'sm', md: 'md' }}
+                      />
+                    </Field.Root>
+                  </Stack>
+                </Stack>
               )}
             </Stack>
-          </Box>
-
-          {/* Actions */}
-          <Stack direction={{ base: 'column', sm: 'row' }} gap={4}>
-            <Button
-              type="submit"
-              colorScheme="blue"
-              loading={submitting}
-              fontSize={{ base: 'sm', md: 'md' }}
-            >
-              {settings.save}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleReset}
-              disabled={submitting}
-              fontSize={{ base: 'sm', md: 'md' }}
-            >
-              {settings.reset}
-            </Button>
           </Stack>
+        </GlassCard>
+
+        {/* Actions */}
+        <Stack direction={{ base: 'column', sm: 'row' }} gap={4} pt={4}>
+          <Button
+            type="submit"
+            colorScheme="blue"
+            loading={submitting}
+            fontSize={{ base: 'sm', md: 'md' }}
+          >
+            {settings.save}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={submitting}
+            fontSize={{ base: 'sm', md: 'md' }}
+          >
+            {settings.reset}
+          </Button>
         </Stack>
-      </Box>
-    </GlassCard>
+      </Stack>
+    </Box>
   )
 }
