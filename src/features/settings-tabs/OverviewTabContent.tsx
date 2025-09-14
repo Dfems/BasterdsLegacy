@@ -81,7 +81,7 @@ export const OverviewTabContent = ({
   return (
     <VStack gap={6} w="full">
       {/* Stato Server */}
-      <GlassCard p={6} w="full">
+      <GlassCard inset p={6} w="full">
         <VStack gap={6} align="stretch">
           <HStack gap={3}>
             <Icon as={FiServer} color="green.400" boxSize={6} />
@@ -91,7 +91,7 @@ export const OverviewTabContent = ({
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={4}>
             <Box p={4} bg="gray.50" rounded="lg">
               <Text fontSize="xs" color="textMuted" mb={2}>
-                Java Runtime
+                Eseguibile Java
               </Text>
               <Text fontSize="sm" fontWeight="semibold" color="textPrimary">
                 {settings?.javaBin || 'N/A'}
@@ -144,7 +144,7 @@ export const OverviewTabContent = ({
       {/* Sistema e Storage */}
       <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={6} w="full">
         <GridItem>
-          <GlassCard p={6} h="full">
+          <GlassCard inset p={6} h="full">
             <VStack gap={4} align="stretch">
               <HStack gap={3}>
                 <Icon as={FiHardDrive} color="purple.400" boxSize={5} />
@@ -197,7 +197,7 @@ export const OverviewTabContent = ({
         </GridItem>
 
         <GridItem>
-          <GlassCard p={6} h="full">
+          <GlassCard inset p={6} h="full">
             <VStack gap={4} align="stretch">
               <HStack gap={3}>
                 <Icon as={FiWifi} color="green.400" boxSize={5} />
@@ -249,7 +249,7 @@ export const OverviewTabContent = ({
 
       {/* Azioni Rapide (solo per owner) */}
       {isOwner && (
-        <GlassCard p={6} w="full">
+        <GlassCard inset p={6} w="full">
           <VStack gap={4} align="stretch">
             <HStack gap={3}>
               <Icon as={FiDatabase} color="blue.400" boxSize={5} />
@@ -263,7 +263,6 @@ export const OverviewTabContent = ({
             <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
               <Box
                 p={4}
-                bg="blue.50"
                 rounded="lg"
                 border="1px"
                 borderColor="blue.200"
@@ -283,7 +282,6 @@ export const OverviewTabContent = ({
 
               <Box
                 p={4}
-                bg="green.50"
                 rounded="lg"
                 border="1px"
                 borderColor="green.200"
@@ -303,7 +301,6 @@ export const OverviewTabContent = ({
 
               <Box
                 p={4}
-                bg="purple.50"
                 rounded="lg"
                 border="1px"
                 borderColor="purple.200"

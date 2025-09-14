@@ -12,7 +12,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
-import { FiActivity, FiEye, FiMonitor, FiSettings, FiTool, FiImage } from 'react-icons/fi'
+import { FiActivity, FiEye, FiImage, FiMonitor, FiSettings, FiTool } from 'react-icons/fi'
 
 import {
   AdvancedTabContent,
@@ -173,7 +173,7 @@ export default function SettingsPage(): JSX.Element {
     >
       <VStack gap={8} maxW="8xl" mx="auto">
         {/* Header rivoluzionario con animazioni */}
-        <GlassCard p={{ base: 6, md: 8 }} w="full">
+        <GlassCard inset p={{ base: 6, md: 8 }} w="full">
           <VStack gap={4} textAlign="center">
             <HStack gap={3} justify="center">
               <Box
@@ -221,6 +221,7 @@ export default function SettingsPage(): JSX.Element {
                   value={tab.id}
                   flex="1"
                   rounded="lg"
+                  height={20}
                   p={4}
                   transition="all 0.3s ease"
                   _selected={{
@@ -291,7 +292,7 @@ export default function SettingsPage(): JSX.Element {
         </TabsRoot>
 
         {/* Footer con informazioni utili */}
-        <GlassCard p={4} w="full">
+        <GlassCard inset p={4} w="full">
           <HStack justify="center" gap={4} wrap="wrap">
             <HStack gap={2}>
               <FiEye color="var(--chakra-colors-textMuted)" />
