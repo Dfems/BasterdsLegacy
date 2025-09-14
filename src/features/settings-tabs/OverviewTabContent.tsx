@@ -3,6 +3,7 @@ import { type JSX } from 'react'
 import {
   Badge,
   Box,
+  Button,
   Grid,
   GridItem,
   Heading,
@@ -40,6 +41,8 @@ type OverviewTabContentProps = {
   loading: boolean
   error: string | null
   isOwner: boolean
+  onServerAction?: (action: 'start' | 'stop' | 'restart') => Promise<void>
+  onDiagnostics?: () => Promise<void>
 }
 
 export const OverviewTabContent = ({
@@ -47,8 +50,11 @@ export const OverviewTabContent = ({
   loading,
   error,
   isOwner,
+  onServerAction,
+  onDiagnostics,
 }: OverviewTabContentProps): JSX.Element => {
   const { settings: t } = useLanguage()
+  const tRecord = t as Record<string, unknown>
 
   if (loading) {
     return (
@@ -85,8 +91,35 @@ export const OverviewTabContent = ({
         <VStack gap={6} align="stretch">
           <HStack gap={3}>
             <Icon as={FiServer} color="green.400" boxSize={6} />
-            <Heading size="md">Panoramica Server</Heading>
+            <Heading size="md">
+              {(tRecord.overview as Record<string, string>)?.title || 'Panoramica Server'}
+            </Heading>
           </HStack>
+
+          {/* Quick Actions for Owner */}
+          {isOwner && onServerAction && (
+            <VStack gap={4} align="stretch">
+              <Text fontSize="sm" fontWeight="semibold" color="textPrimary">
+                {(tRecord.overview as Record<string, string>)?.quickActions || 'Azioni Rapide'}
+              </Text>
+              <HStack gap={2} wrap="wrap">
+                <Button size="sm" colorScheme="green" onClick={() => onServerAction('start')}>
+                  Avvia Server
+                </Button>
+                <Button size="sm" colorScheme="orange" onClick={() => onServerAction('restart')}>
+                  Riavvia Server
+                </Button>
+                <Button size="sm" colorScheme="red" onClick={() => onServerAction('stop')}>
+                  Ferma Server
+                </Button>
+                {onDiagnostics && (
+                  <Button size="sm" colorScheme="blue" onClick={onDiagnostics}>
+                    Diagnostica Sistema
+                  </Button>
+                )}
+              </HStack>
+            </VStack>
+          )}
 
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={4}>
             <Box p={4} bg="gray.50" rounded="lg">

@@ -15,6 +15,7 @@ type AppearanceTabContentProps = {
 
 export const AppearanceTabContent = ({ isOwner }: AppearanceTabContentProps): JSX.Element => {
   const { settings: t } = useLanguage()
+  const tRecord = t as Record<string, unknown>
   const theme = useThemeMode()
 
   return (
@@ -24,7 +25,10 @@ export const AppearanceTabContent = ({ isOwner }: AppearanceTabContentProps): JS
         <VStack gap={6} align="stretch">
           <HStack gap={3}>
             <Icon as={FiSun} color="orange.400" boxSize={6} />
-            <Heading size="md">Personalizzazione Interfaccia</Heading>
+            <Heading size="md">
+              {(tRecord.appearance as Record<string, string>)?.title ||
+                'Personalizzazione Interfaccia'}
+            </Heading>
           </HStack>
 
           <Box>

@@ -2,6 +2,7 @@ import { useEffect, useState, type JSX } from 'react'
 
 import {
   Box,
+  Button,
   Heading,
   HStack,
   TabsContent,
@@ -42,6 +43,7 @@ type EnvironmentConfig = {
   rconHost: string
   rconPort: number
   rconPass: string
+  // Configurazioni logging
   logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
   logDir: string
   logFileEnabled: boolean
@@ -57,37 +59,6 @@ type TabConfig = {
   description: string
 }
 
-const TABS: TabConfig[] = [
-  {
-    id: 'overview',
-    label: 'Panoramica',
-    icon: <FiMonitor />,
-    color: 'blue.400',
-    description: 'Stato generale del server',
-  },
-  {
-    id: 'appearance',
-    label: 'Aspetto',
-    icon: <FiImage />,
-    color: 'purple.400',
-    description: 'Personalizza interfaccia',
-  },
-  {
-    id: 'system',
-    label: 'Sistema',
-    icon: <FiTool />,
-    color: 'green.400',
-    description: 'Configurazioni server',
-  },
-  {
-    id: 'advanced',
-    label: 'Avanzate',
-    icon: <FiSettings />,
-    color: 'red.400',
-    description: 'Opzioni per esperti',
-  },
-]
-
 export default function SettingsPage(): JSX.Element {
   const { settings } = useLanguage()
   const { isOwner } = useUiSettings()
@@ -97,6 +68,80 @@ export default function SettingsPage(): JSX.Element {
   const [envErr, setEnvErr] = useState<string | null>(null)
   const [envLoading, setEnvLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
+
+  // Create tabs with translations
+  const settingsRecord = settings as Record<string, unknown>
+  const tabs: TabConfig[] = [
+    {
+      id: 'overview',
+      label:
+        (settingsRecord.tabs as Record<string, { label: string }>)?.overview?.label || 'Panoramica',
+      icon: <FiMonitor />,
+      color: 'blue.400',
+      description:
+        (settingsRecord.tabs as Record<string, { description: string }>)?.overview?.description ||
+        'Stato generale del server',
+    },
+    {
+      id: 'appearance',
+      label:
+        (settingsRecord.tabs as Record<string, { label: string }>)?.appearance?.label || 'Aspetto',
+      icon: <FiImage />,
+      color: 'purple.400',
+      description:
+        (settingsRecord.tabs as Record<string, { description: string }>)?.appearance?.description ||
+        'Personalizza interfaccia',
+    },
+    {
+      id: 'system',
+      label: (settingsRecord.tabs as Record<string, { label: string }>)?.system?.label || 'Sistema',
+      icon: <FiTool />,
+      color: 'green.400',
+      description:
+        (settingsRecord.tabs as Record<string, { description: string }>)?.system?.description ||
+        'Configurazioni server',
+    },
+    {
+      id: 'advanced',
+      label:
+        (settingsRecord.tabs as Record<string, { label: string }>)?.advanced?.label || 'Avanzate',
+      icon: <FiSettings />,
+      color: 'red.400',
+      description:
+        (settingsRecord.tabs as Record<string, { description: string }>)?.advanced?.description ||
+        'Opzioni per esperti',
+    },
+  ]
+
+  // Quick actions handlers
+  const handleServerAction = async (action: 'start' | 'stop' | 'restart'): Promise<void> => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/server/${action}`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!response.ok) throw new Error(`Failed to ${action} server`)
+    } catch (e) {
+      console.error(`Error ${action} server:`, e)
+    }
+  }
+
+  const handleDiagnostics = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/system/diagnostics', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!response.ok) throw new Error('Failed to run diagnostics')
+      const result = await response.json()
+      console.log('System diagnostics:', result)
+    } catch (e) {
+      console.error('Error running diagnostics:', e)
+    }
+  }
+
+  const availableTabs = tabs.filter((tab) => tab.id !== 'advanced' || isOwner)
 
   useEffect(() => {
     const run = async () => {
@@ -153,6 +198,7 @@ export default function SettingsPage(): JSX.Element {
     const result = await response.json()
     setEnvConfig(result.config)
 
+    // Ricarica anche le impostazioni di base per sincronizzare
     try {
       const basicResponse = await fetch('/api/settings')
       if (basicResponse.ok) {
@@ -163,17 +209,15 @@ export default function SettingsPage(): JSX.Element {
     }
   }
 
-  const availableTabs = TABS.filter((tab) => tab.id !== 'advanced' || isOwner)
-
   return (
     <Box
       minH="100vh"
-      bgGradient="linear(to-br, var(--chakra-colors-chakra-body-bg), transparent)"
+      bgGradient="linear(to-br, rgba(0, 0, 0, 0.02), transparent)"
       p={{ base: 4, md: 6, lg: 8 }}
     >
       <VStack gap={8} maxW="8xl" mx="auto">
-        {/* Header rivoluzionario con animazioni */}
-        <GlassCard inset p={{ base: 6, md: 8 }} w="full">
+        {/* Header with proper translations */}
+        <GlassCard p={{ base: 6, md: 8 }} w="full">
           <VStack gap={4} textAlign="center">
             <HStack gap={3} justify="center">
               <Box
@@ -194,25 +238,40 @@ export default function SettingsPage(): JSX.Element {
                 {settings.title}
               </Heading>
             </HStack>
-            <Text
-              fontSize={{ base: 'md', md: 'lg' }}
-              color="textMuted"
-              maxW="2xl"
-              lineHeight="tall"
-            >
-              Gestisci e personalizza il tuo server
+            <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.300" maxW="2xl" lineHeight="tall">
+              {(settingsRecord.subtitle as string) || settings.title}
             </Text>
+            {isOwner && (
+              <HStack gap={2} wrap="wrap" justify="center">
+                <Button size="sm" colorScheme="green" onClick={() => handleServerAction('start')}>
+                  {(settingsRecord.actions as Record<string, string>)?.startServer ||
+                    'Avvia Server'}
+                </Button>
+                <Button
+                  size="sm"
+                  colorScheme="orange"
+                  onClick={() => handleServerAction('restart')}
+                >
+                  {(settingsRecord.actions as Record<string, string>)?.restartServer ||
+                    'Riavvia Server'}
+                </Button>
+                <Button size="sm" colorScheme="blue" onClick={handleDiagnostics}>
+                  {(settingsRecord.actions as Record<string, string>)?.systemDiagnostics ||
+                    'Diagnostica Sistema'}
+                </Button>
+              </HStack>
+            )}
           </VStack>
         </GlassCard>
 
-        {/* Sistema di tabs moderno */}
+        {/* Modern Tab System */}
         <TabsRoot
           value={activeTab}
           onValueChange={(details) => setActiveTab(details.value)}
           w="full"
           variant="enclosed"
         >
-          {/* Tab Navigation con design moderno */}
+          {/* Tab Navigation */}
           <GlassCard p={2} mb={6}>
             <TabsList rounded="xl" bg="transparent" gap={2}>
               {availableTabs.map((tab) => (
@@ -225,13 +284,15 @@ export default function SettingsPage(): JSX.Element {
                   p={4}
                   transition="all 0.3s ease"
                   _selected={{
-                    bg: 'white',
+                    bg: 'rgba(255, 255, 255, 0.15)',
                     shadow: 'lg',
                     transform: 'translateY(-2px)',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
                   }}
                   _hover={{
                     transform: 'translateY(-1px)',
                     shadow: 'md',
+                    bg: 'rgba(255, 255, 255, 0.08)',
                   }}
                 >
                   <VStack gap={2} w="full">
@@ -245,7 +306,7 @@ export default function SettingsPage(): JSX.Element {
                     </HStack>
                     <Text
                       fontSize="xs"
-                      color="textMuted"
+                      color="gray.400"
                       textAlign="center"
                       display={{ base: 'none', md: 'block' }}
                     >
@@ -258,10 +319,17 @@ export default function SettingsPage(): JSX.Element {
             <TabsIndicator />
           </GlassCard>
 
-          {/* Tab Content con animazioni */}
+          {/* Tab Content */}
           <Box w="full">
             <TabsContent value="overview">
-              <OverviewTabContent settings={s} loading={!s && !err} error={err} isOwner={isOwner} />
+              <OverviewTabContent
+                settings={s}
+                loading={!s && !err}
+                error={err}
+                isOwner={isOwner}
+                onServerAction={handleServerAction}
+                onDiagnostics={handleDiagnostics}
+              />
             </TabsContent>
 
             <TabsContent value="appearance">
@@ -291,20 +359,25 @@ export default function SettingsPage(): JSX.Element {
           </Box>
         </TabsRoot>
 
-        {/* Footer con informazioni utili */}
-        <GlassCard inset p={4} w="full">
+        {/* Footer with translations */}
+        <GlassCard p={4} w="full">
           <HStack justify="center" gap={4} wrap="wrap">
             <HStack gap={2}>
-              <FiEye color="var(--chakra-colors-textMuted)" />
-              <Text fontSize="sm" color="textMuted">
-                {isOwner ? 'Modalità Proprietario' : 'Modalità Visualizzazione'}
+              <FiEye color="var(--chakra-colors-gray-400)" />
+              <Text fontSize="sm" color="gray.400">
+                {isOwner
+                  ? (settingsRecord.footer as Record<string, string>)?.ownerMode ||
+                    'Modalità Proprietario'
+                  : (settingsRecord.footer as Record<string, string>)?.viewMode ||
+                    'Modalità Visualizzazione'}
               </Text>
             </HStack>
-            <Text fontSize="sm" color="textMuted">
+            <Text fontSize="sm" color="gray.400">
               •
             </Text>
-            <Text fontSize="sm" color="textMuted">
-              Ultima modifica: {new Date().toLocaleDateString('it-IT')}
+            <Text fontSize="sm" color="gray.400">
+              {(settingsRecord.footer as Record<string, string>)?.lastModified || 'Ultima modifica'}
+              : {new Date().toLocaleDateString('it-IT')}
             </Text>
           </HStack>
         </GlassCard>

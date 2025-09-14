@@ -38,6 +38,7 @@ export const SystemTabContent = ({
   isOwner,
 }: SystemTabContentProps): JSX.Element => {
   const { settings: t } = useLanguage()
+  const tRecord = t as Record<string, unknown>
 
   if (!isOwner) {
     return (
@@ -45,10 +46,11 @@ export const SystemTabContent = ({
         <VStack gap={4}>
           <Icon as={FiShield} color="orange.400" boxSize={8} />
           <Heading size="md" color="textMuted">
-            Accesso Limitato
+            {(tRecord.system as Record<string, string>)?.accessDenied || 'Accesso Limitato'}
           </Heading>
           <Text color="textMuted" textAlign="center" maxW="md">
-            Le configurazioni di sistema sono disponibili solo per il proprietario del server.
+            {(tRecord.system as Record<string, string>)?.ownerOnly ||
+              'Le configurazioni di sistema sono disponibili solo per il proprietario del server.'}
           </Text>
         </VStack>
       </GlassCard>

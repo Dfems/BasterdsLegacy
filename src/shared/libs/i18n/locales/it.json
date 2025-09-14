@@ -261,10 +261,22 @@
     "loading": "Caricamento…",
     "errorLoad": "Errore nel caricamento delle impostazioni",
     "tabs": {
-      "overview": "Panoramica",
-      "appearance": "Aspetto",
-      "system": "Sistema",
-      "advanced": "Avanzate"
+      "overview": {
+        "label": "Panoramica",
+        "description": "Stato generale del server"
+      },
+      "appearance": {
+        "label": "Aspetto",
+        "description": "Personalizza interfaccia"
+      },
+      "system": {
+        "label": "Sistema",
+        "description": "Configurazioni server"
+      },
+      "advanced": {
+        "label": "Avanzate",
+        "description": "Opzioni per esperti"
+      }
     },
     "overview": {
       "title": "Panoramica Server",
@@ -292,6 +304,29 @@
       "description": "Impostazioni per utenti esperti",
       "warning": "Modifica solo se sai cosa stai facendo",
       "dangerZone": "Zona Pericolosa"
+    },
+    "footer": {
+      "ownerMode": "Modalità Proprietario",
+      "viewMode": "Modalità Visualizzazione",
+      "lastModified": "Ultima modifica"
+    },
+    "actions": {
+      "systemDiagnostics": "Diagnostica Sistema",
+      "startServer": "Avvia Server",
+      "stopServer": "Ferma Server",
+      "restartServer": "Riavvia Server",
+      "viewLogs": "Visualizza Log",
+      "manageBackups": "Gestisci Backup",
+      "serverHealth": "Controllo Salute",
+      "performanceTuning": "Ottimizzazione Performance"
+    },
+    "status": {
+      "connected": "Connesso",
+      "disconnected": "Disconnesso",
+      "healthy": "Integro",
+      "warning": "Attenzione",
+      "critical": "Critico",
+      "unknown": "Sconosciuto"
     },
     "sections": {
       "serverInfo": "📊 Informazioni Server",
