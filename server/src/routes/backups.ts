@@ -176,7 +176,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           }
 
           // Applica preset
-          updateScheduler(preset as BackupScheduleConfig)
+          await updateScheduler(preset as BackupScheduleConfig)
 
           try {
             await (
@@ -204,7 +204,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         }
 
         // Applica configurazione custom
-        updateScheduler(body as BackupScheduleConfig)
+        await updateScheduler(body as BackupScheduleConfig)
 
         try {
           await (

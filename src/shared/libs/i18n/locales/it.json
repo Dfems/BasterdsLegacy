@@ -175,6 +175,10 @@
     "creating": "Creazione backup...",
     "restoring": "Ripristino...",
     "noBackups": "Nessun backup disponibile",
+    "restoreSuccess": "Backup ripristinato con successo!",
+    "restoreError": "Errore durante il ripristino del backup",
+    "createSuccess": "Backup creato con successo!",
+    "createError": "Errore durante la creazione del backup",
     "schedule": {
       "title": "Backup Automatici",
       "enabled": "Backup automatici abilitati",

@@ -1,7 +1,7 @@
 import cron from 'node-cron'
 
 import { auditLog } from '../lib/audit.js'
-import { CONFIG } from '../lib/config.js'
+import { CONFIG, getConfig } from '../lib/config.js'
 import { createBackup, applyRetention } from './backups.js'
 
 // Tipi per la configurazione del backup automatico
@@ -24,16 +24,187 @@ export type BackupScheduleConfig = {
   multipleDaily?: string[] // Array di orari es. ["08:00", "14:00", "20:00"]
 }
 
-// Configurazione default
-const DEFAULT_SCHEDULE: BackupScheduleConfig = {
-  enabled: CONFIG.AUTO_BACKUP_ENABLED,
-  frequency: CONFIG.AUTO_BACKUP_ENABLED ? 'daily' : 'disabled',
-  mode: CONFIG.AUTO_BACKUP_MODE,
-  dailyAt: '03:00',
+// Salva la configurazione del backup automatico nel database
+const saveScheduleToDatabase = async (config: BackupScheduleConfig): Promise<void> => {
+  try {
+    const { db } = await import('../lib/db.js')
+
+    // Log dell'operazione di salvataggio
+    await auditLog({
+      type: 'backup',
+      op: 'schedule_save',
+      details: {
+        enabled: config.enabled,
+        frequency: config.frequency,
+        mode: config.mode,
+        source: 'ui_configuration',
+      },
+    })
+
+    // Salva le configurazioni come settings nel database
+    const updates = [
+      { key: 'backup.schedule.enabled', value: config.enabled.toString() },
+      { key: 'backup.schedule.frequency', value: config.frequency },
+      { key: 'backup.schedule.mode', value: config.mode },
+    ]
+
+    if (config.dailyAt) {
+      updates.push({ key: 'backup.schedule.dailyAt', value: config.dailyAt })
+    }
+
+    if (config.weeklyOn !== undefined) {
+      updates.push({ key: 'backup.schedule.weeklyOn', value: config.weeklyOn.toString() })
+    }
+
+    if (config.cronPattern) {
+      updates.push({ key: 'backup.schedule.cronPattern', value: config.cronPattern })
+    }
+
+    if (config.multipleDaily) {
+      updates.push({ key: 'backup.schedule.multipleDaily', value: config.multipleDaily.join(',') })
+    }
+
+    // Salva nel database
+    for (const update of updates) {
+      await db.setting.upsert({
+        where: { key: update.key },
+        update: { value: update.value },
+        create: { key: update.key, value: update.value },
+      })
+    }
+
+    console.log('Backup schedule configuration saved to database')
+  } catch (error) {
+    console.error('Failed to save backup schedule to database:', error)
+
+    // Log dell'errore
+    await auditLog({
+      type: 'backup',
+      op: 'schedule_save_error',
+      details: {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        config: config,
+      },
+    })
+
+    throw error
+  }
+}
+
+// Carica la configurazione del backup automatico dal database
+const loadScheduleFromDatabase = async (): Promise<BackupScheduleConfig | null> => {
+  try {
+    const { db } = await import('../lib/db.js')
+
+    const settings = await db.setting.findMany({
+      where: {
+        key: {
+          in: [
+            'backup.schedule.enabled',
+            'backup.schedule.frequency',
+            'backup.schedule.mode',
+            'backup.schedule.dailyAt',
+            'backup.schedule.weeklyOn',
+            'backup.schedule.cronPattern',
+            'backup.schedule.multipleDaily',
+          ],
+        },
+      },
+    })
+
+    if (settings.length === 0) {
+      return null // Nessuna configurazione salvata
+    }
+
+    const config: Partial<BackupScheduleConfig> = {}
+
+    for (const setting of settings) {
+      switch (setting.key) {
+        case 'backup.schedule.enabled':
+          config.enabled = setting.value === 'true'
+          break
+        case 'backup.schedule.frequency':
+          config.frequency = setting.value as BackupFrequency
+          break
+        case 'backup.schedule.mode':
+          config.mode = setting.value as 'full' | 'world'
+          break
+        case 'backup.schedule.dailyAt':
+          config.dailyAt = setting.value
+          break
+        case 'backup.schedule.weeklyOn':
+          config.weeklyOn = parseInt(setting.value, 10)
+          break
+        case 'backup.schedule.cronPattern':
+          config.cronPattern = setting.value
+          break
+        case 'backup.schedule.multipleDaily':
+          config.multipleDaily = setting.value.split(',').filter(Boolean)
+          break
+      }
+    }
+
+    // Assicuriamoci che i campi obbligatori siano presenti
+    if (config.enabled !== undefined && config.frequency && config.mode) {
+      const result = config as BackupScheduleConfig
+
+      // Log del caricamento riuscito
+      await auditLog({
+        type: 'backup',
+        op: 'schedule_load',
+        details: {
+          enabled: result.enabled,
+          frequency: result.frequency,
+          mode: result.mode,
+          source: 'database',
+        },
+      })
+
+      return result
+    }
+
+    return null
+  } catch (error) {
+    console.error('Failed to load backup schedule from database:', error)
+    return null
+  }
+}
+
+// Configurazione default (usa le configurazioni da database se disponibili, altrimenti fallback env)
+const getDefaultSchedule = async (): Promise<BackupScheduleConfig> => {
+  // Prima prova a caricare dal database
+  const dbConfig = await loadScheduleFromDatabase()
+  if (dbConfig) {
+    console.log('Loaded backup schedule from database')
+    return dbConfig
+  }
+
+  // Fallback alle configurazioni da variabili d'ambiente
+  try {
+    const config = await getConfig()
+    console.log('Using backup schedule from environment variables')
+    return {
+      enabled: config.AUTO_BACKUP_ENABLED,
+      frequency: config.AUTO_BACKUP_ENABLED ? 'custom' : 'disabled',
+      mode: config.AUTO_BACKUP_MODE,
+      cronPattern: config.AUTO_BACKUP_CRON,
+      dailyAt: '03:00',
+    }
+  } catch (error) {
+    // Fallback alle configurazioni statiche se il database non è disponibile
+    console.warn('Failed to load config from database, using static config:', error)
+    return {
+      enabled: CONFIG.AUTO_BACKUP_ENABLED,
+      frequency: CONFIG.AUTO_BACKUP_ENABLED ? 'custom' : 'disabled',
+      mode: CONFIG.AUTO_BACKUP_MODE,
+      cronPattern: CONFIG.AUTO_BACKUP_CRON,
+      dailyAt: '03:00',
+    }
+  }
 }
 
 // Stato globale della configurazione
-let currentSchedule: BackupScheduleConfig = { ...DEFAULT_SCHEDULE }
+let currentSchedule: BackupScheduleConfig | null = null
 let currentTask: cron.ScheduledTask | null = null
 
 // Preset predefiniti per facilità d'uso
@@ -125,6 +296,11 @@ const executeAutoBackup = async (): Promise<void> => {
   const startTime = Date.now()
 
   try {
+    if (!currentSchedule) {
+      console.error('Cannot execute automatic backup: no schedule configured')
+      return
+    }
+
     console.log(`Starting automatic backup (mode: ${currentSchedule.mode})...`)
 
     // Log inizio job
@@ -199,7 +375,7 @@ const executeAutoBackup = async (): Promise<void> => {
       durationMs: Date.now() - startTime,
       details: {
         error: errorMsg,
-        mode: currentSchedule.mode,
+        mode: currentSchedule?.mode || 'unknown',
       },
     })
 
@@ -208,7 +384,7 @@ const executeAutoBackup = async (): Promise<void> => {
 }
 
 // Avvia/ferma i task cron
-export const updateScheduler = (config: BackupScheduleConfig): void => {
+export const updateScheduler = async (config: BackupScheduleConfig): Promise<void> => {
   // Ferma il task esistente
   if (currentTask && currentTask.destroy) {
     currentTask.destroy()
@@ -217,6 +393,17 @@ export const updateScheduler = (config: BackupScheduleConfig): void => {
 
   // Aggiorna la configurazione
   currentSchedule = { ...config }
+
+  // Salva la configurazione nel database
+  try {
+    await saveScheduleToDatabase(config)
+    console.log(
+      `Backup schedule updated: ${config.enabled ? 'enabled' : 'disabled'} (${config.frequency})`
+    )
+  } catch (error) {
+    console.warn('Failed to save backup schedule to database:', error)
+    // Non blocchiamo l'operazione se il salvataggio fallisce
+  }
 
   if (!config.enabled || config.frequency === 'disabled') {
     console.log('Automatic backups disabled')
@@ -278,22 +465,32 @@ export const initAutoBackup = async (): Promise<void> => {
     details: { component: 'automatic-backup-system' },
   })
 
-  // Carica configurazione da variabili ambiente
-  if (CONFIG.AUTO_BACKUP_ENABLED) {
-    const envConfig: BackupScheduleConfig = {
-      enabled: true,
-      frequency: 'custom',
-      mode: CONFIG.AUTO_BACKUP_MODE,
-      cronPattern: CONFIG.AUTO_BACKUP_CRON,
+  // Carica configurazione dal database o fallback a variabili ambiente
+  try {
+    const defaultConfig = await getDefaultSchedule()
+    currentSchedule = defaultConfig
+
+    if (defaultConfig.enabled) {
+      await updateScheduler(defaultConfig)
+    } else {
+      console.log('Automatic backups are disabled')
     }
-    updateScheduler(envConfig)
-  } else {
-    console.log('Automatic backups are disabled by default')
+  } catch (error) {
+    console.error('Failed to load backup configuration:', error)
+    currentSchedule = {
+      enabled: false,
+      frequency: 'disabled',
+      mode: 'world',
+      dailyAt: '03:00',
+    }
   }
 }
 
 // Ottiene la configurazione corrente
 export const getCurrentSchedule = (): BackupScheduleConfig => {
+  if (!currentSchedule) {
+    throw new Error('Backup schedule not initialized')
+  }
   return { ...currentSchedule }
 }
 

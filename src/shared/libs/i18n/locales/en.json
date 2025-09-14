@@ -175,6 +175,10 @@
     "creating": "Creating backup...",
     "restoring": "Restoring...",
     "noBackups": "No backups available",
+    "restoreSuccess": "Backup restored successfully!",
+    "restoreError": "Error restoring backup",
+    "createSuccess": "Backup created successfully!",
+    "createError": "Error creating backup",
     "schedule": {
       "title": "Automatic Backups",
       "enabled": "Automatic backups enabled",
