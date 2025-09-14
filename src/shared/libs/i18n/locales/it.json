@@ -249,7 +249,8 @@
     }
   },
   "settings": {
-    "title": "Impostazioni",
+    "title": "Configurazioni Sistema",
+    "subtitle": "Gestisci e personalizza il tuo server",
     "save": "Salva",
     "reset": "Ripristina",
     "serverProperties": "Proprietà Server",
@@ -259,6 +260,39 @@
     "maxPlayers": "Giocatori Massimi",
     "loading": "Caricamento…",
     "errorLoad": "Errore nel caricamento delle impostazioni",
+    "tabs": {
+      "overview": "Panoramica",
+      "appearance": "Aspetto",
+      "system": "Sistema",
+      "advanced": "Avanzate"
+    },
+    "overview": {
+      "title": "Panoramica Server",
+      "description": "Informazioni generali e stato del server",
+      "quickActions": "Azioni Rapide",
+      "systemStatus": "Stato Sistema",
+      "recentActivity": "Attività Recente"
+    },
+    "appearance": {
+      "title": "Personalizzazione Interfaccia",
+      "description": "Customizza l'aspetto dell'interfaccia",
+      "themes": "Temi",
+      "backgrounds": "Sfondi",
+      "animations": "Animazioni"
+    },
+    "system": {
+      "title": "Configurazioni Sistema",
+      "description": "Gestisci le impostazioni del server",
+      "environment": "Ambiente",
+      "performance": "Performance",
+      "security": "Sicurezza"
+    },
+    "advanced": {
+      "title": "Configurazioni Avanzate",
+      "description": "Impostazioni per utenti esperti",
+      "warning": "Modifica solo se sai cosa stai facendo",
+      "dangerZone": "Zona Pericolosa"
+    },
     "sections": {
       "serverInfo": "📊 Informazioni Server",
       "environment": "⚙️ Configurazioni Ambiente",

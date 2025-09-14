@@ -1,12 +1,26 @@
 import { useEffect, useState, type JSX } from 'react'
 
-import { Box, Heading, Stack } from '@chakra-ui/react'
+import {
+  Box,
+  Heading,
+  HStack,
+  TabsContent,
+  TabsIndicator,
+  TabsList,
+  TabsRoot,
+  TabsTrigger,
+  Text,
+  VStack,
+} from '@chakra-ui/react'
+import { FiActivity, FiEye, FiMonitor, FiSettings, FiTool, FiImage } from 'react-icons/fi'
 
 import {
-  AdvancedSection,
-  ServerInfoSection,
-  UserInterfaceSection,
-} from '@/features/settings-sections'
+  AdvancedTabContent,
+  AppearanceTabContent,
+  OverviewTabContent,
+  SystemTabContent,
+} from '@/features/settings-tabs'
+import { GlassCard } from '@/shared/components/GlassCard'
 import { useUiSettings } from '@/shared/hooks'
 import useLanguage from '@/shared/hooks/useLanguage'
 
@@ -28,13 +42,51 @@ type EnvironmentConfig = {
   rconHost: string
   rconPort: number
   rconPass: string
-  // Configurazioni logging
   logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
   logDir: string
   logFileEnabled: boolean
   logRetentionDays: number
   logMaxFiles: number
 }
+
+type TabConfig = {
+  id: string
+  label: string
+  icon: JSX.Element
+  color: string
+  description: string
+}
+
+const TABS: TabConfig[] = [
+  {
+    id: 'overview',
+    label: 'Panoramica',
+    icon: <FiMonitor />,
+    color: 'blue.400',
+    description: 'Stato generale del server',
+  },
+  {
+    id: 'appearance',
+    label: 'Aspetto',
+    icon: <FiImage />,
+    color: 'purple.400',
+    description: 'Personalizza interfaccia',
+  },
+  {
+    id: 'system',
+    label: 'Sistema',
+    icon: <FiTool />,
+    color: 'green.400',
+    description: 'Configurazioni server',
+  },
+  {
+    id: 'advanced',
+    label: 'Avanzate',
+    icon: <FiSettings />,
+    color: 'red.400',
+    description: 'Opzioni per esperti',
+  },
+]
 
 export default function SettingsPage(): JSX.Element {
   const { settings } = useLanguage()
@@ -44,6 +96,7 @@ export default function SettingsPage(): JSX.Element {
   const [err, setErr] = useState<string | null>(null)
   const [envErr, setEnvErr] = useState<string | null>(null)
   const [envLoading, setEnvLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
     const run = async () => {
@@ -100,7 +153,6 @@ export default function SettingsPage(): JSX.Element {
     const result = await response.json()
     setEnvConfig(result.config)
 
-    // Ricarica anche le impostazioni di base per sincronizzare
     try {
       const basicResponse = await fetch('/api/settings')
       if (basicResponse.ok) {
@@ -111,30 +163,151 @@ export default function SettingsPage(): JSX.Element {
     }
   }
 
+  const availableTabs = TABS.filter((tab) => tab.id !== 'advanced' || isOwner)
+
   return (
-    <Box p={{ base: 4, md: 6 }}>
-      <Stack direction="column" gap={6}>
-        {/* Header della pagina */}
-        <Box>
-          <Heading mb={2} fontSize={{ base: 'lg', md: 'xl' }}>
-            {settings.title}
-          </Heading>
-        </Box>
+    <Box
+      minH="100vh"
+      bgGradient="linear(to-br, var(--chakra-colors-chakra-body-bg), transparent)"
+      p={{ base: 4, md: 6, lg: 8 }}
+    >
+      <VStack gap={8} maxW="8xl" mx="auto">
+        {/* Header rivoluzionario con animazioni */}
+        <GlassCard p={{ base: 6, md: 8 }} w="full">
+          <VStack gap={4} textAlign="center">
+            <HStack gap={3} justify="center">
+              <Box
+                p={3}
+                rounded="full"
+                bgGradient="linear(45deg, blue.400, purple.500)"
+                color="white"
+                animation="pulse 2s infinite"
+              >
+                <FiActivity size="24" />
+              </Box>
+              <Heading
+                size={{ base: 'lg', md: 'xl', lg: '2xl' }}
+                bgGradient="linear(45deg, blue.400, purple.500)"
+                bgClip="text"
+                fontWeight="bold"
+              >
+                {settings.title}
+              </Heading>
+            </HStack>
+            <Text
+              fontSize={{ base: 'md', md: 'lg' }}
+              color="textMuted"
+              maxW="2xl"
+              lineHeight="tall"
+            >
+              Gestisci e personalizza il tuo server
+            </Text>
+          </VStack>
+        </GlassCard>
 
-        {/* Sezione Informazioni Server */}
-        <ServerInfoSection settings={s} loading={!s && !err} error={err} />
+        {/* Sistema di tabs moderno */}
+        <TabsRoot
+          value={activeTab}
+          onValueChange={(details) => setActiveTab(details.value)}
+          w="full"
+          variant="enclosed"
+        >
+          {/* Tab Navigation con design moderno */}
+          <GlassCard p={2} mb={6}>
+            <TabsList rounded="xl" bg="transparent" gap={2}>
+              {availableTabs.map((tab) => (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  flex="1"
+                  rounded="lg"
+                  p={4}
+                  transition="all 0.3s ease"
+                  _selected={{
+                    bg: 'white',
+                    shadow: 'lg',
+                    transform: 'translateY(-2px)',
+                  }}
+                  _hover={{
+                    transform: 'translateY(-1px)',
+                    shadow: 'md',
+                  }}
+                >
+                  <VStack gap={2} w="full">
+                    <HStack gap={2} justify="center">
+                      <Box color={tab.color} fontSize="xl">
+                        {tab.icon}
+                      </Box>
+                      <Text fontWeight="semibold" fontSize={{ base: 'sm', md: 'md' }}>
+                        {tab.label}
+                      </Text>
+                    </HStack>
+                    <Text
+                      fontSize="xs"
+                      color="textMuted"
+                      textAlign="center"
+                      display={{ base: 'none', md: 'block' }}
+                    >
+                      {tab.description}
+                    </Text>
+                  </VStack>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsIndicator />
+          </GlassCard>
 
-        {/* Sezione Interfaccia Utente */}
-        <UserInterfaceSection />
+          {/* Tab Content con animazioni */}
+          <Box w="full">
+            <TabsContent value="overview">
+              <OverviewTabContent settings={s} loading={!s && !err} error={err} isOwner={isOwner} />
+            </TabsContent>
 
-        {/* Sezione Avanzate (solo per owner) */}
-        <AdvancedSection
-          envConfig={envConfig}
-          envError={envErr}
-          envLoading={envLoading}
-          onEnvConfigSave={handleEnvConfigSave}
-        />
-      </Stack>
+            <TabsContent value="appearance">
+              <AppearanceTabContent isOwner={isOwner} />
+            </TabsContent>
+
+            <TabsContent value="system">
+              <SystemTabContent
+                envConfig={envConfig}
+                envError={envErr}
+                envLoading={envLoading}
+                onEnvConfigSave={handleEnvConfigSave}
+                isOwner={isOwner}
+              />
+            </TabsContent>
+
+            {isOwner && (
+              <TabsContent value="advanced">
+                <AdvancedTabContent
+                  envConfig={envConfig}
+                  envError={envErr}
+                  envLoading={envLoading}
+                  onEnvConfigSave={handleEnvConfigSave}
+                />
+              </TabsContent>
+            )}
+          </Box>
+        </TabsRoot>
+
+        {/* Footer con informazioni utili */}
+        <GlassCard p={4} w="full">
+          <HStack justify="center" gap={4} wrap="wrap">
+            <HStack gap={2}>
+              <FiEye color="var(--chakra-colors-textMuted)" />
+              <Text fontSize="sm" color="textMuted">
+                {isOwner ? 'Modalità Proprietario' : 'Modalità Visualizzazione'}
+              </Text>
+            </HStack>
+            <Text fontSize="sm" color="textMuted">
+              •
+            </Text>
+            <Text fontSize="sm" color="textMuted">
+              Ultima modifica: {new Date().toLocaleDateString('it-IT')}
+            </Text>
+          </HStack>
+        </GlassCard>
+      </VStack>
     </Box>
   )
 }

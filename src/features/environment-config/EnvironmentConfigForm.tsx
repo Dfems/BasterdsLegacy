@@ -1,6 +1,6 @@
 import { useState, type JSX } from 'react'
 
-import { Alert, Box, Button, Field, Heading, Input, Stack, Text } from '@chakra-ui/react'
+import { Alert, Box, Button, Field, Heading, HStack, Input, Stack, Text } from '@chakra-ui/react'
 
 import { GlassCard } from '@/shared/components/GlassCard'
 import useLanguage from '@/shared/hooks/useLanguage'
@@ -145,7 +145,9 @@ export const EnvironmentConfigForm = ({
             <Box>
               <HStack gap={2} align="center" mb={2}>
                 <Text fontSize="md">☕</Text>
-                <Heading size="xs" color="textPrimary">Configurazione Java</Heading>
+                <Heading size="xs" color="textPrimary">
+                  Configurazione Java
+                </Heading>
               </HStack>
             </Box>
             <Field.Root>
@@ -171,7 +173,9 @@ export const EnvironmentConfigForm = ({
             <Box>
               <HStack gap={2} align="center" mb={2}>
                 <Text fontSize="md">📁</Text>
-                <Heading size="xs" color="textPrimary">Configurazione Cartelle</Heading>
+                <Heading size="xs" color="textPrimary">
+                  Configurazione Cartelle
+                </Heading>
               </HStack>
             </Box>
             <Stack gap={4}>
@@ -214,7 +218,9 @@ export const EnvironmentConfigForm = ({
             <Box>
               <HStack gap={2} align="center" mb={2}>
                 <Text fontSize="md">🔗</Text>
-                <Heading size="xs" color="textPrimary">{settings.environment.rcon.title}</Heading>
+                <Heading size="xs" color="textPrimary">
+                  {settings.environment.rcon.title}
+                </Heading>
               </HStack>
             </Box>
             <Stack gap={4}>
@@ -289,7 +295,9 @@ export const EnvironmentConfigForm = ({
             <Box>
               <HStack gap={2} align="center" mb={2}>
                 <Text fontSize="md">📝</Text>
-                <Heading size="xs" color="textPrimary">{settings.environment.logging.title}</Heading>
+                <Heading size="xs" color="textPrimary">
+                  {settings.environment.logging.title}
+                </Heading>
               </HStack>
               <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
                 {settings.environment.logging.description}
@@ -419,7 +427,10 @@ export const EnvironmentConfigForm = ({
                         type="number"
                         value={config.logRetentionDays.toString()}
                         onChange={(e) =>
-                          setConfig((prev) => ({ ...prev, logRetentionDays: Number(e.target.value) }))
+                          setConfig((prev) => ({
+                            ...prev,
+                            logRetentionDays: Number(e.target.value),
+                          }))
                         }
                         min={1}
                         max={365}
