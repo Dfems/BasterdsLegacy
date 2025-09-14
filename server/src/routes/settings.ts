@@ -404,6 +404,31 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
   // Public: Get button settings (for home page display)
   fastify.get('/api/settings/buttons', async () => {
     const config = await getConfig()
+    let name = config.CURRENT_MODPACK
+    let version = config.CURRENT_VERSION
+    let loader: string | null = null
+
+    try {
+      const { loadLastInstalledFromDb } = await import('../minecraft/modpack.js')
+      const installationInfo = await loadLastInstalledFromDb()
+      if (installationInfo && installationInfo.loader) {
+        const mcVersion = installationInfo.mcVersion
+        const loaderVersion = installationInfo.loaderVersion
+        loader = installationInfo.loader
+        name =
+          installationInfo.loader === 'Vanilla'
+            ? `Minecraft ${mcVersion ?? 'Vanilla'}`
+            : `Minecraft ${installationInfo.loader}`
+        // Evita placeholder 'Latest': se manca la versione, usa quella di env
+        version =
+          installationInfo.loader === 'Vanilla'
+            ? (mcVersion ?? config.CURRENT_VERSION)
+            : (loaderVersion ?? config.CURRENT_VERSION)
+      }
+    } catch {
+      // ignore, fallback to env config values
+    }
+
     return {
       launcher: {
         visible: config.LAUNCHER_BTN_VISIBLE,
@@ -414,8 +439,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         path: config.CONFIG_BTN_PATH,
       },
       modpack: {
-        name: config.CURRENT_MODPACK,
-        version: config.CURRENT_VERSION,
+        name,
+        version,
+        loader,
       },
     }
   })
@@ -519,6 +545,87 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       }
 
       return { success: true }
+    }
+  )
+
+  // Owner: Get modpack meta saved in DB
+  fastify.get(
+    '/api/settings/modpack-meta',
+    { preHandler: fastify.authorize('owner') },
+    async () => {
+      const keys = ['modpack.mode', 'modpack.loader', 'modpack.loaderVersion', 'modpack.mcVersion']
+      const rows = await db.setting.findMany({ where: { key: { in: keys } } })
+      const out: Record<string, string | null> = {
+        mode: null,
+        loader: null,
+        loaderVersion: null,
+        mcVersion: null,
+      }
+      for (const r of rows) {
+        if (r.key === 'modpack.mode') out.mode = r.value
+        if (r.key === 'modpack.loader') out.loader = r.value
+        if (r.key === 'modpack.loaderVersion') out.loaderVersion = r.value
+        if (r.key === 'modpack.mcVersion') out.mcVersion = r.value
+      }
+      return out
+    }
+  )
+
+  // Owner: Update modpack meta in DB
+  fastify.put(
+    '/api/settings/modpack-meta',
+    { preHandler: fastify.authorize('owner') },
+    async (req, reply) => {
+      try {
+        const body = req.body as {
+          mode?: 'automatic' | 'manual' | null
+          loader?: 'Vanilla' | 'Forge' | 'Fabric' | 'Quilt' | 'NeoForge' | null
+          loaderVersion?: string | null
+          mcVersion?: string | null
+        }
+
+        const upserts: Array<{ key: string; value: string }> = []
+        const deletes: string[] = []
+
+        const setOrDelete = (key: string, v: unknown) => {
+          if (v === undefined) return
+          if (v === null) deletes.push(key)
+          else upserts.push({ key, value: String(v).trim() })
+        }
+
+        // Basic validation
+        if (
+          body.loader &&
+          !['Vanilla', 'Forge', 'Fabric', 'Quilt', 'NeoForge'].includes(body.loader)
+        ) {
+          return reply.status(400).send({ error: 'Loader non valido' })
+        }
+        if (body.mode && !['automatic', 'manual'].includes(body.mode)) {
+          return reply.status(400).send({ error: 'Mode non valido' })
+        }
+
+        setOrDelete('modpack.mode', body.mode ?? undefined)
+        setOrDelete('modpack.loader', body.loader ?? undefined)
+        setOrDelete('modpack.loaderVersion', body.loaderVersion ?? undefined)
+        setOrDelete('modpack.mcVersion', body.mcVersion ?? undefined)
+
+        // Apply deletes first
+        if (deletes.length) {
+          await db.setting.deleteMany({ where: { key: { in: deletes } } })
+        }
+        for (const u of upserts) {
+          await db.setting.upsert({
+            where: { key: u.key },
+            update: { value: u.value },
+            create: { key: u.key, value: u.value },
+          })
+        }
+
+        return { success: true }
+      } catch (error) {
+        fastify.log.error('Error updating modpack meta: ' + (error as Error).message)
+        return reply.status(500).send({ error: 'Failed to update modpack meta' })
+      }
     }
   )
 

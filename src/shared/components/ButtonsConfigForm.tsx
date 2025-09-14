@@ -1,25 +1,22 @@
-import { useState, type JSX } from 'react'
+import { useEffect, useState, type JSX } from 'react'
 
-import { Box, HStack, Heading, Input, Stack, Text } from '@chakra-ui/react'
-import { Checkbox } from '@chakra-ui/react'
+import { Box, Checkbox, HStack, Heading, Input, Stack, Text } from '@chakra-ui/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
 import useLanguage from '@/shared/hooks/useLanguage'
 
-type ButtonsConfig = {
+type EditableButtonsConfig = {
   launcherBtnVisible: boolean
   launcherBtnPath: string
   configBtnVisible: boolean
   configBtnPath: string
-  currentModpack: string
-  currentVersion: string
 }
 
 type ButtonsConfigFormProps = {
-  initialConfig: ButtonsConfig
-  onSave: (changes: Partial<ButtonsConfig>) => Promise<void>
+  initialConfig: EditableButtonsConfig
+  onSave: (changes: Partial<EditableButtonsConfig>) => Promise<void>
   loading: boolean
 }
 
@@ -28,11 +25,12 @@ export const ButtonsConfigForm = ({
   onSave,
   loading,
 }: ButtonsConfigFormProps): JSX.Element => {
-  const { settings } = useLanguage()
+  const { settings, common } = useLanguage()
   const queryClient = useQueryClient()
 
-  const [config, setConfig] = useState<ButtonsConfig>(initialConfig)
+  const [config, setConfig] = useState<EditableButtonsConfig>(initialConfig)
   const [hasChanges, setHasChanges] = useState(false)
+  const [modpackInfo, setModpackInfo] = useState<{ name: string; version: string } | null>(null)
 
   const updateMutation = useMutation({
     mutationFn: onSave,
@@ -43,13 +41,13 @@ export const ButtonsConfigForm = ({
     },
   })
 
-  const handleChange = (key: keyof ButtonsConfig, value: string | boolean): void => {
+  const handleChange = (key: keyof EditableButtonsConfig, value: string | boolean): void => {
     setConfig((prev) => ({ ...prev, [key]: value }))
     setHasChanges(true)
   }
 
   const handleSave = (): void => {
-    const changes: Partial<ButtonsConfig> = {}
+    const changes: Partial<EditableButtonsConfig> = {}
 
     // Confronta con la configurazione iniziale e includi solo i cambiamenti
     if (config.launcherBtnVisible !== initialConfig.launcherBtnVisible) {
@@ -64,50 +62,65 @@ export const ButtonsConfigForm = ({
     if (config.configBtnPath !== initialConfig.configBtnPath) {
       changes.configBtnPath = config.configBtnPath
     }
-    if (config.currentModpack !== initialConfig.currentModpack) {
-      changes.currentModpack = config.currentModpack
-    }
-    if (config.currentVersion !== initialConfig.currentVersion) {
-      changes.currentVersion = config.currentVersion
-    }
-
     updateMutation.mutate(changes)
   }
+
+  // Carica info modpack correnti dal backend pubblico
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const res = await fetch('/api/settings/buttons')
+        if (!res.ok) return
+        const data = (await res.json()) as { modpack?: { name?: string; version?: string } }
+        if (data.modpack)
+          setModpackInfo({ name: data.modpack.name ?? '', version: data.modpack.version ?? '' })
+      } catch {
+        // ignora errori di rete
+      }
+    }
+    void run()
+  }, [])
 
   return (
     <GlassCard inset p={{ base: 4, md: 5 }}>
       <Heading size={{ base: 'sm', md: 'md' }} mb={3}>
-        Configurazione Pulsanti Download
+        {settings.buttons?.title ?? 'Configurazione Pulsanti Download'}
       </Heading>
       <Text mb={4} fontSize={{ base: 'sm', md: 'md' }} color="textMuted">
-        Configura la visibilità e i percorsi dei pulsanti di download
+        {settings.buttons?.description ??
+          'Configura la visibilità e i percorsi dei pulsanti di download'}
       </Text>
 
       <Stack gap={6}>
         {/* Configurazione Launcher */}
         <Box>
           <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-            CurseForge Launcher
+            {settings.buttons?.launcher.title ?? 'CurseForge Launcher'}
           </Heading>
           <Stack gap={3}>
             <Checkbox.Root
+              size="sm"
               checked={config.launcherBtnVisible}
               onCheckedChange={(details) =>
                 handleChange('launcherBtnVisible', details.checked === true)
               }
             >
               <Checkbox.HiddenInput />
-              <Checkbox.Indicator />
-              <Checkbox.Label>Mostra pulsante launcher</Checkbox.Label>
+              <Checkbox.Control />
+              <Checkbox.Label>
+                {settings.buttons?.launcher.visible ?? 'Mostra pulsante launcher'}
+              </Checkbox.Label>
             </Checkbox.Root>
             <Box>
               <Text fontSize={{ base: 'sm', md: 'md' }} mb={2}>
-                Percorso file launcher
+                {settings.buttons?.launcher.path.label ?? 'Percorso file launcher'}
               </Text>
               <Input
                 value={config.launcherBtnPath}
                 onChange={(e) => handleChange('launcherBtnPath', e.target.value)}
-                placeholder="dfemscraft-launcher.jar"
+                placeholder={
+                  settings.buttons?.launcher.path.placeholder ?? 'dfemscraft-launcher.jar'
+                }
                 size={{ base: 'sm', md: 'md' }}
               />
             </Box>
@@ -117,27 +130,30 @@ export const ButtonsConfigForm = ({
         {/* Configurazione Config */}
         <Box>
           <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-            Mods to install
+            {settings.buttons?.config.title ?? 'Mods to install'}
           </Heading>
           <Stack gap={3}>
             <Checkbox.Root
+              size="sm"
               checked={config.configBtnVisible}
               onCheckedChange={(details) =>
                 handleChange('configBtnVisible', details.checked === true)
               }
             >
               <Checkbox.HiddenInput />
-              <Checkbox.Indicator />
-              <Checkbox.Label>Mostra pulsante configurazione</Checkbox.Label>
+              <Checkbox.Control />
+              <Checkbox.Label>
+                {settings.buttons?.config.visible ?? 'Mostra pulsante configurazione'}
+              </Checkbox.Label>
             </Checkbox.Root>
             <Box>
               <Text fontSize={{ base: 'sm', md: 'md' }} mb={2}>
-                Percorso file configurazione
+                {settings.buttons?.config.path.label ?? 'Percorso file configurazione'}
               </Text>
               <Input
                 value={config.configBtnPath}
                 onChange={(e) => handleChange('configBtnPath', e.target.value)}
-                placeholder="dfemscraft-config.zip"
+                placeholder={settings.buttons?.config.path.placeholder ?? 'dfemscraft-config.zip'}
                 size={{ base: 'sm', md: 'md' }}
               />
             </Box>
@@ -147,28 +163,28 @@ export const ButtonsConfigForm = ({
         {/* Configurazione Modpack corrente */}
         <Box>
           <Heading size={{ base: 'xs', md: 'sm' }} mb={3}>
-            Modpack Corrente
+            {settings.buttons?.modpack.title ?? 'Modpack Corrente'}
           </Heading>
           <Stack gap={3}>
             <Box>
               <Text fontSize={{ base: 'sm', md: 'md' }} mb={2}>
-                Nome Modpack
+                {settings.buttons?.modpack.name.label ?? 'Nome Modpack'}
               </Text>
               <Input
-                value={config.currentModpack}
-                onChange={(e) => handleChange('currentModpack', e.target.value)}
-                placeholder="Basterd's Legacy"
+                value={modpackInfo?.name ?? ''}
+                readOnly
+                placeholder={settings.buttons?.modpack.name.placeholder ?? "Basterd's Legacy"}
                 size={{ base: 'sm', md: 'md' }}
               />
             </Box>
             <Box>
               <Text fontSize={{ base: 'sm', md: 'md' }} mb={2}>
-                Versione
+                {settings.buttons?.modpack.version.label ?? 'Versione'}
               </Text>
               <Input
-                value={config.currentVersion}
-                onChange={(e) => handleChange('currentVersion', e.target.value)}
-                placeholder="1.0.0"
+                value={modpackInfo?.version ?? ''}
+                readOnly
+                placeholder={settings.buttons?.modpack.version.placeholder ?? '1.0.0'}
                 size={{ base: 'sm', md: 'md' }}
               />
             </Box>
@@ -189,14 +205,14 @@ export const ButtonsConfigForm = ({
 
         {updateMutation.isError && (
           <Text color="accent.danger" fontSize={{ base: 'sm', md: 'md' }}>
-            {settings.environment?.error ?? 'Errore nel salvataggio'}:{' '}
+            {(common?.error ?? 'Errore') + ': '}
             {(updateMutation.error as Error).message}
           </Text>
         )}
 
         {updateMutation.isSuccess && (
           <Text color="accent.success" fontSize={{ base: 'sm', md: 'md' }}>
-            {settings.environment?.success ?? 'Configurazioni aggiornate con successo'}
+            {common?.success ?? 'Successo'}
           </Text>
         )}
       </Stack>

@@ -57,10 +57,8 @@ const LoggedInHomePage = (): JSX.Element => {
 
   // Determina le informazioni del modpack da mostrare
   // Priorità: informazioni reali del server > configurazioni admin > fallback
-  const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
-  const displayVersion = modpackInfo?.loader
-    ? `${modpackInfo.loader} ${modpackInfo.version}`
-    : (buttonsSettings?.modpack.version ?? '1.0.0')
+  // const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
+  const displayVersion = modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '1.0.0'
 
   return (
     <Box p={{ base: 4, md: 6 }}>
@@ -111,9 +109,9 @@ const LoggedInHomePage = (): JSX.Element => {
                     variant="solid"
                     fontSize={{ base: 'xs', md: 'sm' }}
                   >
-                    {jarStatus.hasJar ? 'Installato' : 'Non trovato'}
+                    {jarStatus.hasJar ? 'Installed' : 'Not Found'}
                   </Badge>
-                  {jarStatus.hasJar && jarStatus.jarType && (
+                  {/* {jarStatus.hasJar && jarStatus.jarType && (
                     <Badge
                       colorPalette="blue"
                       variant="outline"
@@ -121,7 +119,7 @@ const LoggedInHomePage = (): JSX.Element => {
                     >
                       {jarStatus.jarType.toUpperCase()}
                     </Badge>
-                  )}
+                  )} */}
                 </HStack>
               </HStack>
             )}
@@ -129,26 +127,22 @@ const LoggedInHomePage = (): JSX.Element => {
             {/* Informazioni modpack corrente */}
             {(modpackInfo || buttonsSettings) && (
               <>
-                <HStack mb={2} justify="space-between">
+                {/* <HStack mb={2} justify="space-between">
                   <Text fontSize={{ base: 'sm', md: 'md' }}>Modpack:</Text>
                   <Text fontSize={{ base: 'sm', md: 'md' }}>{displayName}</Text>
-                </HStack>
+                </HStack> */}
+                {modpackInfo?.loader && (
+                  <HStack mb={3} justify="space-between">
+                    <Text fontSize={{ base: 'sm', md: 'md' }}>Loader:</Text>
+                    <Badge colorPalette="blue" variant="solid" fontSize={{ base: 'xs', md: 'sm' }}>
+                      {modpackInfo.loader}
+                    </Badge>
+                  </HStack>
+                )}
                 <HStack mb={3} justify="space-between">
                   <Text fontSize={{ base: 'sm', md: 'md' }}>Versione:</Text>
                   <Text fontSize={{ base: 'sm', md: 'md' }}>{displayVersion}</Text>
                 </HStack>
-                {modpackInfo?.loader && (
-                  <HStack mb={3} justify="space-between">
-                    <Text fontSize={{ base: 'sm', md: 'md' }}>Loader:</Text>
-                    <Badge
-                      colorPalette="blue"
-                      variant="outline"
-                      fontSize={{ base: 'xs', md: 'sm' }}
-                    >
-                      {modpackInfo.loader.toUpperCase()}
-                    </Badge>
-                  </HStack>
-                )}
               </>
             )}
 

@@ -361,6 +361,25 @@ export type TranslationKey = {
       light: string
       current: string
     }
+    buttons: {
+      title: string
+      description: string
+      launcher: {
+        title: string
+        visible: string
+        path: { label: string; placeholder: string }
+      }
+      config: {
+        title: string
+        visible: string
+        path: { label: string; placeholder: string }
+      }
+      modpack: {
+        title: string
+        name: { label: string; placeholder: string }
+        version: { label: string; placeholder: string }
+      }
+    }
   }
   modpack: {
     title: string

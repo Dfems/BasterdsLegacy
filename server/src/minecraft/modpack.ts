@@ -27,7 +27,12 @@ const JVM_ARGS = 'user_jvm_args.txt'
 const INSTALLATION_INFO = '.installation_info.json'
 
 // Funzioni per gestire le informazioni sull'installazione
-const saveInstallationInfo = async (info: { mode: string; loader?: string }): Promise<void> => {
+const saveInstallationInfo = async (info: {
+  mode: string
+  loader?: string
+  loaderVersion?: string
+  mcVersion?: string
+}): Promise<void> => {
   const file = path.join(CONFIG.MC_DIR, INSTALLATION_INFO)
   await fsp.writeFile(file, JSON.stringify(info, null, 2), 'utf8')
 }
@@ -35,6 +40,8 @@ const saveInstallationInfo = async (info: { mode: string; loader?: string }): Pr
 export const loadInstallationInfo = async (): Promise<{
   mode?: string
   loader?: string
+  loaderVersion?: string
+  mcVersion?: string
 } | null> => {
   try {
     const file = path.join(CONFIG.MC_DIR, INSTALLATION_INFO)
@@ -43,6 +50,101 @@ export const loadInstallationInfo = async (): Promise<{
   } catch {
     return null
   }
+}
+
+type InstallInfo = {
+  mode?: string
+  loader?: string
+  loaderVersion?: string
+  mcVersion?: string
+}
+
+export const saveLastInstalledToDb = async (info: InstallInfo): Promise<void> => {
+  try {
+    const { db } = await import('../lib/db.js')
+    const entries: Array<[string, string]> = []
+    if (info.mode) entries.push(['modpack.mode', info.mode])
+    if (info.loader) entries.push(['modpack.loader', info.loader])
+    if (info.loaderVersion) entries.push(['modpack.loaderVersion', info.loaderVersion])
+    if (info.mcVersion) entries.push(['modpack.mcVersion', info.mcVersion])
+    for (const [key, value] of entries) {
+      await db.setting.upsert({
+        where: { key },
+        update: { value },
+        create: { key, value },
+      })
+    }
+  } catch {
+    // Se il DB non è disponibile, ignora (fallback al file)
+  }
+}
+
+export const loadLastInstalledFromDb = async (): Promise<InstallInfo | null> => {
+  try {
+    const { db } = await import('../lib/db.js')
+    const keys = ['modpack.mode', 'modpack.loader', 'modpack.loaderVersion', 'modpack.mcVersion']
+    const rows = await db.setting.findMany({ where: { key: { in: keys } } })
+    const out: InstallInfo = {}
+    for (const row of rows) {
+      switch (row.key) {
+        case 'modpack.mode':
+          out.mode = row.value
+          break
+        case 'modpack.loader':
+          out.loader = row.value
+          break
+        case 'modpack.loaderVersion':
+          out.loaderVersion = row.value
+          break
+        case 'modpack.mcVersion':
+          out.mcVersion = row.value
+          break
+      }
+    }
+    return Object.keys(out).length ? out : null
+  } catch {
+    return null
+  }
+}
+
+// Risolve le informazioni d'installazione includendo fallback dal filesystem (installer JAR)
+export const getResolvedInstallationInfo = async (): Promise<{
+  mode?: string
+  loader?: string
+  loaderVersion?: string
+  mcVersion?: string
+} | null> => {
+  const info = (await loadInstallationInfo()) ?? {}
+  try {
+    const entries = await fsp.readdir(CONFIG.MC_DIR)
+    // Rileva NeoForge: neoforge-<version>-installer.jar
+    const neo = entries.find((f) => /^neoforge-[^-]+-installer\.jar$/i.test(f))
+    if (!info.loaderVersion && (info.loader === 'NeoForge' || neo)) {
+      if (neo) {
+        const m = neo.match(/^neoforge-([^-]+)-installer\.jar$/i)
+        if (m) {
+          info.loader = 'NeoForge'
+          info.loaderVersion = m[1]!
+        }
+      }
+    }
+    // Rileva Forge: forge-<mcVersion>-<loaderVersion>-installer.jar
+    const forge = entries.find((f) => /^forge-\d+\.\d+(?:\.\d+)?-[^-]+-installer\.jar$/i.test(f))
+    if (!info.loaderVersion && (info.loader === 'Forge' || forge)) {
+      if (forge) {
+        const m = forge.match(/^forge-(\d+\.\d+(?:\.\d+)?)-([^-]+)-installer\.jar$/i)
+        if (m) {
+          info.loader = 'Forge'
+          if (!info.mcVersion) info.mcVersion = m[1]!
+          info.loaderVersion = m[2]!
+        }
+      }
+    }
+    // Fabric/Quilt: lasciamo 'latest' non determinabile
+  } catch {
+    // ignora errori di lettura directory
+  }
+  return Object.keys(info).length ? info : null
 }
 
 export const ensureEula = async (): Promise<void> => {
@@ -358,6 +460,8 @@ export const installModpack = async (
   req: InstallRequest
 ): Promise<{ ok: true; notes: string[] }> => {
   const notes: string[] = []
+  // Conserva la versione del loader rilevata per salvarla a fine installazione
+  let loaderVersion: string | undefined
 
   if (req.mode === 'automatic') {
     if (!req.loader || !req.mcVersion) {
@@ -368,16 +472,23 @@ export const installModpack = async (
     await writeJvmArgs()
     await fsp.mkdir(CONFIG.MC_DIR, { recursive: true })
 
+    // Determina la versione del loader (se applicabile)
+
     if (req.loader === 'Vanilla') {
       await installVanilla(req.mcVersion, notes)
+      loaderVersion = req.mcVersion
     } else if (req.loader === 'Fabric') {
       await installFabric(req.mcVersion, notes)
+      loaderVersion = 'latest'
     } else if (req.loader === 'Forge') {
+      loaderVersion = (await getLatestForgeVersion(req.mcVersion)) || undefined
       await installForge(req.mcVersion, notes)
     } else if (req.loader === 'NeoForge') {
+      loaderVersion = (await getLatestNeoForgeVersion(req.mcVersion)) || undefined
       await installNeoForge(req.mcVersion, notes)
     } else if (req.loader === 'Quilt') {
       await installQuilt(req.mcVersion, notes)
+      loaderVersion = 'latest'
     }
   } else if (req.mode === 'manual') {
     if (!req.jarFileName) {
@@ -393,7 +504,14 @@ export const installModpack = async (
 
   // Salva le informazioni dell'installazione per la detection del tipo
   if (req.mode === 'automatic' && req.loader) {
-    await saveInstallationInfo({ mode: req.mode, loader: req.loader })
+    const info: { mode: string; loader?: string; loaderVersion?: string; mcVersion?: string } = {
+      mode: req.mode,
+      loader: req.loader,
+    }
+    if (loaderVersion) info.loaderVersion = loaderVersion
+    if (req.mcVersion) info.mcVersion = req.mcVersion
+    await saveInstallationInfo(info)
+    await saveLastInstalledToDb(info)
   }
 
   return { ok: true, notes }
@@ -434,11 +552,16 @@ export const installModpackWithProgress = async (
   }
 
   try {
+    // Conserva la versione del loader rilevata per salvarla a fine installazione
+    let loaderVersion: string | undefined
+
     if (req.mode === 'automatic') {
       if (!req.loader || !req.mcVersion) {
         throw new Error('Loader e versione MC sono richiesti per modalità automatica')
       }
       sendProgress(`Modalità automatica: loader=${req.loader} mc=${req.mcVersion}`)
+
+      // Determina la versione del loader (se applicabile)
 
       sendProgress('Preparazione directory server...')
       await ensureEula()
@@ -447,14 +570,19 @@ export const installModpackWithProgress = async (
 
       if (req.loader === 'Vanilla') {
         await installVanillaWithProgress(req.mcVersion, sendProgress)
+        loaderVersion = req.mcVersion
       } else if (req.loader === 'Fabric') {
         await installFabricWithProgress(req.mcVersion, sendProgress)
+        loaderVersion = 'latest'
       } else if (req.loader === 'Forge') {
+        loaderVersion = (await getLatestForgeVersion(req.mcVersion)) || undefined
         await installForgeWithProgress(req.mcVersion, sendProgress)
       } else if (req.loader === 'NeoForge') {
+        loaderVersion = (await getLatestNeoForgeVersion(req.mcVersion)) || undefined
         await installNeoForgeWithProgress(req.mcVersion, sendProgress)
       } else if (req.loader === 'Quilt') {
         await installQuiltWithProgress(req.mcVersion, sendProgress)
+        loaderVersion = 'latest'
       }
     } else if (req.mode === 'manual') {
       if (!req.jarFileName) {
@@ -472,7 +600,14 @@ export const installModpackWithProgress = async (
 
     // Salva le informazioni dell'installazione per la detection del tipo
     if (req.mode === 'automatic' && req.loader) {
-      await saveInstallationInfo({ mode: req.mode, loader: req.loader })
+      const info: { mode: string; loader?: string; loaderVersion?: string; mcVersion?: string } = {
+        mode: req.mode,
+        loader: req.loader,
+      }
+      if (loaderVersion) info.loaderVersion = loaderVersion
+      if (req.mcVersion) info.mcVersion = req.mcVersion
+      await saveInstallationInfo(info)
+      await saveLastInstalledToDb(info)
     }
 
     sendComplete('✅ Installazione modpack completata con successo!')

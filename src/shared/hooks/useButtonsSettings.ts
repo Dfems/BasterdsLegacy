@@ -12,6 +12,7 @@ export type ButtonsSettings = {
   modpack: {
     name: string
     version: string
+    loader?: string | null
   }
 }
 

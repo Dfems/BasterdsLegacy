@@ -6,7 +6,7 @@ import {
   getSupportedVersions,
   installModpack,
   installModpackWithProgress,
-  loadInstallationInfo,
+  loadLastInstalledFromDb,
   type InstallRequest,
 } from '../minecraft/modpack.js'
 
@@ -107,21 +107,22 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
   )
 
   // Endpoint per ottenere informazioni sul modpack corrente
-  fastify.get('/info', async (_req, reply) => {
+  fastify.get('/api/modpack/info', async (_req, reply) => {
     try {
-      const installationInfo = await loadInstallationInfo()
+      const installationInfo = await loadLastInstalledFromDb()
 
       if (installationInfo && installationInfo.loader) {
         // Se abbiamo informazioni sull'installazione, usiamo quelle
+        const loader = installationInfo.loader
+        const loaderVersion = installationInfo.loaderVersion
+        const mcVersion = installationInfo.mcVersion
         const name =
-          installationInfo.loader === 'Vanilla'
-            ? 'Minecraft Vanilla'
-            : `Minecraft ${installationInfo.loader}`
+          loader === 'Vanilla' ? `Minecraft ${mcVersion ?? 'Vanilla'}` : `Minecraft ${loader}`
 
         return {
           name,
-          version: installationInfo.loader === 'Vanilla' ? 'Latest' : 'Latest',
-          loader: installationInfo.loader,
+          version: loader === 'Vanilla' ? (mcVersion ?? '') : (loaderVersion ?? ''),
+          loader,
           mode: installationInfo.mode,
         }
       } else {

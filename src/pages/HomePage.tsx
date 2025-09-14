@@ -25,15 +25,13 @@ const HomePage = (): JSX.Element => {
 
   // Determina le informazioni del modpack da mostrare
   // Priorità: informazioni reali del server > configurazioni admin > fallback
-  const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
-  const displayVersion = modpackInfo?.loader
-    ? `${modpackInfo.loader} ${modpackInfo.version}`
-    : (buttonsSettings?.modpack.version ?? '1.0.0')
+  // const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
+  const displayVersion = modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '1.0.0'
 
   // Versione per utenti non loggati (rimane invariata come richiesto)
   return (
     <Box p={{ base: 4, md: 6 }}>
-      <GlassCard maxW="720px" mx="auto" textAlign="center" p={{ base: 4, md: 6 }}>
+      <GlassCard inset maxW="720px" mx="auto" textAlign="center" p={{ base: 4, md: 6 }}>
         <Heading mb={3} fontSize={{ base: 'lg', md: 'xl' }}>
           {home.title}
         </Heading>
@@ -44,17 +42,17 @@ const HomePage = (): JSX.Element => {
         {/* Mostra modpack e versione corrente se disponibili */}
         {(modpackInfo || buttonsSettings) && (
           <Box mb={4} p={2} borderRadius="md" bg="whiteAlpha.100">
-            <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
+            {/* <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
               Modpack corrente: {displayName}
-            </Text>
+            </Text> */}
+            {(modpackInfo?.loader || jarStatus?.jarType) && (
+              <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted" fontWeight="medium">
+                Loader: {(modpackInfo?.loader ?? jarStatus?.jarType) as string}
+              </Text>
+            )}
             <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
               Versione: {displayVersion}
             </Text>
-            {jarStatus?.jarType && (
-              <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted" fontWeight="medium">
-                Loader: {jarStatus.jarType.toUpperCase()}
-              </Text>
-            )}
           </Box>
         )}
 
