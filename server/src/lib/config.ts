@@ -32,6 +32,14 @@ const DYNAMIC_CONFIG_DEFAULTS = {
   LOG_FILE_ENABLED: env('LOG_FILE_ENABLED', 'true') === 'true',
   LOG_RETENTION_DAYS: Number(env('LOG_RETENTION_DAYS', '30')),
   LOG_MAX_FILES: Number(env('LOG_MAX_FILES', '10')),
+  // Configurazioni per i pulsanti launcher e config
+  LAUNCHER_BTN_VISIBLE: env('LAUNCHER_BTN_VISIBLE', 'true') === 'true',
+  LAUNCHER_BTN_PATH: env('LAUNCHER_BTN_PATH', 'dfemscraft-launcher.jar'),
+  CONFIG_BTN_VISIBLE: env('CONFIG_BTN_VISIBLE', 'true') === 'true',
+  CONFIG_BTN_PATH: env('CONFIG_BTN_PATH', 'dfemscraft-config.zip'),
+  // Configurazioni per modpack e versione corrente
+  CURRENT_MODPACK: env('CURRENT_MODPACK', 'Basterd\'s Legacy'),
+  CURRENT_VERSION: env('CURRENT_VERSION', '1.0.0'),
 } as const
 
 // Cache per le configurazioni del database
@@ -75,6 +83,12 @@ export const getConfig = async (): Promise<ConfigType> => {
             'env.LOG_FILE_ENABLED',
             'env.LOG_RETENTION_DAYS',
             'env.LOG_MAX_FILES',
+            'env.LAUNCHER_BTN_VISIBLE',
+            'env.LAUNCHER_BTN_PATH',
+            'env.CONFIG_BTN_VISIBLE',
+            'env.CONFIG_BTN_PATH',
+            'env.CURRENT_MODPACK',
+            'env.CURRENT_VERSION',
           ]
         }
       }
@@ -98,12 +112,18 @@ export const getConfig = async (): Promise<ConfigType> => {
         case 'BACKUP_CRON':
         case 'AUTO_BACKUP_CRON':
         case 'LOG_LEVEL':
+        case 'LAUNCHER_BTN_PATH':
+        case 'CONFIG_BTN_PATH':
+        case 'CURRENT_MODPACK':
+        case 'CURRENT_VERSION':
           (overrides as Record<string, unknown>)[key] = value
           break
         case 'LOG_LEVELS':
           (overrides as Record<string, unknown>)[key] = value.split(',').map((level: string) => level.trim())
           break
         case 'RCON_ENABLED':
+        case 'LAUNCHER_BTN_VISIBLE':
+        case 'CONFIG_BTN_VISIBLE':
         case 'AUTO_BACKUP_ENABLED':
         case 'LOG_FILE_ENABLED':
           (overrides as Record<string, unknown>)[key] = value === 'true'

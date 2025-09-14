@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { useButtonsSettings } from '@/shared/hooks/useButtonsSettings'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
@@ -37,6 +38,7 @@ const fmtUptime = (ms: number): string => {
 const LoggedInHomePage = (): JSX.Element => {
   const { home, common } = useLanguage()
   const { data: jarStatus } = useServerJarStatus()
+  const { data: buttonsSettings } = useButtonsSettings()
 
   const { data: status, error } = useQuery({
     queryKey: ['status'],
@@ -113,6 +115,20 @@ const LoggedInHomePage = (): JSX.Element => {
                   )}
                 </HStack>
               </HStack>
+            )}
+
+            {/* Informazioni modpack corrente */}
+            {buttonsSettings && (
+              <>
+                <HStack mb={2} justify="space-between">
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>Modpack:</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>{buttonsSettings.modpack.name}</Text>
+                </HStack>
+                <HStack mb={3} justify="space-between">
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>Versione:</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>{buttonsSettings.modpack.version}</Text>
+                </HStack>
+              </>
             )}
 
             {/* Informazioni sistema se disponibili */}
@@ -194,24 +210,32 @@ const LoggedInHomePage = (): JSX.Element => {
           </Heading>
 
           <Stack direction={{ base: 'column', sm: 'row' }} gap={3} align="center" justify="center">
-            <GlassButton
-              as={ChakraLink}
-              href="dfemscraft-config.zip"
-              download
-              size={{ base: 'sm', md: 'md' }}
-              minH="44px"
-            >
-              {home.configBtn}
-            </GlassButton>
-            <GlassButton
-              as={ChakraLink}
-              href="dfemscraft-launcher.jar"
-              download
-              size={{ base: 'sm', md: 'md' }}
-              minH="44px"
-            >
-              {home.launcherBtn}
-            </GlassButton>
+            {/* Pulsante Config - mostra solo se visible è true */}
+            {buttonsSettings?.config.visible && (
+              <GlassButton
+                as={ChakraLink}
+                href={buttonsSettings.config.path}
+                download
+                size={{ base: 'sm', md: 'md' }}
+                minH="44px"
+              >
+                {home.configBtn}
+              </GlassButton>
+            )}
+
+            {/* Pulsante Launcher - mostra solo se visible è true */}
+            {buttonsSettings?.launcher.visible && (
+              <GlassButton
+                as={ChakraLink}
+                href={buttonsSettings.launcher.path}
+                download
+                size={{ base: 'sm', md: 'md' }}
+                minH="44px"
+              >
+                {home.launcherBtn}
+              </GlassButton>
+            )}
+
             <GlassButton
               as={ChakraLink}
               href="https://ko-fi.com/dfems"

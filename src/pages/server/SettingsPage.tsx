@@ -6,6 +6,7 @@ import { useThemeMode, type ThemeMode } from '@/entities/user/ThemeModeContext'
 import { EnvironmentConfigForm } from '@/features/environment-config'
 import { BackgroundRotationSettings } from '@/shared/components/BackgroundRotationSettings'
 import { BackgroundUpload } from '@/shared/components/BackgroundUpload'
+import { ButtonsConfigForm } from '@/shared/components/ButtonsConfigForm'
 import { GlassCard } from '@/shared/components/GlassCard'
 import { useUiSettings } from '@/shared/hooks'
 import useLanguage from '@/shared/hooks/useLanguage'
@@ -34,6 +35,14 @@ type EnvironmentConfig = {
   logFileEnabled: boolean
   logRetentionDays: number
   logMaxFiles: number
+  // Configurazioni pulsanti
+  launcherBtnVisible: boolean
+  launcherBtnPath: string
+  configBtnVisible: boolean
+  configBtnPath: string
+  // Configurazioni modpack corrente
+  currentModpack: string
+  currentVersion: string
 }
 
 export default function SettingsPage(): JSX.Element {
@@ -194,6 +203,24 @@ export default function SettingsPage(): JSX.Element {
               loading={envLoading}
             />
           )}
+        </Box>
+      )}
+
+      {/* Buttons Configuration Form - Solo per owner */}
+      {isOwner && envConfig && (
+        <Box mb={6}>
+          <ButtonsConfigForm
+            initialConfig={{
+              launcherBtnVisible: envConfig.launcherBtnVisible,
+              launcherBtnPath: envConfig.launcherBtnPath,
+              configBtnVisible: envConfig.configBtnVisible,
+              configBtnPath: envConfig.configBtnPath,
+              currentModpack: envConfig.currentModpack,
+              currentVersion: envConfig.currentVersion,
+            }}
+            onSave={handleEnvConfigSave}
+            loading={envLoading}
+          />
         </Box>
       )}
 

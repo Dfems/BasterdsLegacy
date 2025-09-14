@@ -126,6 +126,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       logFileEnabled: config.LOG_FILE_ENABLED,
       logRetentionDays: config.LOG_RETENTION_DAYS,
       logMaxFiles: config.LOG_MAX_FILES,
+      // Configurazioni pulsanti
+      launcherBtnVisible: config.LAUNCHER_BTN_VISIBLE,
+      launcherBtnPath: config.LAUNCHER_BTN_PATH,
+      configBtnVisible: config.CONFIG_BTN_VISIBLE,
+      configBtnPath: config.CONFIG_BTN_PATH,
+      // Configurazioni modpack corrente
+      currentModpack: config.CURRENT_MODPACK,
+      currentVersion: config.CURRENT_VERSION,
     }
   })
 
@@ -150,6 +158,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           logFileEnabled?: boolean
           logRetentionDays?: number
           logMaxFiles?: number
+          // Configurazioni pulsanti
+          launcherBtnVisible?: boolean
+          launcherBtnPath?: string
+          configBtnVisible?: boolean
+          configBtnPath?: string
+          // Configurazioni modpack corrente
+          currentModpack?: string
+          currentVersion?: string
         }
 
         const updates: Array<{ key: string; value: string }> = []
@@ -272,6 +288,56 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           updates.push({ key: 'env.LOG_MAX_FILES', value: body.logMaxFiles.toString() })
         }
 
+        // Validazione configurazioni pulsanti
+        if (body.launcherBtnVisible !== undefined) {
+          if (typeof body.launcherBtnVisible !== 'boolean') {
+            return reply.status(400).send({ error: 'LAUNCHER_BTN_VISIBLE must be a boolean' })
+          }
+          updates.push({
+            key: 'env.LAUNCHER_BTN_VISIBLE',
+            value: body.launcherBtnVisible.toString(),
+          })
+        }
+
+        if (body.launcherBtnPath !== undefined) {
+          if (
+            typeof body.launcherBtnPath !== 'string' ||
+            body.launcherBtnPath.trim().length === 0
+          ) {
+            return reply.status(400).send({ error: 'LAUNCHER_BTN_PATH must be a non-empty string' })
+          }
+          updates.push({ key: 'env.LAUNCHER_BTN_PATH', value: body.launcherBtnPath.trim() })
+        }
+
+        if (body.configBtnVisible !== undefined) {
+          if (typeof body.configBtnVisible !== 'boolean') {
+            return reply.status(400).send({ error: 'CONFIG_BTN_VISIBLE must be a boolean' })
+          }
+          updates.push({ key: 'env.CONFIG_BTN_VISIBLE', value: body.configBtnVisible.toString() })
+        }
+
+        if (body.configBtnPath !== undefined) {
+          if (typeof body.configBtnPath !== 'string' || body.configBtnPath.trim().length === 0) {
+            return reply.status(400).send({ error: 'CONFIG_BTN_PATH must be a non-empty string' })
+          }
+          updates.push({ key: 'env.CONFIG_BTN_PATH', value: body.configBtnPath.trim() })
+        }
+
+        // Validazione configurazioni modpack corrente
+        if (body.currentModpack !== undefined) {
+          if (typeof body.currentModpack !== 'string' || body.currentModpack.trim().length === 0) {
+            return reply.status(400).send({ error: 'CURRENT_MODPACK must be a non-empty string' })
+          }
+          updates.push({ key: 'env.CURRENT_MODPACK', value: body.currentModpack.trim() })
+        }
+
+        if (body.currentVersion !== undefined) {
+          if (typeof body.currentVersion !== 'string' || body.currentVersion.trim().length === 0) {
+            return reply.status(400).send({ error: 'CURRENT_VERSION must be a non-empty string' })
+          }
+          updates.push({ key: 'env.CURRENT_VERSION', value: body.currentVersion.trim() })
+        }
+
         // Aggiorna le impostazioni nel database
         for (const update of updates) {
           await db.setting.upsert({
@@ -304,6 +370,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
             logFileEnabled: updatedConfig.LOG_FILE_ENABLED,
             logRetentionDays: updatedConfig.LOG_RETENTION_DAYS,
             logMaxFiles: updatedConfig.LOG_MAX_FILES,
+            // Configurazioni pulsanti
+            launcherBtnVisible: updatedConfig.LAUNCHER_BTN_VISIBLE,
+            launcherBtnPath: updatedConfig.LAUNCHER_BTN_PATH,
+            configBtnVisible: updatedConfig.CONFIG_BTN_VISIBLE,
+            configBtnPath: updatedConfig.CONFIG_BTN_PATH,
+            // Configurazioni modpack corrente
+            currentModpack: updatedConfig.CURRENT_MODPACK,
+            currentVersion: updatedConfig.CURRENT_VERSION,
           },
         }
       } catch (error) {
@@ -324,6 +398,25 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
 
     return {
       backgroundImage: backgroundImage?.value || null,
+    }
+  })
+
+  // Public: Get button settings (for home page display)
+  fastify.get('/api/settings/buttons', async () => {
+    const config = await getConfig()
+    return {
+      launcher: {
+        visible: config.LAUNCHER_BTN_VISIBLE,
+        path: config.LAUNCHER_BTN_PATH,
+      },
+      config: {
+        visible: config.CONFIG_BTN_VISIBLE,
+        path: config.CONFIG_BTN_PATH,
+      },
+      modpack: {
+        name: config.CURRENT_MODPACK,
+        version: config.CURRENT_VERSION,
+      },
     }
   })
 
