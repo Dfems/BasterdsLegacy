@@ -1,6 +1,6 @@
 import { useState, type JSX } from 'react'
 
-import { Box, Button, Field, Heading, Input, Stack, Text } from '@chakra-ui/react'
+import { Alert, Box, Button, Field, Heading, Input, Stack, Text } from '@chakra-ui/react'
 
 import { GlassCard } from '@/shared/components/GlassCard'
 import useLanguage from '@/shared/hooks/useLanguage'
@@ -37,7 +37,7 @@ export const EnvironmentConfigForm = ({
   onSave,
   loading = false,
 }: EnvironmentConfigFormProps): JSX.Element => {
-  const { settings } = useLanguage()
+  const { settings, common } = useLanguage()
 
   // Gestione retrocompatibilità per logLevels
   const normalizedInitialConfig: InternalEnvironmentConfig = {
@@ -47,12 +47,17 @@ export const EnvironmentConfigForm = ({
 
   const [config, setConfig] = useState<InternalEnvironmentConfig>(normalizedInitialConfig)
   const [submitting, setSubmitting] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'success' | 'error' | null>(null)
+  const [saveMessage, setSaveMessage] = useState<string>('')
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
     if (submitting) return
 
     setSubmitting(true)
+    setSaveStatus(null)
+    setSaveMessage('')
+
     try {
       // Solo invia i campi che sono cambiati
       const changes: Partial<EnvironmentConfig> = {}
@@ -79,6 +84,26 @@ export const EnvironmentConfigForm = ({
         changes.logMaxFiles = config.logMaxFiles
 
       await onSave(changes)
+
+      // Mostra messaggio di successo
+      setSaveStatus('success')
+      setSaveMessage(settings.environment.success)
+
+      // Nascondi il messaggio dopo 3 secondi
+      setTimeout(() => {
+        setSaveStatus(null)
+        setSaveMessage('')
+      }, 3000)
+    } catch (error) {
+      // Mostra messaggio di errore
+      setSaveStatus('error')
+      setSaveMessage((error as Error).message || settings.environment.error)
+
+      // Nascondi il messaggio di errore dopo 5 secondi
+      setTimeout(() => {
+        setSaveStatus(null)
+        setSaveMessage('')
+      }, 5000)
     } finally {
       setSubmitting(false)
     }
@@ -86,6 +111,8 @@ export const EnvironmentConfigForm = ({
 
   const handleReset = (): void => {
     setConfig(normalizedInitialConfig)
+    setSaveStatus(null)
+    setSaveMessage('')
   }
 
   if (loading) {
@@ -104,6 +131,19 @@ export const EnvironmentConfigForm = ({
       <Text color="textMuted" fontSize={{ base: 'sm', md: 'md' }} mb={6}>
         {settings.environment.description}
       </Text>
+
+      {/* Save Status Alert */}
+      {saveStatus && saveMessage && (
+        <Alert.Root
+          status={saveStatus === 'success' ? 'success' : 'error'}
+          mb={4}
+          fontSize={{ base: 'sm', md: 'md' }}
+        >
+          <Alert.Indicator />
+          <Alert.Title>{saveStatus === 'success' ? common.success : common.error}</Alert.Title>
+          <Alert.Description>{saveMessage}</Alert.Description>
+        </Alert.Root>
+      )}
 
       <Box as="form" onSubmit={handleSubmit}>
         <Stack gap={6}>
