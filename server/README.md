@@ -214,6 +214,9 @@ RCON_PASS=                                   # Password RCON
 BACKUP_CRON=0 3 * * *                        # Backup automatico (3:00)
 RETENTION_DAYS=7                             # Giorni retention backup
 RETENTION_WEEKS=4                            # Settimane retention backup
+# Opzionali: seed UI rotation all'avvio (solo se non presenti nel DB)
+UI_BG_ROTATE_SECONDS=15                      # Intervallo rotazione sfondo (min 3)
+UI_BG_ROTATE_ENABLED=true                    # Abilita/disabilita rotazione sfondo
 ```
 
 ### Modalità Database

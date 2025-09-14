@@ -71,7 +71,7 @@ Pannello di controllo per server Minecraft con installazione automatica modpack 
   - Anteprima in tempo reale
   - Rimozione con un click
   
-  Se lo sfondo personalizzato non è impostato, viene mostrata una rotazione automatica delle immagini presenti in `src/assets/background` (JPG/PNG/WebP). L'intervallo di cambio immagine è configurabile tramite variabile d'ambiente Vite.
+  Se lo sfondo personalizzato non è impostato, viene mostrata una rotazione automatica delle immagini presenti in `src/assets/background` (JPG/PNG/WebP). L'intervallo di cambio immagine è configurabile dall'endpoint backend `/api/settings/ui-rotation` (default 15s, minimo 3s).
 
 ---
 
@@ -150,8 +150,8 @@ Il sistema gestisce automaticamente:
 - `JWT_SECRET`: Segreto per autenticazione
 - `DATABASE_URL`: URL database Prisma
 
-**Frontend (opzionali):**
-- `VITE_BG_ROTATE_SECONDS`: Intervallo in secondi per la rotazione degli sfondi di `src/assets/background` (default: 15, minimo: 3).
+**UI Rotation:**
+- La rotazione di sfondo è gestita dal backend: `GET /api/settings/ui-rotation` restituisce `{ seconds, enabled }` e `PUT /api/settings/ui-rotation` consente di aggiornare i valori (permessi owner). Il frontend non usa più variabili `VITE_` per questa funzionalità.
 
 ## API Real-time
 

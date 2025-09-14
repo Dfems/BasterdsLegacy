@@ -63,6 +63,11 @@ export const buildApp = () => {
   // Inizializza il sistema di pulizia log automatica
   initLogCleanup()
 
+  // Seed opzionale: UI rotation da variabili env (se presenti e non già in DB)
+  import('./lib/ui-rotation.js')
+    .then(({ initUiRotationDefaults }) => initUiRotationDefaults())
+    .catch((error) => app.log.warn({ error }, 'Failed to initialize UI rotation defaults'))
+
   return app
 }
 

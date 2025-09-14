@@ -26,10 +26,7 @@ const readLsEnabled = (): boolean | null => {
 export const useRotatingBackground = (options?: {
   intervalSeconds?: number
 }): { url: string | null; allUrls: string[] } => {
-  const initialSeconds =
-    options?.intervalSeconds ??
-    readLsSeconds() ??
-    Number(import.meta.env.VITE_BG_ROTATE_SECONDS ?? 15)
+  const initialSeconds = options?.intervalSeconds ?? readLsSeconds() ?? 15
   const [seconds, setSeconds] = useState(() => Math.max(3, Math.floor(initialSeconds)))
   const [enabled, setEnabled] = useState<boolean>(() => readLsEnabled() ?? true)
 
