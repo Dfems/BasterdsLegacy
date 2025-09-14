@@ -1,6 +1,6 @@
-import { useMemo, type JSX } from 'react'
+import { useMemo, useState, type JSX } from 'react'
 
-import { Box, Heading, HStack, Table, Text, VStack } from '@chakra-ui/react'
+import { Box, Button, Heading, HStack, Table, Text, VStack } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { BackupScheduler } from '@/features/backup-schedule'
@@ -10,9 +10,15 @@ import useLanguage from '@/shared/hooks/useLanguage'
 
 type Backup = { id: string; size: number; createdAt: number }
 
+type NotificationState = {
+  type: 'success' | 'error' | null
+  message: string
+}
+
 export default function BackupsPage(): JSX.Element {
   const { backups, common } = useLanguage()
   const qc = useQueryClient()
+  const [notification, setNotification] = useState<NotificationState>({ type: null, message: '' })
   const { data, isLoading } = useQuery<Backup[]>({
     queryKey: ['backups'],
     queryFn: async () => {
@@ -32,7 +38,23 @@ export default function BackupsPage(): JSX.Element {
       })
       if (!r.ok) throw new Error('Create failed')
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['backups'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['backups'] })
+      const successMessage =
+        'createSuccess' in backups && typeof backups.createSuccess === 'string'
+          ? backups.createSuccess
+          : 'Backup creato con successo!'
+      setNotification({ type: 'success', message: successMessage })
+      setTimeout(() => setNotification({ type: null, message: '' }), 3000)
+    },
+    onError: () => {
+      const errorMessage =
+        'createError' in backups && typeof backups.createError === 'string'
+          ? backups.createError
+          : 'Errore durante la creazione del backup'
+      setNotification({ type: 'error', message: errorMessage })
+      setTimeout(() => setNotification({ type: null, message: '' }), 5000)
+    },
   })
 
   const restore = useMutation({
@@ -42,7 +64,23 @@ export default function BackupsPage(): JSX.Element {
       })
       if (!r.ok) throw new Error('Restore failed')
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['backups'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['backups'] })
+      const successMessage =
+        'restoreSuccess' in backups && typeof backups.restoreSuccess === 'string'
+          ? backups.restoreSuccess
+          : 'Backup ripristinato con successo!'
+      setNotification({ type: 'success', message: successMessage })
+      setTimeout(() => setNotification({ type: null, message: '' }), 3000)
+    },
+    onError: () => {
+      const errorMessage =
+        'restoreError' in backups && typeof backups.restoreError === 'string'
+          ? backups.restoreError
+          : 'Errore durante il ripristino del backup'
+      setNotification({ type: 'error', message: errorMessage })
+      setTimeout(() => setNotification({ type: null, message: '' }), 5000)
+    },
   })
 
   const rows = useMemo(() => data ?? [], [data])
@@ -51,6 +89,31 @@ export default function BackupsPage(): JSX.Element {
     <Box p={{ base: 4, md: 6 }}>
       {' '}
       {/* Padding responsive */}
+      {/* Notification */}
+      {notification.type && (
+        <Box
+          bg={notification.type === 'success' ? 'green.100' : 'red.100'}
+          color={notification.type === 'success' ? 'green.800' : 'red.800'}
+          p={4}
+          mb={4}
+          borderRadius="md"
+          position="relative"
+          border="1px solid"
+          borderColor={notification.type === 'success' ? 'green.200' : 'red.200'}
+        >
+          <Text>{notification.message}</Text>
+          <Button
+            size="xs"
+            variant="ghost"
+            position="absolute"
+            right={2}
+            top={2}
+            onClick={() => setNotification({ type: null, message: '' })}
+          >
+            ✕
+          </Button>
+        </Box>
+      )}
       <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
         {backups.title}
       </Heading>{' '}

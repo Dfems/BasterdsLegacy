@@ -142,9 +142,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     },
     async (_req, reply) => {
       try {
-        const schedule = getCurrentSchedule()
+        const schedule = await getCurrentSchedule()
         return {
-          ...schedule,
+          config: schedule,
           presets: Object.keys(BACKUP_PRESETS),
         }
       } catch (error) {
@@ -176,7 +176,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           }
 
           // Applica preset
-          updateScheduler(preset as BackupScheduleConfig)
+          await updateScheduler(preset as BackupScheduleConfig)
 
           try {
             await (
@@ -191,7 +191,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
             console.warn('Failed to log backup schedule update audit')
           }
 
-          return { ok: true, config: getCurrentSchedule() }
+          return { ok: true, config: await getCurrentSchedule() }
         }
 
         // Validazione configurazione custom
@@ -204,7 +204,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         }
 
         // Applica configurazione custom
-        updateScheduler(body as BackupScheduleConfig)
+        await updateScheduler(body as BackupScheduleConfig)
 
         try {
           await (
@@ -219,7 +219,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           console.warn('Failed to log backup schedule update audit')
         }
 
-        return { ok: true, config: getCurrentSchedule() }
+        return { ok: true, config: await getCurrentSchedule() }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'
         console.error('Failed to update backup schedule:', errorMsg)

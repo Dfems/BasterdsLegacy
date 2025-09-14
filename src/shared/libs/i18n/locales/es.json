@@ -175,6 +175,10 @@
     "creating": "Creando copia...",
     "restoring": "Restaurando...",
     "noBackups": "No hay copias disponibles",
+    "restoreSuccess": "¡Copia de seguridad restaurada con éxito!",
+    "restoreError": "Error al restaurar la copia de seguridad",
+    "createSuccess": "¡Copia de seguridad creada con éxito!",
+    "createError": "Error al crear la copia de seguridad",
     "schedule": {
       "title": "Copias Automáticas",
       "enabled": "Copias automáticas habilitadas",

@@ -12,7 +12,7 @@ export type AuditEvent =
   | { type: 'logout'; userId?: string | undefined }
   | { type: 'file'; op: 'rename' | 'delete' | 'upload' | 'zip' | 'unzip'; path: string; userId?: string | undefined }
   | { type: 'power'; op: 'start' | 'stop' | 'restart'; userId?: string | undefined }
-  | { type: 'backup'; op: 'create' | 'restore' | 'schedule_update'; id?: string | undefined; userId?: string | undefined; details?: Record<string, unknown> | undefined }
+  | { type: 'backup'; op: 'create' | 'restore' | 'schedule_update' | 'schedule_save' | 'schedule_save_error' | 'schedule_load'; id?: string | undefined; userId?: string | undefined; details?: Record<string, unknown> | undefined }
   | { type: 'job'; name: string; op: 'start' | 'end' | 'error'; durationMs?: number | undefined; details?: Record<string, unknown> | undefined }
   | { type: 'server'; op: 'startup' | 'shutdown' | 'config_change'; details?: Record<string, unknown> | undefined }
   | { type: 'user'; op: 'create' | 'delete' | 'update' | 'password_change'; targetUserId?: string | undefined; userId?: string | undefined; details?: Record<string, unknown> | undefined }
@@ -67,6 +67,9 @@ const getHumanMessage = (evt: AuditEvent): string => {
       case 'create': return `Backup created${evt.id ? `: ${evt.id}` : ''}`
       case 'restore': return `Backup restored${evt.id ? `: ${evt.id}` : ''}`
       case 'schedule_update': return 'Backup schedule updated'
+      case 'schedule_save': return 'Backup schedule saved to database'
+      case 'schedule_save_error': return 'Failed to save backup schedule to database'
+      case 'schedule_load': return 'Backup schedule loaded from database'
     }
   } else if (evt.type === 'job') {
     switch (evt.op) {
