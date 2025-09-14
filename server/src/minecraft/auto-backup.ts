@@ -486,12 +486,25 @@ export const initAutoBackup = async (): Promise<void> => {
   }
 }
 
-// Ottiene la configurazione corrente
-export const getCurrentSchedule = (): BackupScheduleConfig => {
-  if (!currentSchedule) {
-    throw new Error('Backup schedule not initialized')
+// Ottiene la configurazione corrente (carica sempre dal database per sincronizzazione)
+export const getCurrentSchedule = async (): Promise<BackupScheduleConfig> => {
+  // Carica sempre dal database per garantire sincronizzazione
+  const dbConfig = await loadScheduleFromDatabase()
+  if (dbConfig) {
+    // Aggiorna anche la configurazione in memoria
+    currentSchedule = dbConfig
+    return { ...dbConfig }
   }
-  return { ...currentSchedule }
+
+  // Se non c'è configurazione nel database, usa quella in memoria
+  if (currentSchedule) {
+    return { ...currentSchedule }
+  }
+
+  // Se non c'è nessuna configurazione, ritorna quella di default
+  const defaultConfig = await getDefaultSchedule()
+  currentSchedule = defaultConfig
+  return { ...defaultConfig }
 }
 
 // Valida la configurazione
