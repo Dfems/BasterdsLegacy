@@ -314,6 +314,50 @@
           "world": "Solo Mundo"
         }
       },
+      "logging": {
+        "title": "Configuración de Logging",
+        "description": "Configura el comportamiento de logging del servidor y las políticas de retención",
+        "level": {
+          "label": "Nivel de Log",
+          "description": "Nivel mínimo de log a registrar",
+          "trace": "Trace (muy verboso)",
+          "debug": "Debug (verboso)",
+          "info": "Info (normal)",
+          "warn": "Warning (importante)",
+          "error": "Error (problemas)",
+          "fatal": "Fatal (crítico)"
+        },
+        "levels": {
+          "label": "Niveles de Log",
+          "description": "Selecciona qué niveles de log registrar (selección múltiple o TODOS)",
+          "all": "TODOS (todos los niveles)",
+          "trace": "Trace (muy verboso)",
+          "debug": "Debug (verboso)",
+          "info": "Info (normal)",
+          "warn": "Warning (importante)",
+          "error": "Error (problemas)",
+          "fatal": "Fatal (crítico)"
+        },
+        "dir": {
+          "label": "Directorio de Log",
+          "description": "Directorio donde se almacenan los archivos de log",
+          "placeholder": "./logs"
+        },
+        "fileEnabled": {
+          "label": "Log en Archivo Habilitado",
+          "description": "Habilita la escritura de logs en archivos"
+        },
+        "retentionDays": {
+          "label": "Días de Retención",
+          "description": "Días de conservación de archivos de log antes de la limpieza",
+          "placeholder": "30"
+        },
+        "maxFiles": {
+          "label": "Archivos Máximos",
+          "description": "Número máximo de archivos de log a conservar",
+          "placeholder": "10"
+        }
+      },
       "success": "Configuración actualizada exitosamente",
       "error": "Error al actualizar la configuración",
       "validationError": "Error de validación"

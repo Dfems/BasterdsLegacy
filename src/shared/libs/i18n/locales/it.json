@@ -289,6 +289,50 @@
           "placeholder": "Lascia vuoto per generare automaticamente"
         }
       },
+      "logging": {
+        "title": "Configurazione Logging",
+        "description": "Configura il comportamento di logging del server e le politiche di retention",
+        "level": {
+          "label": "Livello Log",
+          "description": "Livello minimo di log da registrare",
+          "trace": "Trace (molto verboso)",
+          "debug": "Debug (verboso)",
+          "info": "Info (normale)",
+          "warn": "Warning (importante)",
+          "error": "Error (problemi)",
+          "fatal": "Fatal (critico)"
+        },
+        "levels": {
+          "label": "Livelli Log",
+          "description": "Seleziona quali livelli di log registrare (selezione multipla o TUTTI)",
+          "all": "TUTTI (tutti i livelli)",
+          "trace": "Trace (molto verboso)",
+          "debug": "Debug (verboso)",
+          "info": "Info (normale)",
+          "warn": "Warning (importante)",
+          "error": "Error (problemi)",
+          "fatal": "Fatal (critico)"
+        },
+        "dir": {
+          "label": "Directory Log",
+          "description": "Directory dove vengono salvati i file di log",
+          "placeholder": "./logs"
+        },
+        "fileEnabled": {
+          "label": "Log su File Abilitato",
+          "description": "Abilita la scrittura dei log su file"
+        },
+        "retentionDays": {
+          "label": "Giorni di Retention",
+          "description": "Giorni di conservazione dei file di log prima della pulizia",
+          "placeholder": "30"
+        },
+        "maxFiles": {
+          "label": "File Massimi",
+          "description": "Numero massimo di file di log da mantenere",
+          "placeholder": "10"
+        }
+      },
       "backup": {
         "title": "Configurazione Backup",
         "cron": {

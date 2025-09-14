@@ -292,6 +292,50 @@ export type TranslationKey = {
           placeholder: string
         }
       }
+      logging: {
+        title: string
+        description: string
+        level: {
+          label: string
+          description: string
+          trace: string
+          debug: string
+          info: string
+          warn: string
+          error: string
+          fatal: string
+        }
+        levels: {
+          label: string
+          description: string
+          all: string
+          trace: string
+          debug: string
+          info: string
+          warn: string
+          error: string
+          fatal: string
+        }
+        dir: {
+          label: string
+          description: string
+          placeholder: string
+        }
+        fileEnabled: {
+          label: string
+          description: string
+        }
+        retentionDays: {
+          label: string
+          description: string
+          placeholder: string
+        }
+        maxFiles: {
+          label: string
+          description: string
+          placeholder: string
+        }
+      }
       success: string
       error: string
       validationError: string

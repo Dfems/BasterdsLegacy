@@ -27,6 +27,12 @@ type EnvironmentConfig = {
   rconHost: string
   rconPort: number
   rconPass: string
+  // Configurazioni logging
+  logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+  logDir: string
+  logFileEnabled: boolean
+  logRetentionDays: number
+  logMaxFiles: number
 }
 
 export default function SettingsPage(): JSX.Element {
