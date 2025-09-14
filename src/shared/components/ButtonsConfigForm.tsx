@@ -189,13 +189,14 @@ export const ButtonsConfigForm = ({
 
         {updateMutation.isError && (
           <Text color="accent.danger" fontSize={{ base: 'sm', md: 'md' }}>
-            Errore nel salvataggio: {(updateMutation.error as Error).message}
+            {settings.environment?.error ?? 'Errore nel salvataggio'}:{' '}
+            {(updateMutation.error as Error).message}
           </Text>
         )}
 
         {updateMutation.isSuccess && (
           <Text color="accent.success" fontSize={{ base: 'sm', md: 'md' }}>
-            Configurazioni aggiornate con successo
+            {settings.environment?.success ?? 'Configurazioni aggiornate con successo'}
           </Text>
         )}
       </Stack>

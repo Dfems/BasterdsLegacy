@@ -16,6 +16,7 @@ import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
 import { useButtonsSettings } from '@/shared/hooks/useButtonsSettings'
 import useLanguage from '@/shared/hooks/useLanguage'
+import { useModpackInfo } from '@/shared/hooks/useModpackInfo'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 type Status = {
@@ -39,6 +40,7 @@ const LoggedInHomePage = (): JSX.Element => {
   const { home, common } = useLanguage()
   const { data: jarStatus } = useServerJarStatus()
   const { data: buttonsSettings } = useButtonsSettings()
+  const { data: modpackInfo } = useModpackInfo()
 
   const { data: status, error } = useQuery({
     queryKey: ['status'],
@@ -52,6 +54,13 @@ const LoggedInHomePage = (): JSX.Element => {
   })
 
   const isServerRunning = status?.state === 'RUNNING' || status?.running === true
+
+  // Determina le informazioni del modpack da mostrare
+  // Priorità: informazioni reali del server > configurazioni admin > fallback
+  const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
+  const displayVersion = modpackInfo?.loader
+    ? `${modpackInfo.loader} ${modpackInfo.version}`
+    : (buttonsSettings?.modpack.version ?? '1.0.0')
 
   return (
     <Box p={{ base: 4, md: 6 }}>
@@ -118,16 +127,28 @@ const LoggedInHomePage = (): JSX.Element => {
             )}
 
             {/* Informazioni modpack corrente */}
-            {buttonsSettings && (
+            {(modpackInfo || buttonsSettings) && (
               <>
                 <HStack mb={2} justify="space-between">
                   <Text fontSize={{ base: 'sm', md: 'md' }}>Modpack:</Text>
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{buttonsSettings.modpack.name}</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>{displayName}</Text>
                 </HStack>
                 <HStack mb={3} justify="space-between">
                   <Text fontSize={{ base: 'sm', md: 'md' }}>Versione:</Text>
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{buttonsSettings.modpack.version}</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>{displayVersion}</Text>
                 </HStack>
+                {modpackInfo?.loader && (
+                  <HStack mb={3} justify="space-between">
+                    <Text fontSize={{ base: 'sm', md: 'md' }}>Loader:</Text>
+                    <Badge
+                      colorPalette="blue"
+                      variant="outline"
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                    >
+                      {modpackInfo.loader.toUpperCase()}
+                    </Badge>
+                  </HStack>
+                )}
               </>
             )}
 

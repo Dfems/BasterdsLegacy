@@ -8,16 +8,27 @@ import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
 import { useButtonsSettings } from '@/shared/hooks/useButtonsSettings'
 import useLanguage from '@/shared/hooks/useLanguage'
+import { useModpackInfo } from '@/shared/hooks/useModpackInfo'
+import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 const HomePage = (): JSX.Element => {
   const { home } = useLanguage()
   const { token } = useContext(AuthContext)
   const { data: buttonsSettings } = useButtonsSettings()
+  const { data: modpackInfo } = useModpackInfo()
+  const { data: jarStatus } = useServerJarStatus()
 
   // Se l'utente è loggato, mostra la versione completa
   if (token) {
     return <LoggedInHomePage />
   }
+
+  // Determina le informazioni del modpack da mostrare
+  // Priorità: informazioni reali del server > configurazioni admin > fallback
+  const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
+  const displayVersion = modpackInfo?.loader
+    ? `${modpackInfo.loader} ${modpackInfo.version}`
+    : (buttonsSettings?.modpack.version ?? '1.0.0')
 
   // Versione per utenti non loggati (rimane invariata come richiesto)
   return (
@@ -31,28 +42,19 @@ const HomePage = (): JSX.Element => {
         </Text>
 
         {/* Mostra modpack e versione corrente se disponibili */}
-        {buttonsSettings && (
+        {(modpackInfo || buttonsSettings) && (
           <Box mb={4} p={2} borderRadius="md" bg="whiteAlpha.100">
             <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(home.loggedIn as any)?.currentModpack
-                ? /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                  (home.loggedIn as any).currentModpack.replace(
-                    '{name}',
-                    buttonsSettings.modpack.name
-                  )
-                : `Modpack corrente: ${buttonsSettings.modpack.name}`}
+              Modpack corrente: {displayName}
             </Text>
             <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(home.loggedIn as any)?.currentVersion
-                ? /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                  (home.loggedIn as any).currentVersion.replace(
-                    '{version}',
-                    buttonsSettings.modpack.version
-                  )
-                : `Versione: ${buttonsSettings.modpack.version}`}
+              Versione: {displayVersion}
             </Text>
+            {jarStatus?.jarType && (
+              <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted" fontWeight="medium">
+                Loader: {jarStatus.jarType.toUpperCase()}
+              </Text>
+            )}
           </Box>
         )}
 
