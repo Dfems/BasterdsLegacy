@@ -3,9 +3,10 @@ import type { RawData, WebSocket } from 'ws'
 
 import type { JwtPayload } from '../lib/auth.js'
 import {
+  getSupportedVersions,
   installModpack,
   installModpackWithProgress,
-  getSupportedVersions,
+  loadLastInstalledFromDb,
   type InstallRequest,
 } from '../minecraft/modpack.js'
 
@@ -104,6 +105,42 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       return res
     }
   )
+
+  // Endpoint per ottenere informazioni sul modpack corrente
+  fastify.get('/api/modpack/info', async (_req, reply) => {
+    try {
+      const installationInfo = await loadLastInstalledFromDb()
+
+      if (installationInfo && installationInfo.loader) {
+        // Se abbiamo informazioni sull'installazione, usiamo quelle
+        const loader = installationInfo.loader
+        const loaderVersion = installationInfo.loaderVersion
+        const mcVersion = installationInfo.mcVersion
+        const name =
+          loader === 'Vanilla' ? `Minecraft ${mcVersion ?? 'Vanilla'}` : `Minecraft ${loader}`
+
+        return {
+          name,
+          version: loader === 'Vanilla' ? (mcVersion ?? '') : (loaderVersion ?? ''),
+          loader,
+          mode: installationInfo.mode,
+        }
+      } else {
+        // Fallback alle configurazioni generiche se non abbiamo informazioni specifiche
+        return {
+          name: "Basterd's Legacy",
+          version: '1.0.0',
+          loader: null,
+          mode: null,
+        }
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      fastify.log.error({ err }, 'Errore nel caricamento informazioni modpack')
+      return reply.status(500).send({ error: 'Errore nel caricamento informazioni modpack' })
+    }
+  })
+
   done()
 }
 

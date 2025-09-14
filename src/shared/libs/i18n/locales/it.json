@@ -25,6 +25,7 @@
     "download": "Scarica",
     "status": "Stato",
     "modpack": "Modpack",
+    "loader": "Loader",
     "created": "Creato",
     "size": "Dimensione",
     "actions": "Azioni",
@@ -48,8 +49,8 @@
     "title": "Basterd's Legacy!",
     "welcomePart": "Preparatevi a un'esperienza unica e imprevedibile: un immenso multiverso con qualche mod selezionata per rendere le cose ancora più... interessanti 😉",
     "instructions": "Segui le istruzioni per connetterti al nostro server:",
-    "configBtn": "Scarica Configurazione",
-    "launcherBtn": "Scarica Launcher",
+    "configBtn": "Mods to install",
+    "launcherBtn": "CurseForge Launcher",
     "donateBtn": "☕ Supporta su Ko-fi",
     "footer": "© Francisco Esteban Mosquera Sancan 2025. Tutti i diritti riservati.",
     "loggedIn": {
@@ -58,6 +59,10 @@
       "quickActions": "Azioni Rapide",
       "systemInfo": "Informazioni Sistema",
       "downloadSection": "Download & Supporto",
+      "currentModpack": "Modpack corrente: {name}",
+      "currentVersion": "Versione: {version}",
+      "modpackInstalled": "Installato",
+      "modpackNotFound": "Non trovato",
       "cpu": "CPU",
       "memory": "Memoria",
       "uptime": "Uptime",
@@ -386,6 +391,37 @@
       "dark": "Dark",
       "light": "Light",
       "current": "Attuale: {theme}"
+    },
+    "buttons": {
+      "title": "Configurazione Pulsanti Download",
+      "description": "Configura la visibilità e i percorsi dei pulsanti di download",
+      "launcher": {
+        "title": "CurseForge Launcher",
+        "visible": "Mostra pulsante launcher",
+        "path": {
+          "label": "Percorso file launcher",
+          "placeholder": "dfemscraft-launcher.jar"
+        }
+      },
+      "config": {
+        "title": "Mods to install",
+        "visible": "Mostra pulsante configurazione",
+        "path": {
+          "label": "Percorso file configurazione",
+          "placeholder": "dfemscraft-config.zip"
+        }
+      },
+      "modpack": {
+        "title": "Modpack Corrente",
+        "name": {
+          "label": "Nome Modpack",
+          "placeholder": "Basterd's Legacy"
+        },
+        "version": {
+          "label": "Versione",
+          "placeholder": "1.0.0"
+        }
+      }
     }
   },
   "modpack": {

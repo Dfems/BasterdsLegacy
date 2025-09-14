@@ -14,7 +14,9 @@ import { useQuery } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { useButtonsSettings } from '@/shared/hooks/useButtonsSettings'
 import useLanguage from '@/shared/hooks/useLanguage'
+import { useModpackInfo } from '@/shared/hooks/useModpackInfo'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 type Status = {
@@ -37,6 +39,8 @@ const fmtUptime = (ms: number): string => {
 const LoggedInHomePage = (): JSX.Element => {
   const { home, common } = useLanguage()
   const { data: jarStatus } = useServerJarStatus()
+  const { data: buttonsSettings } = useButtonsSettings()
+  const { data: modpackInfo } = useModpackInfo()
 
   const { data: status, error } = useQuery({
     queryKey: ['status'],
@@ -50,6 +54,11 @@ const LoggedInHomePage = (): JSX.Element => {
   })
 
   const isServerRunning = status?.state === 'RUNNING' || status?.running === true
+
+  // Determina le informazioni del modpack da mostrare
+  // Priorità: informazioni reali del server > configurazioni admin > fallback
+  // const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
+  const displayVersion = modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '1.0.0'
 
   return (
     <Box p={{ base: 4, md: 6 }}>
@@ -100,9 +109,9 @@ const LoggedInHomePage = (): JSX.Element => {
                     variant="solid"
                     fontSize={{ base: 'xs', md: 'sm' }}
                   >
-                    {jarStatus.hasJar ? 'Installato' : 'Non trovato'}
+                    {jarStatus.hasJar ? 'Installed' : 'Not Found'}
                   </Badge>
-                  {jarStatus.hasJar && jarStatus.jarType && (
+                  {/* {jarStatus.hasJar && jarStatus.jarType && (
                     <Badge
                       colorPalette="blue"
                       variant="outline"
@@ -110,9 +119,31 @@ const LoggedInHomePage = (): JSX.Element => {
                     >
                       {jarStatus.jarType.toUpperCase()}
                     </Badge>
-                  )}
+                  )} */}
                 </HStack>
               </HStack>
+            )}
+
+            {/* Informazioni modpack corrente */}
+            {(modpackInfo || buttonsSettings) && (
+              <>
+                {/* <HStack mb={2} justify="space-between">
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>Modpack:</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>{displayName}</Text>
+                </HStack> */}
+                {modpackInfo?.loader && (
+                  <HStack mb={3} justify="space-between">
+                    <Text fontSize={{ base: 'sm', md: 'md' }}>Loader:</Text>
+                    <Badge colorPalette="blue" variant="solid" fontSize={{ base: 'xs', md: 'sm' }}>
+                      {modpackInfo.loader}
+                    </Badge>
+                  </HStack>
+                )}
+                <HStack mb={3} justify="space-between">
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>Versione:</Text>
+                  <Text fontSize={{ base: 'sm', md: 'md' }}>{displayVersion}</Text>
+                </HStack>
+              </>
             )}
 
             {/* Informazioni sistema se disponibili */}
@@ -194,24 +225,32 @@ const LoggedInHomePage = (): JSX.Element => {
           </Heading>
 
           <Stack direction={{ base: 'column', sm: 'row' }} gap={3} align="center" justify="center">
-            <GlassButton
-              as={ChakraLink}
-              href="dfemscraft-config.zip"
-              download
-              size={{ base: 'sm', md: 'md' }}
-              minH="44px"
-            >
-              {home.configBtn}
-            </GlassButton>
-            <GlassButton
-              as={ChakraLink}
-              href="dfemscraft-launcher.jar"
-              download
-              size={{ base: 'sm', md: 'md' }}
-              minH="44px"
-            >
-              {home.launcherBtn}
-            </GlassButton>
+            {/* Pulsante Config - mostra solo se visible è true */}
+            {buttonsSettings?.config.visible && (
+              <GlassButton
+                as={ChakraLink}
+                href={buttonsSettings.config.path}
+                download
+                size={{ base: 'sm', md: 'md' }}
+                minH="44px"
+              >
+                {home.configBtn}
+              </GlassButton>
+            )}
+
+            {/* Pulsante Launcher - mostra solo se visible è true */}
+            {buttonsSettings?.launcher.visible && (
+              <GlassButton
+                as={ChakraLink}
+                href={buttonsSettings.launcher.path}
+                download
+                size={{ base: 'sm', md: 'md' }}
+                minH="44px"
+              >
+                {home.launcherBtn}
+              </GlassButton>
+            )}
+
             <GlassButton
               as={ChakraLink}
               href="https://ko-fi.com/dfems"

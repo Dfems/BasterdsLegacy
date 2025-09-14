@@ -383,6 +383,25 @@ export const useTranslation = (): UseTranslationReturnType => {
         light: '',
         current: '',
       },
+      buttons: {
+        title: '',
+        description: '',
+        launcher: {
+          title: '',
+          visible: '',
+          path: { label: '', placeholder: '' },
+        },
+        config: {
+          title: '',
+          visible: '',
+          path: { label: '', placeholder: '' },
+        },
+        modpack: {
+          title: '',
+          name: { label: '', placeholder: '' },
+          version: { label: '', placeholder: '' },
+        },
+      },
     },
     modpack: {
       title: '',

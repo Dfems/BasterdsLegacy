@@ -442,7 +442,6 @@ export const EnvironmentConfigForm = ({
             </Button>
             <Button
               type="button"
-              variant="outline"
               onClick={handleReset}
               disabled={submitting}
               fontSize={{ base: 'sm', md: 'md' }}

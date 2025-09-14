@@ -126,6 +126,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       logFileEnabled: config.LOG_FILE_ENABLED,
       logRetentionDays: config.LOG_RETENTION_DAYS,
       logMaxFiles: config.LOG_MAX_FILES,
+      // Configurazioni pulsanti
+      launcherBtnVisible: config.LAUNCHER_BTN_VISIBLE,
+      launcherBtnPath: config.LAUNCHER_BTN_PATH,
+      configBtnVisible: config.CONFIG_BTN_VISIBLE,
+      configBtnPath: config.CONFIG_BTN_PATH,
+      // Configurazioni modpack corrente
+      currentModpack: config.CURRENT_MODPACK,
+      currentVersion: config.CURRENT_VERSION,
     }
   })
 
@@ -150,6 +158,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           logFileEnabled?: boolean
           logRetentionDays?: number
           logMaxFiles?: number
+          // Configurazioni pulsanti
+          launcherBtnVisible?: boolean
+          launcherBtnPath?: string
+          configBtnVisible?: boolean
+          configBtnPath?: string
+          // Configurazioni modpack corrente
+          currentModpack?: string
+          currentVersion?: string
         }
 
         const updates: Array<{ key: string; value: string }> = []
@@ -272,6 +288,56 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           updates.push({ key: 'env.LOG_MAX_FILES', value: body.logMaxFiles.toString() })
         }
 
+        // Validazione configurazioni pulsanti
+        if (body.launcherBtnVisible !== undefined) {
+          if (typeof body.launcherBtnVisible !== 'boolean') {
+            return reply.status(400).send({ error: 'LAUNCHER_BTN_VISIBLE must be a boolean' })
+          }
+          updates.push({
+            key: 'env.LAUNCHER_BTN_VISIBLE',
+            value: body.launcherBtnVisible.toString(),
+          })
+        }
+
+        if (body.launcherBtnPath !== undefined) {
+          if (
+            typeof body.launcherBtnPath !== 'string' ||
+            body.launcherBtnPath.trim().length === 0
+          ) {
+            return reply.status(400).send({ error: 'LAUNCHER_BTN_PATH must be a non-empty string' })
+          }
+          updates.push({ key: 'env.LAUNCHER_BTN_PATH', value: body.launcherBtnPath.trim() })
+        }
+
+        if (body.configBtnVisible !== undefined) {
+          if (typeof body.configBtnVisible !== 'boolean') {
+            return reply.status(400).send({ error: 'CONFIG_BTN_VISIBLE must be a boolean' })
+          }
+          updates.push({ key: 'env.CONFIG_BTN_VISIBLE', value: body.configBtnVisible.toString() })
+        }
+
+        if (body.configBtnPath !== undefined) {
+          if (typeof body.configBtnPath !== 'string' || body.configBtnPath.trim().length === 0) {
+            return reply.status(400).send({ error: 'CONFIG_BTN_PATH must be a non-empty string' })
+          }
+          updates.push({ key: 'env.CONFIG_BTN_PATH', value: body.configBtnPath.trim() })
+        }
+
+        // Validazione configurazioni modpack corrente
+        if (body.currentModpack !== undefined) {
+          if (typeof body.currentModpack !== 'string' || body.currentModpack.trim().length === 0) {
+            return reply.status(400).send({ error: 'CURRENT_MODPACK must be a non-empty string' })
+          }
+          updates.push({ key: 'env.CURRENT_MODPACK', value: body.currentModpack.trim() })
+        }
+
+        if (body.currentVersion !== undefined) {
+          if (typeof body.currentVersion !== 'string' || body.currentVersion.trim().length === 0) {
+            return reply.status(400).send({ error: 'CURRENT_VERSION must be a non-empty string' })
+          }
+          updates.push({ key: 'env.CURRENT_VERSION', value: body.currentVersion.trim() })
+        }
+
         // Aggiorna le impostazioni nel database
         for (const update of updates) {
           await db.setting.upsert({
@@ -304,6 +370,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
             logFileEnabled: updatedConfig.LOG_FILE_ENABLED,
             logRetentionDays: updatedConfig.LOG_RETENTION_DAYS,
             logMaxFiles: updatedConfig.LOG_MAX_FILES,
+            // Configurazioni pulsanti
+            launcherBtnVisible: updatedConfig.LAUNCHER_BTN_VISIBLE,
+            launcherBtnPath: updatedConfig.LAUNCHER_BTN_PATH,
+            configBtnVisible: updatedConfig.CONFIG_BTN_VISIBLE,
+            configBtnPath: updatedConfig.CONFIG_BTN_PATH,
+            // Configurazioni modpack corrente
+            currentModpack: updatedConfig.CURRENT_MODPACK,
+            currentVersion: updatedConfig.CURRENT_VERSION,
           },
         }
       } catch (error) {
@@ -324,6 +398,51 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
 
     return {
       backgroundImage: backgroundImage?.value || null,
+    }
+  })
+
+  // Public: Get button settings (for home page display)
+  fastify.get('/api/settings/buttons', async () => {
+    const config = await getConfig()
+    let name = config.CURRENT_MODPACK
+    let version = config.CURRENT_VERSION
+    let loader: string | null = null
+
+    try {
+      const { loadLastInstalledFromDb } = await import('../minecraft/modpack.js')
+      const installationInfo = await loadLastInstalledFromDb()
+      if (installationInfo && installationInfo.loader) {
+        const mcVersion = installationInfo.mcVersion
+        const loaderVersion = installationInfo.loaderVersion
+        loader = installationInfo.loader
+        name =
+          installationInfo.loader === 'Vanilla'
+            ? `Minecraft ${mcVersion ?? 'Vanilla'}`
+            : `Minecraft ${installationInfo.loader}`
+        // Evita placeholder 'Latest': se manca la versione, usa quella di env
+        version =
+          installationInfo.loader === 'Vanilla'
+            ? (mcVersion ?? config.CURRENT_VERSION)
+            : (loaderVersion ?? config.CURRENT_VERSION)
+      }
+    } catch {
+      // ignore, fallback to env config values
+    }
+
+    return {
+      launcher: {
+        visible: config.LAUNCHER_BTN_VISIBLE,
+        path: config.LAUNCHER_BTN_PATH,
+      },
+      config: {
+        visible: config.CONFIG_BTN_VISIBLE,
+        path: config.CONFIG_BTN_PATH,
+      },
+      modpack: {
+        name,
+        version,
+        loader,
+      },
     }
   })
 
@@ -426,6 +545,87 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       }
 
       return { success: true }
+    }
+  )
+
+  // Owner: Get modpack meta saved in DB
+  fastify.get(
+    '/api/settings/modpack-meta',
+    { preHandler: fastify.authorize('owner') },
+    async () => {
+      const keys = ['modpack.mode', 'modpack.loader', 'modpack.loaderVersion', 'modpack.mcVersion']
+      const rows = await db.setting.findMany({ where: { key: { in: keys } } })
+      const out: Record<string, string | null> = {
+        mode: null,
+        loader: null,
+        loaderVersion: null,
+        mcVersion: null,
+      }
+      for (const r of rows) {
+        if (r.key === 'modpack.mode') out.mode = r.value
+        if (r.key === 'modpack.loader') out.loader = r.value
+        if (r.key === 'modpack.loaderVersion') out.loaderVersion = r.value
+        if (r.key === 'modpack.mcVersion') out.mcVersion = r.value
+      }
+      return out
+    }
+  )
+
+  // Owner: Update modpack meta in DB
+  fastify.put(
+    '/api/settings/modpack-meta',
+    { preHandler: fastify.authorize('owner') },
+    async (req, reply) => {
+      try {
+        const body = req.body as {
+          mode?: 'automatic' | 'manual' | null
+          loader?: 'Vanilla' | 'Forge' | 'Fabric' | 'Quilt' | 'NeoForge' | null
+          loaderVersion?: string | null
+          mcVersion?: string | null
+        }
+
+        const upserts: Array<{ key: string; value: string }> = []
+        const deletes: string[] = []
+
+        const setOrDelete = (key: string, v: unknown) => {
+          if (v === undefined) return
+          if (v === null) deletes.push(key)
+          else upserts.push({ key, value: String(v).trim() })
+        }
+
+        // Basic validation
+        if (
+          body.loader &&
+          !['Vanilla', 'Forge', 'Fabric', 'Quilt', 'NeoForge'].includes(body.loader)
+        ) {
+          return reply.status(400).send({ error: 'Loader non valido' })
+        }
+        if (body.mode && !['automatic', 'manual'].includes(body.mode)) {
+          return reply.status(400).send({ error: 'Mode non valido' })
+        }
+
+        setOrDelete('modpack.mode', body.mode ?? undefined)
+        setOrDelete('modpack.loader', body.loader ?? undefined)
+        setOrDelete('modpack.loaderVersion', body.loaderVersion ?? undefined)
+        setOrDelete('modpack.mcVersion', body.mcVersion ?? undefined)
+
+        // Apply deletes first
+        if (deletes.length) {
+          await db.setting.deleteMany({ where: { key: { in: deletes } } })
+        }
+        for (const u of upserts) {
+          await db.setting.upsert({
+            where: { key: u.key },
+            update: { value: u.value },
+            create: { key: u.key, value: u.value },
+          })
+        }
+
+        return { success: true }
+      } catch (error) {
+        fastify.log.error('Error updating modpack meta: ' + (error as Error).message)
+        return reply.status(500).send({ error: 'Failed to update modpack meta' })
+      }
     }
   )
 

@@ -25,6 +25,7 @@
     "download": "Download",
     "status": "Status",
     "modpack": "Modpack",
+    "loader": "Loader",
     "created": "Created",
     "size": "Size",
     "actions": "Actions",
@@ -48,8 +49,8 @@
     "title": "Basterd's Legacy!",
     "welcomePart": "Get ready for a unique and unpredictable experience: a huge multiverse with some selected mods to make things even more... interesting 😉",
     "instructions": "Follow the instructions to connect to our server:",
-    "configBtn": "Download Configuration",
-    "launcherBtn": "Download Launcher",
+    "configBtn": "Mods to install",
+    "launcherBtn": "CurseForge Launcher",
     "donateBtn": "☕ Support on Ko-fi",
     "footer": "© Francisco Esteban Mosquera Sancan 2025. All rights reserved.",
     "loggedIn": {
@@ -58,6 +59,10 @@
       "quickActions": "Quick Actions",
       "systemInfo": "System Information",
       "downloadSection": "Downloads & Support",
+      "currentModpack": "Current modpack: {name}",
+      "currentVersion": "Version: {version}",
+      "modpackInstalled": "Installed",
+      "modpackNotFound": "Not found",
       "cpu": "CPU",
       "memory": "Memory",
       "uptime": "Uptime",
@@ -386,6 +391,37 @@
       "dark": "Dark",
       "light": "Light",
       "current": "Current: {theme}"
+    },
+    "buttons": {
+      "title": "Download Buttons Configuration",
+      "description": "Configure visibility and paths for download buttons",
+      "launcher": {
+        "title": "CurseForge Launcher",
+        "visible": "Show launcher button",
+        "path": {
+          "label": "Launcher file path",
+          "placeholder": "dfemscraft-launcher.jar"
+        }
+      },
+      "config": {
+        "title": "Mods to install",
+        "visible": "Show config button",
+        "path": {
+          "label": "Config file path",
+          "placeholder": "dfemscraft-config.zip"
+        }
+      },
+      "modpack": {
+        "title": "Current Modpack",
+        "name": {
+          "label": "Modpack Name",
+          "placeholder": "Basterd's Legacy"
+        },
+        "version": {
+          "label": "Version",
+          "placeholder": "1.0.0"
+        }
+      }
     }
   },
   "modpack": {
