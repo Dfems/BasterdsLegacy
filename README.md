@@ -11,6 +11,7 @@ Pannello di controllo per server Minecraft con installazione automatica modpack 
 - **Sistema di Backup Robusto**: Backup automatici con gestione errori completa
 - **Controlli di sicurezza**: Impedisce start senza JAR e cancellazione con server attivo
 - **Background personalizzato**: Gli owner possono caricare immagini di sfondo personalizzate
+ - **Sfondo rotante globale**: Se non è impostato uno sfondo personalizzato, l'interfaccia mostra in rotazione le immagini presenti in `src/assets/background`.
 
 ## Come Usare il Sistema
 
@@ -69,6 +70,8 @@ Pannello di controllo per server Minecraft con installazione automatica modpack 
   - Accessibile da Settings → Sfondo Personalizzato
   - Anteprima in tempo reale
   - Rimozione con un click
+  
+  Se lo sfondo personalizzato non è impostato, viene mostrata una rotazione automatica delle immagini presenti in `src/assets/background` (JPG/PNG/WebP). L'intervallo di cambio immagine è configurabile tramite variabile d'ambiente Vite.
 
 ---
 
@@ -146,6 +149,9 @@ Il sistema gestisce automaticamente:
 - `AUTO_BACKUP_MODE`: Modalità backup automatici - `full` o `world` (default: `world`)
 - `JWT_SECRET`: Segreto per autenticazione
 - `DATABASE_URL`: URL database Prisma
+
+**Frontend (opzionali):**
+- `VITE_BG_ROTATE_SECONDS`: Intervallo in secondi per la rotazione degli sfondi di `src/assets/background` (default: 15, minimo: 3).
 
 ## API Real-time
 

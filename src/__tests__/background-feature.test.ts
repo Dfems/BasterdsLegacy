@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { useUiSettings } from '@/shared/hooks/useUiSettings'
+import { BackgroundUpload } from '../shared/components/BackgroundUpload'
+import { useUiSettings } from '../shared/hooks/useUiSettings'
+import * as settingsTypes from '../types/settings'
 
-// Mock fetch global
-global.fetch = vi.fn()
+// Nessun mock globale di fetch necessario per questi test
 
 // Mock AuthContext
 vi.mock('@/entities/user/AuthContext', () => ({
@@ -20,16 +21,14 @@ describe('useUiSettings', () => {
     expect(typeof useUiSettings).toBe('function')
   })
 
-  it('should export background upload component', async () => {
+  it('should export background upload component', () => {
     // Test che il componente BackgroundUpload esista
-    const { BackgroundUpload } = await import('@/shared/components/BackgroundUpload')
     expect(BackgroundUpload).toBeDefined()
     expect(typeof BackgroundUpload).toBe('function')
   })
 
-  it('should export UI settings types', async () => {
+  it('should export UI settings types', () => {
     // Test che i tipi siano definiti
-    const types = await import('@/types/settings')
-    expect(types).toBeDefined()
+    expect(settingsTypes).toBeDefined()
   })
 })

@@ -362,6 +362,13 @@ export const useTranslation = (): UseTranslationReturnType => {
         error: '',
         validationError: '',
       },
+      backgroundRotation: {
+        title: '',
+        description: '',
+        toggle: '',
+        secondsLabel: '',
+        current: '',
+      },
       sftp: {
         title: '',
         description: '',

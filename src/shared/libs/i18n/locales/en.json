@@ -366,6 +366,13 @@
       "error": "Error updating configuration",
       "validationError": "Validation error"
     },
+    "backgroundRotation": {
+      "title": "Public Background Rotation",
+      "description": "Set the interval (in seconds) for rotating public backgrounds in src/assets/background. Minimum 3 seconds. Applies to all non-owner users and unauthenticated visitors.",
+      "toggle": "Enable background rotation",
+      "secondsLabel": "Rotation interval (seconds)",
+      "current": "Current: {seconds}s"
+    },
     "sftp": {
       "title": "SFTP OS-level",
       "description": "Use system OpenSSH with dedicated user, as described in README.",

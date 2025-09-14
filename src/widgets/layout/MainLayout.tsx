@@ -6,19 +6,26 @@ import { Outlet } from 'react-router-dom'
 import AuthContext from '@/entities/user/AuthContext'
 import { useUiSettings } from '@/shared/hooks'
 import useLanguage from '@/shared/hooks/useLanguage'
+import { useRotatingBackground } from '@/shared/hooks/useRotatingBackground'
 import Navbar from '@/widgets/navbar/Navbar'
 
 export default function MainLayout(): JSX.Element {
   useLanguage()
-  const { token, logout } = useContext(AuthContext)
+  const { token, logout, role } = useContext(AuthContext)
   const { settings, getBackgroundImageUrl } = useUiSettings()
+  const { url: rotatingBg } = useRotatingBackground()
 
   const isLoggedIn = Boolean(token)
 
-  const backgroundStyle = settings.backgroundImage
+  const backgroundUrl =
+    role === 'owner' && settings.backgroundImage
+      ? getBackgroundImageUrl(settings.backgroundImage)
+      : rotatingBg
+
+  const backgroundStyle = backgroundUrl
     ? ({
         minHeight: '100vh',
-        backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${getBackgroundImageUrl(settings.backgroundImage)})`,
+        backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${backgroundUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

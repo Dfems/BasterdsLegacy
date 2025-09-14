@@ -366,6 +366,13 @@
       "error": "Errore nell'aggiornamento delle configurazioni",
       "validationError": "Errore di validazione"
     },
+    "backgroundRotation": {
+      "title": "Rotazione Sfondi Pubblici",
+      "description": "Imposta l'intervallo (in secondi) per la rotazione degli sfondi pubblici in src/assets/background. Minimo 3 secondi. Si applica a tutti gli utenti non‑owner e ai visitatori non autenticati.",
+      "toggle": "Abilita rotazione sfondi",
+      "secondsLabel": "Intervallo rotazione (secondi)",
+      "current": "Attuale: {seconds}s"
+    },
     "sftp": {
       "title": "SFTP OS‑level",
       "description": "Usa OpenSSH di sistema con utente dedicato, come descritto nel README.",

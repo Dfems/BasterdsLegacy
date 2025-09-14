@@ -7,3 +7,6 @@ node_modules/
 dist/
 lib/
 coverage/
+
+# Do not format Minecraft server runtime files
+server/server/**

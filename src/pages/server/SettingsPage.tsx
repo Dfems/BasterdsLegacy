@@ -4,6 +4,7 @@ import { Box, Heading, HStack, Kbd, RadioGroup, Stack, Text } from '@chakra-ui/r
 
 import { useThemeMode, type ThemeMode } from '@/entities/user/ThemeModeContext'
 import { EnvironmentConfigForm } from '@/features/environment-config'
+import { BackgroundRotationSettings } from '@/shared/components/BackgroundRotationSettings'
 import { BackgroundUpload } from '@/shared/components/BackgroundUpload'
 import { GlassCard } from '@/shared/components/GlassCard'
 import { useUiSettings } from '@/shared/hooks'
@@ -200,6 +201,12 @@ export default function SettingsPage(): JSX.Element {
       {isOwner && (
         <Box mb={6}>
           <BackgroundUpload />
+        </Box>
+      )}
+
+      {isOwner && (
+        <Box mb={6}>
+          <BackgroundRotationSettings />
         </Box>
       )}
 

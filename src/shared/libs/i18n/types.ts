@@ -340,6 +340,13 @@ export type TranslationKey = {
       error: string
       validationError: string
     }
+    backgroundRotation: {
+      title: string
+      description: string
+      toggle: string
+      secondsLabel: string
+      current: string
+    }
     sftp: {
       title: string
       description: string

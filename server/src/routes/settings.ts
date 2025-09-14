@@ -327,6 +327,62 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     }
   })
 
+  // Public: Get rotation seconds for global backgrounds
+  fastify.get('/api/settings/ui-rotation', async () => {
+    const rotate = await db.setting.findUnique({ where: { key: 'ui.bgRotateSeconds' } })
+    const enabledRow = await db.setting.findUnique({ where: { key: 'ui.bgRotateEnabled' } })
+    const seconds = Number(rotate?.value ?? '15')
+    const enabled = (enabledRow?.value ?? 'true') === 'true'
+    return {
+      seconds: Number.isFinite(seconds) && seconds >= 3 ? seconds : 15,
+      enabled,
+    }
+  })
+
+  // Owner: Update rotation seconds
+  fastify.put(
+    '/api/settings/ui-rotation',
+    { preHandler: fastify.authorize('owner') },
+    async (req, reply) => {
+      try {
+        const body = req.body as { seconds?: number; enabled?: boolean }
+
+        let savedSeconds: number | undefined
+        if (body.seconds !== undefined) {
+          const raw = Number(body.seconds)
+          if (!Number.isFinite(raw)) {
+            return reply.status(400).send({ error: 'Invalid seconds' })
+          }
+          const value = Math.max(3, Math.floor(raw))
+          await db.setting.upsert({
+            where: { key: 'ui.bgRotateSeconds' },
+            update: { value: String(value) },
+            create: { key: 'ui.bgRotateSeconds', value: String(value) },
+          })
+          savedSeconds = value
+        }
+
+        if (body.enabled !== undefined) {
+          await db.setting.upsert({
+            where: { key: 'ui.bgRotateEnabled' },
+            update: { value: body.enabled ? 'true' : 'false' },
+            create: { key: 'ui.bgRotateEnabled', value: body.enabled ? 'true' : 'false' },
+          })
+        }
+
+        // Return merged state
+        const rotate = await db.setting.findUnique({ where: { key: 'ui.bgRotateSeconds' } })
+        const enabledRow = await db.setting.findUnique({ where: { key: 'ui.bgRotateEnabled' } })
+        const seconds = savedSeconds ?? Math.max(3, Math.floor(Number(rotate?.value ?? '15')))
+        const enabled = (enabledRow?.value ?? 'true') === 'true'
+        return { success: true, seconds, enabled }
+      } catch (error) {
+        fastify.log.error('Error updating rotation seconds: ' + (error as Error).message)
+        return reply.status(500).send({ error: 'Failed to update rotation settings' })
+      }
+    }
+  )
+
   // Update owner UI preferences (only owner can modify)
   fastify.put(
     '/api/settings/ui',
