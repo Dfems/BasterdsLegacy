@@ -37,7 +37,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         await (
           await import('../lib/audit.js')
         ).auditLog({ type: 'command', cmd: 'server delete', userId: req.user?.sub })
-      } catch {}
+      } catch {
+        // Audit log unavailable; continue without failing the request
+      }
       return { movedTo: dest }
     }
   )
@@ -56,12 +58,14 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           if (now - stat.mtimeMs > PURGE_MS) await fse.remove(full)
         }
       } catch {
-        // ignore
+        // Ignore purge errors (quarantine may not exist yet)
       }
     },
     60 * 60 * 1000
   )
-  fastify.addHook('onClose', async () => clearInterval(timer))
+  fastify.addHook('onClose', async () => {
+    clearInterval(timer)
+  })
 
   done()
 }

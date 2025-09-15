@@ -7,7 +7,6 @@ import { CONFIG } from '../lib/config.js'
 export type RconClient = InstanceType<typeof Rcon>
 
 let client: RconClient | null = null
-let _connectionAttempts = 0
 const MAX_RETRIES = 3
 const CONNECTION_TIMEOUT = 5000 // 5 secondi
 const COMMAND_TIMEOUT = 3000 // 3 secondi
@@ -39,7 +38,7 @@ const readRconConfigFromProperties = (): { enabled: boolean; port: number; passw
     const password = properties['rcon.password'] || defaultConfig.password
 
     return { enabled, port, password }
-  } catch (error) {
+  } catch (error: unknown) {
     console.warn('Could not read server.properties for RCON config:', error)
     // Fallback alle variabili d'ambiente se server.properties non è leggibile
     return {
@@ -67,7 +66,6 @@ export const getRcon = async (): Promise<RconClient> => {
     } catch {
       // Connessione non valida, cleanup e riconnetti
       client = null
-      _connectionAttempts = 0
     }
   }
 
@@ -94,20 +92,16 @@ export const getRcon = async (): Promise<RconClient> => {
       client.on('end', () => {
         console.log('[RCON] Connection ended')
         client = null
-        _connectionAttempts = 0
       })
 
-      client.on('error', (error) => {
+      client.on('error', (error: unknown) => {
         console.error('[RCON] Connection error:', error)
         client = null
-        _connectionAttempts = 0
       })
 
       console.log('[RCON] Connection established successfully')
-      _connectionAttempts = 0
       return client
-    } catch (error) {
-      _connectionAttempts = attempt
+    } catch (error: unknown) {
       console.warn(`[RCON] Connection attempt ${attempt} failed:`, error)
 
       if (attempt === MAX_RETRIES) {
@@ -138,7 +132,7 @@ export const rconExec = async (cmd: string): Promise<string> => {
       `[RCON] Command "${cmd}" result: ${result.substring(0, 100)}${result.length > 100 ? '...' : ''}`
     )
     return result
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(`[RCON] Command "${cmd}" failed:`, error)
     // Invalidate client on command failure
     client = null
@@ -151,11 +145,10 @@ export const disconnectRcon = async (): Promise<void> => {
   if (client) {
     try {
       await client.end()
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn('[RCON] Error during disconnect:', error)
     } finally {
       client = null
-      _connectionAttempts = 0
     }
   }
 }

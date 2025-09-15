@@ -40,7 +40,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           cmd: `whitelist ${body.action}${body.player ? ` ${body.player}` : ''}`,
           userId: req.user?.sub,
         })
-      } catch {}
+      } catch {
+        // Audit log unavailable; proceed
+      }
       return { ok: true }
     }
   )

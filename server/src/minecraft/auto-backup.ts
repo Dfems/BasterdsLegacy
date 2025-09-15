@@ -277,17 +277,22 @@ export const configToCronPattern = (config: BackupScheduleConfig): string | null
   const [hour, minute] = (config.dailyAt ?? '03:00').split(':').map(Number)
 
   switch (config.frequency) {
-    case 'daily':
+    case 'daily': {
       return `${minute ?? 0} ${hour ?? 3} * * *`
-    case 'every-2-days':
+    }
+    case 'every-2-days': {
       return `${minute ?? 0} ${hour ?? 3} */2 * *`
-    case 'every-3-days':
+    }
+    case 'every-3-days': {
       return `${minute ?? 0} ${hour ?? 3} */3 * *`
-    case 'weekly':
+    }
+    case 'weekly': {
       const dayOfWeek = config.weeklyOn ?? 1 // Default lunedì
       return `${minute ?? 0} ${hour ?? 3} * * ${dayOfWeek}`
-    default:
+    }
+    default: {
       return null
+    }
   }
 }
 

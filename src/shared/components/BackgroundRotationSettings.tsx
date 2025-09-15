@@ -123,7 +123,9 @@ export const BackgroundRotationSettings = (): JSX.Element => {
             aria-label={t.settings.backgroundRotation.toggle}
           />
           <Text fontSize={{ base: 'xs', md: 'sm' }}>
-            {enabled ? t.backups.schedule.enabled : t.backups.schedule.disabled}
+            {enabled
+              ? t.settings.backgroundRotation.enabled
+              : t.settings.backgroundRotation.disabled}
           </Text>
         </HStack>
         <HStack gap={2}>
@@ -150,7 +152,10 @@ export const BackgroundRotationSettings = (): JSX.Element => {
           </GlassButton>
         </HStack>
         <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
-          {t.settings.backgroundRotation.current.replace('{seconds}', String(current))}
+          {t.settings.backgroundRotation.current.replace(
+            '{seconds}',
+            String(serverValue ?? current)
+          )}
         </Text>
         {savedMsg && (
           <Text fontSize={{ base: 'xs', md: 'sm' }} color="accent.success">

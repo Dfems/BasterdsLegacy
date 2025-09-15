@@ -1,4 +1,3 @@
-import React from 'react'
 import type { JSX } from 'react'
 
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
@@ -8,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import DashboardPage from '@/pages/server/DashboardPage'
 import SettingsPage from '@/pages/server/SettingsPage'
+import { I18nProvider } from '@/shared/libs/i18n'
 
 // Mock del hook useLanguage per i test
 vi.mock('@/shared/hooks/useLanguage', () => ({
@@ -87,7 +87,9 @@ describe('Settings and Dashboard render basics', () => {
   const system = createSystem(defaultConfig, {})
   const wrap = (ui: JSX.Element) => (
     <ChakraProvider value={system}>
-      <QueryClientProvider client={new QueryClient()}>{ui}</QueryClientProvider>
+      <I18nProvider>
+        <QueryClientProvider client={new QueryClient()}>{ui}</QueryClientProvider>
+      </I18nProvider>
     </ChakraProvider>
   )
 
@@ -111,10 +113,11 @@ describe('Settings and Dashboard render basics', () => {
     } as unknown as Response)
 
     render(wrap(<SettingsPage />))
-    // titolo campo statico e valore da fetch mockato
-    expect(screen.getByText(/Settings/i)).toBeInTheDocument()
-    expect(await screen.findByText(/JAVA_BIN/i)).toBeInTheDocument()
-    expect(await screen.findByText('java')).toBeInTheDocument()
+    // titolo campo statico e valore da fetch mockato (accetta lingue diverse)
+    const title = await screen.findByText(/(Settings|Impostazioni|Ajustes)/i)
+    expect(title).toBeTruthy()
+    expect(await screen.findByText(/JAVA_BIN/i)).toBeTruthy()
+    expect(await screen.findByText('java')).toBeTruthy()
   })
 
   it('renders dashboard status', async () => {
@@ -125,6 +128,6 @@ describe('Settings and Dashboard render basics', () => {
     } as unknown as Response)
 
     render(wrap(<DashboardPage />))
-    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument()
+    expect(screen.getByText(/Dashboard/i)).toBeTruthy()
   })
 })

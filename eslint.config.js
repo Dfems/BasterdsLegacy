@@ -1,4 +1,5 @@
 import js from '@eslint/js'
+import importPlugin from 'eslint-plugin-import'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import globals from 'globals'
@@ -16,8 +17,18 @@ export default tseslint.config(
       globals: { ...globals.browser, ...globals.node },
     },
     plugins: {
+      import: importPlugin,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: ['./tsconfig.app.json', './tsconfig.node.json', './tsconfig.vitest.json'],
+        },
+        node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
+      },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -31,6 +42,22 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  // Frontend-only import style rules as warnings (keep CI green)
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'import/no-unresolved': ['error', { commonjs: true, caseSensitive: true }],
+      'import/first': 'warn',
+      'import/newline-after-import': 'warn',
+      'import/no-duplicates': 'warn',
+      'import/order': 'off',
+    },
+  },
+  // Server: don't enforce module resolution (handled in server project)
+  {
+    files: ['server/**/*.ts'],
+    rules: { 'import/no-unresolved': 'off' },
   },
   {
     files: ['**/*.{js,jsx}'],

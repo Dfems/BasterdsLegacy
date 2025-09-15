@@ -264,6 +264,44 @@
     "maxPlayers": "Jugadores Máximos",
     "loading": "Cargando…",
     "errorLoad": "Error al cargar ajustes",
+    "headerDescription": "Gestiona y personaliza cada aspecto de tu servidor de Minecraft con una interfaz moderna e intuitiva",
+    "ownerOnlyTitle": "Acceso solo propietarios",
+    "ownerOnlyDescription": "Solo los propietarios del servidor pueden modificar estos ajustes",
+    "tabs": {
+      "overview": {
+        "title": "Resumen",
+        "description": "Información general del servidor"
+      },
+      "environment": {
+        "title": "Entorno",
+        "description": "Configuración Java, RCON y logging"
+      },
+      "ui": {
+        "title": "Interfaz",
+        "description": "Tema, fondos y personalización"
+      },
+      "server": {
+        "title": "Servidor",
+        "description": "Botones de descarga y modpack"
+      },
+      "advanced": {
+        "title": "Avanzado",
+        "description": "SFTP y configuraciones avanzadas"
+      }
+    },
+    "overview": {
+      "java": "Configuración Java",
+      "directories": "Configuración de Directorios",
+      "rconStatus": "Estado RCON",
+      "connection": "Conexión",
+      "disabled": "deshabilitado",
+      "backup": "Configuración de Copias",
+      "schedule": "Horario (CRON)",
+      "retention": "Retención",
+      "retentionHelp": "Conserva todas las copias de los últimos N días y, para semanas anteriores, mantiene solo la copia más reciente de cada una de las últimas M semanas.",
+      "days": "días",
+      "weeks": "semanas"
+    },
     "environment": {
       "title": "Configuración del Entorno",
       "description": "Configurar variables de entorno del servidor (solo propietarios)",
@@ -376,13 +414,22 @@
       "description": "Establece el intervalo (en segundos) para rotar los fondos públicos en src/assets/background. Mínimo 3 segundos. Se aplica a todos los usuarios que no son propietarios y a visitantes no autenticados.",
       "toggle": "Habilitar rotación de fondos",
       "secondsLabel": "Intervalo de rotación (segundos)",
-      "current": "Actual: {seconds}s"
+      "current": "Actual: {seconds}s",
+      "enabled": "Rotación de fondos habilitada",
+      "disabled": "Rotación de fondos deshabilitada"
+    },
+    "backgroundUpload": {
+      "title": "Subida de Fondos",
+      "description": "Sube y gestiona fondos personalizados del servidor"
     },
     "sftp": {
       "title": "SFTP a nivel OS",
       "description": "Usa OpenSSH del sistema con usuario dedicado, como se describe en el README.",
       "ssh": "ssh",
-      "user": "usuario@servidor"
+      "user": "usuario@servidor",
+      "commandLabel": "Comando SSH:",
+      "exampleLabel": "Ejemplo de conexión:",
+      "exampleSsh": "ssh minecraft@your-server.com"
     },
     "theme": {
       "title": "Tema",
@@ -422,6 +469,34 @@
           "placeholder": "1.0.0"
         }
       }
+    },
+    "advancedInfo": {
+      "security": {
+        "title": "Seguridad y Acceso",
+        "description": "Información importante sobre la seguridad del servidor",
+        "authTitle": "Autenticación",
+        "authDescription": "El acceso SFTP utiliza claves SSH para máxima seguridad",
+        "permsTitle": "Permisos de Archivos",
+        "permsDescription": "El usuario dedicado tiene acceso limitado a los directorios del servidor",
+        "backupsTitle": "Copias Automáticas",
+        "backupsDescription": "Las copias se ejecutan automáticamente según la programación configurada"
+      },
+      "system": {
+        "title": "Información del Sistema",
+        "description": "Detalles técnicos del servidor y del entorno",
+        "osTitle": "Sistema Operativo",
+        "osDescription": "Linux con soporte nativo de OpenSSH",
+        "javaTitle": "Runtime de Java",
+        "javaDescription": "Java JRE/JDK configurado para el Servidor de Minecraft",
+        "processesTitle": "Gestión de Procesos",
+        "processesDescription": "Supervisión automática y reinicio del servidor de Minecraft"
+      },
+      "warning": {
+        "title": "Aviso Importante",
+        "stability": "Los cambios avanzados pueden afectar la estabilidad del servidor",
+        "backups": "Asegúrate de tener copias recientes antes de cambios críticos",
+        "contactAdmin": "Contacta al administrador para soporte técnico especializado"
+      }
     }
   },
   "modpack": {
@@ -437,6 +512,10 @@
     "manual": "Manual (JAR personalizado)",
     "loader": "Cargador",
     "mcVersion": "Versión de Minecraft",
+    "metaConfigTitle": "Configuración Meta del Modpack",
+    "metaConfigDescription": "Configura los metadatos del modpack actual",
+    "loaderVersionPlaceholder": "loaderVersion (ej. 21.1.95)",
+    "mcVersionPlaceholder": "mcVersion (ej. 1.21.1)",
     "jarFileName": "Nombre del archivo JAR",
     "jarPlaceholder": "Nombre del archivo JAR (ej. forge-installer.jar)",
     "jarHelp": "El JAR debe estar ya presente en el directorio del servidor",
