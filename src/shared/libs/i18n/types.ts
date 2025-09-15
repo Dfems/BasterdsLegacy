@@ -258,6 +258,28 @@ export type TranslationKey = {
     maxPlayers: string
     loading: string
     errorLoad: string
+    tabs: {
+      overview: {
+        title: string
+        description: string
+      }
+      environment: {
+        title: string
+        description: string
+      }
+      ui: {
+        title: string
+        description: string
+      }
+      server: {
+        title: string
+        description: string
+      }
+      advanced: {
+        title: string
+        description: string
+      }
+    }
     environment: {
       title: string
       description: string

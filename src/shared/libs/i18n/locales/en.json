@@ -264,6 +264,28 @@
     "maxPlayers": "Max Players",
     "loading": "Loading…",
     "errorLoad": "Error loading settings",
+    "tabs": {
+      "overview": {
+        "title": "Overview",
+        "description": "General server information"
+      },
+      "environment": {
+        "title": "Environment",
+        "description": "Java, RCON and logging configuration"
+      },
+      "ui": {
+        "title": "Interface",
+        "description": "Theme, backgrounds and customization"
+      },
+      "server": {
+        "title": "Server",
+        "description": "Download buttons and modpack"
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "SFTP and advanced configurations"
+      }
+    },
     "environment": {
       "title": "Environment Configuration",
       "description": "Configure server environment variables (owners only)",

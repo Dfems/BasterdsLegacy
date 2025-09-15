@@ -264,6 +264,28 @@
     "maxPlayers": "Jugadores Máximos",
     "loading": "Cargando…",
     "errorLoad": "Error al cargar ajustes",
+    "tabs": {
+      "overview": {
+        "title": "Resumen",
+        "description": "Información general del servidor"
+      },
+      "environment": {
+        "title": "Entorno",
+        "description": "Configuración Java, RCON y logging"
+      },
+      "ui": {
+        "title": "Interfaz",
+        "description": "Tema, fondos y personalización"
+      },
+      "server": {
+        "title": "Servidor",
+        "description": "Botones de descarga y modpack"
+      },
+      "advanced": {
+        "title": "Avanzado",
+        "description": "SFTP y configuraciones avanzadas"
+      }
+    },
     "environment": {
       "title": "Configuración del Entorno",
       "description": "Configurar variables de entorno del servidor (solo propietarios)",

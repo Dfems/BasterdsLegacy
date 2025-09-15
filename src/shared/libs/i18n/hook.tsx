@@ -280,6 +280,13 @@ export const useTranslation = (): UseTranslationReturnType => {
       maxPlayers: '',
       loading: '',
       errorLoad: '',
+      tabs: {
+        overview: { title: '', description: '' },
+        environment: { title: '', description: '' },
+        ui: { title: '', description: '' },
+        server: { title: '', description: '' },
+        advanced: { title: '', description: '' },
+      },
       environment: {
         title: '',
         description: '',
