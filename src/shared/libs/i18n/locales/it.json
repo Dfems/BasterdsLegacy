@@ -553,5 +553,33 @@
     "created": "Utente creato",
     "yes": "yes",
     "no": "no"
+  },
+  "ui": {
+    "modernInterface": "Interfaccia Moderna",
+    "dashboard": "Dashboard",
+    "overview": "Panoramica",
+    "systemInfo": "Info Sistema",
+    "quickActions": "Azioni Rapide",
+    "recentActivity": "Attività Recente",
+    "statistics": "Statistiche",
+    "performance": "Performance",
+    "monitoring": "Monitoraggio",
+    "alerts": "Avvisi",
+    "notifications": "Notifiche",
+    "trends": "Tendenze",
+    "analytics": "Analytics",
+    "insights": "Insights",
+    "metrics": "Metriche",
+    "realTime": "Tempo Reale",
+    "lastUpdated": "Ultimo aggiornamento",
+    "autoRefresh": "Aggiornamento automatico",
+    "refreshRate": "Frequenza aggiornamento",
+    "viewDetails": "Visualizza dettagli",
+    "expandCard": "Espandi card",
+    "collapseCard": "Comprimi card",
+    "toggleView": "Cambia vista",
+    "filterData": "Filtra dati",
+    "exportData": "Esporta dati",
+    "shareView": "Condividi vista"
   }
 }
