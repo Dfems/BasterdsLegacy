@@ -69,8 +69,8 @@
       "goToDashboard": "📊 Ir al Dashboard",
       "goToConsole": "💻 Abrir Consola",
       "goToFiles": "📁 Gestionar Archivos",
-      "serverRunning": "Servidor Activo",
-      "serverStopped": "Servidor Parado",
+      "serverRunning": "Encendido",
+      "serverStopped": "Apagado",
       "lastRestart": "Último reinicio"
     }
   },
@@ -94,6 +94,7 @@
   "server": {
     "commandLabel": "Comando del Servidor:",
     "consoleTitle": "Consola del Servidor",
+    "consoleDescription": "Controla el servidor en tiempo real con comandos avanzados y monitoreo en vivo",
     "backToHome": "Volver al Inicio",
     "consoleLoginMessage": "Inicia sesión para acceder a la consola.",
     "serverStatus": "Estado del servidor:",
@@ -107,7 +108,13 @@
     "startingMessage": "Iniciando...",
     "stoppingMessage": "Deteniendo...",
     "restartingMessage": "Reiniciando...",
-    "powerError": "Error de energía: {error}"
+    "powerError": "Error de energía: {error}",
+    "controlsTitle": "Controles del Servidor",
+    "controlsDescription": "Gestiona el estado del servidor",
+    "consoleOutput": "Salida de la Consola",
+    "commandPlaceholder": "Introduce comando...",
+    "consolePlaceholder": "La salida de la consola aparecerá aquí...",
+    "noJarError": "Error: No se encontró el JAR del servidor. Instala un modpack antes de iniciar."
   },
   "dashboard": {
     "title": "Panel",
@@ -126,10 +133,10 @@
     "operationStarted": "Operación {action} iniciada",
     "operationError": "Error {action}: {error}",
     "systemMemory": "RAM del Sistema",
-    "diskStorage": "Almacenamiento",
+    "diskStorage": "Espacio",
     "tps": "TPS del Servidor",
     "tickTime": "Tick del Servidor",
-    "playersOnline": "Jugadores En Línea",
+    "playersOnline": "En Línea",
     "processMemory": "Memoria del Proceso",
     "used": "Usado",
     "free": "Libre",
@@ -524,7 +531,8 @@
     "notes": "Notas",
     "versionUnsupported": "⚠️ Versión {version} no compatible con {loader}",
     "versionInfo": "Versión {loader}: {version}",
-    "errorVersions": "Error al cargar versiones: {error}"
+    "errorVersions": "Error al cargar versiones: {error}",
+    "installPrompt": "Ve a la página de Modpack para instalar un servidor antes de iniciarlo"
   },
   "whitelist": {
     "title": "Lista Blanca",
@@ -550,5 +558,35 @@
     "created": "Usuario creado",
     "yes": "sí",
     "no": "no"
+  },
+  "ui": {
+    "modernInterface": "Interfaz Moderna",
+    "dashboard": "Panel",
+    "overview": "Resumen",
+    "systemInfo": "Información del Sistema",
+    "quickActions": "Acciones Rápidas",
+    "recentActivity": "Actividad Reciente",
+    "statistics": "Estadísticas",
+    "performance": "Rendimiento",
+    "monitoring": "Monitoreo",
+    "alerts": "Alertas",
+    "notifications": "Notificaciones",
+    "trends": "Tendencias",
+    "analytics": "Analítica",
+    "insights": "Insights",
+    "metrics": "Métricas",
+    "realTime": "Tiempo Real",
+    "lastUpdated": "Última actualización",
+    "autoRefresh": "Actualización automática",
+    "refreshRate": "Frecuencia de actualización",
+    "viewDetails": "Ver detalles",
+    "expandCard": "Expandir tarjeta",
+    "collapseCard": "Contraer tarjeta",
+    "toggleView": "Cambiar vista",
+    "filterData": "Filtrar datos",
+    "exportData": "Exportar datos",
+    "shareView": "Compartir vista",
+    "monitoringIntro": "Gráficos y monitoreo avanzado se implementarán en una versión futura.",
+    "alertsIntro": "Sistema de alertas y notificaciones inteligentes próximamente."
   }
 }

@@ -45,7 +45,7 @@ const fmtUptime = (ms: number): string => {
 }
 
 const DashboardPage = (): JSX.Element => {
-  const { dashboard, common, ui } = useLanguage()
+  const { dashboard, common, ui, server } = useLanguage()
   const qc = useQueryClient()
   const [note, setNote] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [requiresRestart, setRequiresRestart] = useState(false)
@@ -158,7 +158,7 @@ const DashboardPage = (): JSX.Element => {
     { id: 'overview', label: ui.overview, icon: '📊' },
     { id: 'performance', label: ui.performance, icon: '⚡' },
     { id: 'monitoring', label: ui.monitoring, icon: '👁️' },
-    { id: 'actions', label: 'Controlli', icon: '🎮' },
+    { id: 'actions', label: server?.controlsTitle ?? 'Controls', icon: '🎮' },
   ]
 
   const renderTabContent = () => {
@@ -170,6 +170,7 @@ const DashboardPage = (): JSX.Element => {
             gap={{ base: 4, md: 6 }}
           >
             <StatsCard
+              inset
               title={dashboard.state}
               value={
                 data?.state
@@ -185,15 +186,17 @@ const DashboardPage = (): JSX.Element => {
             />
 
             <StatsCard
+              inset
               title={dashboard.uptime}
               value={data ? fmtUptime(data.uptimeMs) : '-'}
               icon="⏱️"
               color="purple.400"
-              subtitle={data?.state === 'RUNNING' ? 'Server attivo' : 'Server spento'}
+              subtitle={data?.state === 'RUNNING' ? dashboard.online : dashboard.offline}
               isLoading={isFetching}
             />
 
             <StatsCard
+              inset
               title={dashboard.playersOnline}
               value={
                 data?.players && data.rconAvailable
@@ -226,6 +229,7 @@ const DashboardPage = (): JSX.Element => {
             />
 
             <StatsCard
+              inset
               title={dashboard.tickTime}
               value={
                 data?.tickTimeMs && data.state === 'RUNNING' && data.rconAvailable
@@ -278,6 +282,7 @@ const DashboardPage = (): JSX.Element => {
             gap={{ base: 4, md: 6 }}
           >
             <StatsCard
+              inset
               title={dashboard.cpu}
               value={data ? `${data.cpu.toFixed(1)}%` : '-'}
               icon="⚡"
@@ -287,6 +292,7 @@ const DashboardPage = (): JSX.Element => {
             />
 
             <StatsCard
+              inset
               title={dashboard.processMemory}
               value={data ? `${data.memMB} MB` : '-'}
               icon="🧠"
@@ -295,6 +301,7 @@ const DashboardPage = (): JSX.Element => {
             />
 
             <StatsCard
+              inset
               title={dashboard.systemMemory}
               value={
                 data?.systemMemory
@@ -312,6 +319,7 @@ const DashboardPage = (): JSX.Element => {
             />
 
             <StatsCard
+              inset
               title={dashboard.diskStorage}
               value={
                 data?.disk && data.disk.totalGB > 0
@@ -333,29 +341,27 @@ const DashboardPage = (): JSX.Element => {
       case 'monitoring':
         return (
           <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={{ base: 4, md: 6 }}>
-            <GlassCard p={6}>
+            <GlassCard inset p={6}>
               <Text fontSize="lg" fontWeight="bold" mb={4} color="accent.fg">
                 📈 {ui.realTime} {ui.monitoring}
               </Text>
-              <Text color="textMuted">
-                Grafici e monitoraggio avanzato saranno implementati in una versione futura.
-              </Text>
+              <Text color="textMuted">{ui.monitoringIntro ?? ''}</Text>
             </GlassCard>
 
-            <GlassCard p={6}>
+            <GlassCard inset p={6}>
               <Text fontSize="lg" fontWeight="bold" mb={4} color="accent.fg">
                 🔔 {ui.alerts}
               </Text>
-              <Text color="textMuted">Sistema di allerta e notifiche intelligenti in arrivo.</Text>
+              <Text color="textMuted">{ui.alertsIntro ?? ''}</Text>
             </GlassCard>
           </Grid>
         )
 
       case 'actions':
         return (
-          <GlassCard p={6}>
+          <GlassCard inset p={6}>
             <Text fontSize="lg" fontWeight="bold" mb={6} color="accent.fg">
-              🎮 Controlli Server
+              🎮 {server?.controlsTitle ?? server?.consoleTitle ?? 'Controls'}
             </Text>
 
             {/* Messaggio di riavvio necessario se presente */}
@@ -423,7 +429,7 @@ const DashboardPage = (): JSX.Element => {
       {/* Modern Header */}
       <ModernHeader
         title={dashboard.title}
-        description="Centro di controllo avanzato per il monitoraggio e la gestione del server"
+        description={ui.modernInterface ?? ui.dashboard}
         emoji="📊"
         gradient="linear(135deg, cyan.500/15, blue.500/15, purple.500/10)"
       />
@@ -435,7 +441,7 @@ const DashboardPage = (): JSX.Element => {
             <Text fontSize="2xl">❌</Text>
             <Box>
               <Text fontWeight="bold" color="red.400">
-                Errore di Connessione
+                {common.error}
               </Text>
               <Text fontSize="sm" color="textMuted">
                 {err}

@@ -23,7 +23,7 @@ import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 type WsMsg = { type?: string; data?: unknown }
 
 export default function ConsolePage(): JSX.Element {
-  const { server } = useLanguage()
+  const { server, common, home, modpack } = useLanguage()
   const { token } = useContext(AuthContext)
   const { data: jarStatus, isLoading: jarLoading } = useServerJarStatus()
   const { output, setOutput, clearOutput } = useConsoleContext()
@@ -107,10 +107,7 @@ export default function ConsolePage(): JSX.Element {
       try {
         // Controllo aggiuntivo: non permettere start se non c'è JAR
         if (action === 'start' && (!jarStatus?.canStart || !jarStatus?.hasJar)) {
-          setOutput(
-            (o: string) =>
-              o + 'Errore: Nessun JAR del server trovato. Installa un modpack prima di avviare.\n'
-          )
+          setOutput((o: string) => o + server.noJarError + '\n')
           return
         }
 
@@ -137,6 +134,7 @@ export default function ConsolePage(): JSX.Element {
       server.stoppingMessage,
       server.restartingMessage,
       server.powerError,
+      server.noJarError,
       jarStatus?.canStart,
       jarStatus?.hasJar,
       setOutput,
@@ -149,8 +147,8 @@ export default function ConsolePage(): JSX.Element {
     <Box p={{ base: 4, md: 6, lg: 8 }} maxW="7xl" mx="auto">
       {/* Modern Header */}
       <ModernHeader
-        title="Console Server"
-        description="Controlla il server in tempo reale con comandi avanzati e monitoraggio live"
+        title={server.consoleTitle}
+        description={server.consoleDescription}
         emoji="💻"
         gradient="linear(135deg, green.500/15, emerald.500/15, teal.500/10)"
       />
@@ -159,21 +157,21 @@ export default function ConsolePage(): JSX.Element {
       <Box mb={6}>
         <StatusIndicator
           status={serverRunning ? 'online' : 'offline'}
-          label="Stato Server"
-          details={serverRunning ? 'Server attivo e operativo' : 'Server spento'}
+          label={server.serverStatus.replace(/:?$/, '')}
+          details={serverRunning ? server.running : server.stopped}
           size="md"
         />
       </Box>
 
       {/* Modpack Status */}
       {!jarLoading && jarStatus && (
-        <GlassCard p={4} mb={6}>
+        <GlassCard inset p={4} mb={6}>
           <HStack gap={3} align="center" wrap="wrap">
             <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">
-              📦 Stato Modpack:
+              📦 {common.status} {common.modpack}:
             </Text>
             <Badge colorPalette={jarStatus.hasJar ? 'green' : 'orange'} variant="solid">
-              {jarStatus.hasJar ? 'Installato' : 'Non trovato'}
+              {jarStatus.hasJar ? home.loggedIn.modpackInstalled : home.loggedIn.modpackNotFound}
             </Badge>
             {jarStatus.hasJar && jarStatus.jarName && (
               <>
@@ -190,7 +188,7 @@ export default function ConsolePage(): JSX.Element {
           </HStack>
           {!jarStatus.hasJar && (
             <Text fontSize={{ base: 'xs', md: 'sm' }} color="orange.300" mt={2}>
-              💡 Vai alla pagina Modpack per installare un server prima di avviarlo
+              💡 {modpack.installPrompt}
             </Text>
           )}
         </GlassCard>
@@ -205,8 +203,9 @@ export default function ConsolePage(): JSX.Element {
       >
         {/* Server Controls */}
         <QuickActionCard
-          title="Controllo Server"
-          description="Gestisci lo stato del server"
+          inset
+          title={server.controlsTitle}
+          description={server.controlsDescription}
           icon="🎮"
           gradient="linear(135deg, blue.500/10, cyan.500/10)"
         >
@@ -218,7 +217,7 @@ export default function ConsolePage(): JSX.Element {
               w="100%"
               minH="44px"
             >
-              {serverRunning ? '⏹️ Ferma Server' : '▶️ Avvia Server'}
+              {serverRunning ? `⏹️ ${server.stop}` : `▶️ ${server.start}`}
             </GlassButton>
 
             <GlassButton
@@ -228,7 +227,7 @@ export default function ConsolePage(): JSX.Element {
               w="100%"
               minH="44px"
             >
-              🔄 Riavvia Server
+              🔄 {server.restart}
             </GlassButton>
 
             <GlassButton
@@ -239,15 +238,15 @@ export default function ConsolePage(): JSX.Element {
               minH="44px"
               variant="outline"
             >
-              🗑️ Pulisci Console
+              🗑️ {server.clear}
             </GlassButton>
           </Stack>
         </QuickActionCard>
 
         {/* Console Output and Input */}
-        <GlassCard p={6}>
+        <GlassCard inset p={6}>
           <Text fontSize="lg" fontWeight="bold" mb={4} color="accent.fg">
-            💻 Console Output
+            💻 {server.consoleOutput}
           </Text>
 
           {/* Command Input */}
@@ -257,7 +256,7 @@ export default function ConsolePage(): JSX.Element {
                 value={command}
                 onChange={(e) => setCommand(e.target.value)}
                 disabled={busy || !serverRunning}
-                placeholder={serverRunning ? 'Inserisci comando...' : 'Server non avviato'}
+                placeholder={serverRunning ? server.commandPlaceholder : server.stopped}
                 flex="1"
                 minH="44px"
                 fontSize={{ base: 'sm', md: 'md' }}
@@ -269,7 +268,7 @@ export default function ConsolePage(): JSX.Element {
                 minH="44px"
                 px={6}
               >
-                Invia
+                {server.send}
               </GlassButton>
             </HStack>
           </Box>
@@ -286,7 +285,7 @@ export default function ConsolePage(): JSX.Element {
             bg="blackAlpha.300"
             borderColor="whiteAlpha.300"
             _focus={{ borderColor: 'accent.fg' }}
-            placeholder="Output della console apparirà qui..."
+            placeholder={server.consolePlaceholder}
           />
         </GlassCard>
       </Box>

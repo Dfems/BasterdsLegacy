@@ -93,7 +93,8 @@
   },
   "server": {
     "commandLabel": "Server Command:",
-    "consoleTitle": "Server Console:",
+    "consoleTitle": "Server Console",
+    "consoleDescription": "Control the server in real time with advanced commands and live monitoring",
     "backToHome": "Back to Home",
     "consoleLoginMessage": "Log in to access the console.",
     "serverStatus": "Server status:",
@@ -107,7 +108,13 @@
     "startingMessage": "Starting...",
     "stoppingMessage": "Stopping...",
     "restartingMessage": "Restarting...",
-    "powerError": "Power error: {error}"
+    "powerError": "Power error: {error}",
+    "controlsTitle": "Server Controls",
+    "controlsDescription": "Manage server state",
+    "consoleOutput": "Console Output",
+    "commandPlaceholder": "Enter command...",
+    "consolePlaceholder": "Console output will appear here...",
+    "noJarError": "Error: No server JAR found. Install a modpack before starting."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -527,7 +534,8 @@
     "notes": "Notes",
     "versionUnsupported": "⚠️ Version {version} not supported by {loader}",
     "versionInfo": "Version {loader}: {version}",
-    "errorVersions": "Error loading versions: {error}"
+    "errorVersions": "Error loading versions: {error}",
+    "installPrompt": "Go to the Modpack page to install a server before starting it"
   },
   "whitelist": {
     "title": "Whitelist",
@@ -553,5 +561,35 @@
     "created": "User created",
     "yes": "yes",
     "no": "no"
+  },
+  "ui": {
+    "modernInterface": "Modern Interface",
+    "dashboard": "Dashboard",
+    "overview": "Overview",
+    "systemInfo": "System Info",
+    "quickActions": "Quick Actions",
+    "recentActivity": "Recent Activity",
+    "statistics": "Statistics",
+    "performance": "Performance",
+    "monitoring": "Monitoring",
+    "alerts": "Alerts",
+    "notifications": "Notifications",
+    "trends": "Trends",
+    "analytics": "Analytics",
+    "insights": "Insights",
+    "metrics": "Metrics",
+    "realTime": "Real Time",
+    "lastUpdated": "Last updated",
+    "autoRefresh": "Auto refresh",
+    "refreshRate": "Refresh rate",
+    "viewDetails": "View details",
+    "expandCard": "Expand card",
+    "collapseCard": "Collapse card",
+    "toggleView": "Toggle view",
+    "filterData": "Filter data",
+    "exportData": "Export data",
+    "shareView": "Share view",
+    "monitoringIntro": "Charts and advanced monitoring will be implemented in a future release.",
+    "alertsIntro": "Smart alerts and notifications system coming soon."
   }
 }

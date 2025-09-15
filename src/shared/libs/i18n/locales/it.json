@@ -69,8 +69,8 @@
       "goToDashboard": "📊 Vai al Dashboard",
       "goToConsole": "💻 Apri Console",
       "goToFiles": "📁 Gestisci File",
-      "serverRunning": "Server Attivo",
-      "serverStopped": "Server Spento",
+      "serverRunning": "Attivo",
+      "serverStopped": "Spento",
       "lastRestart": "Ultimo riavvio"
     }
   },
@@ -93,7 +93,8 @@
   },
   "server": {
     "commandLabel": "Comando Server:",
-    "consoleTitle": "Console Server:",
+    "consoleTitle": "Console Server",
+    "consoleDescription": "Controlla il server in tempo reale con comandi avanzati e monitoraggio live",
     "backToHome": "Torna alla Home",
     "consoleLoginMessage": "Effettua il login per accedere alla console.",
     "serverStatus": "Stato server:",
@@ -107,7 +108,13 @@
     "startingMessage": "Avvio in corso...",
     "stoppingMessage": "Arresto in corso...",
     "restartingMessage": "Riavvio in corso...",
-    "powerError": "Errore power: {error}"
+    "powerError": "Errore power: {error}",
+    "controlsTitle": "Controllo Server",
+    "controlsDescription": "Gestisci lo stato del server",
+    "consoleOutput": "Output Console",
+    "commandPlaceholder": "Inserisci comando...",
+    "consolePlaceholder": "L'output della console apparirà qui...",
+    "noJarError": "Errore: Nessun JAR del server trovato. Installa un modpack prima di avviare."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -126,10 +133,10 @@
     "operationStarted": "Operazione {action} avviata",
     "operationError": "Errore {action}: {error}",
     "systemMemory": "RAM del Sistema",
-    "diskStorage": "Archiviazione",
+    "diskStorage": "Spazio",
     "tps": "TPS del Server",
     "tickTime": "Tick del Server",
-    "playersOnline": "Giocatori Online",
+    "playersOnline": "Online",
     "processMemory": "Memoria del Processo",
     "used": "Usata",
     "free": "Libera",
@@ -527,7 +534,8 @@
     "notes": "Note",
     "versionUnsupported": "⚠️ Versione {version} non supportata da {loader}",
     "versionInfo": "Versione {loader}: {version}",
-    "errorVersions": "Errore nel caricamento delle versioni: {error}"
+    "errorVersions": "Errore nel caricamento delle versioni: {error}",
+    "installPrompt": "Vai alla pagina Modpack per installare un server prima di avviarlo"
   },
   "whitelist": {
     "title": "Whitelist",
@@ -580,6 +588,8 @@
     "toggleView": "Cambia vista",
     "filterData": "Filtra dati",
     "exportData": "Esporta dati",
-    "shareView": "Condividi vista"
+    "shareView": "Condividi vista",
+    "monitoringIntro": "Grafici e monitoraggio avanzato saranno implementati in una versione futura.",
+    "alertsIntro": "Sistema di allerta e notifiche intelligenti in arrivo."
   }
 }

@@ -63,6 +63,11 @@ export type TranslationKey = {
       quickActions: string
       systemInfo: string
       downloadSection: string
+      description?: string
+      currentModpack?: string
+      currentVersion: string
+      modpackInstalled: string
+      modpackNotFound: string
       cpu: string
       memory: string
       uptime: string
@@ -94,6 +99,7 @@ export type TranslationKey = {
   server: {
     commandLabel: string
     consoleTitle: string
+    consoleDescription: string
     backToHome: string
     consoleLoginMessage: string
     serverStatus: string
@@ -108,6 +114,12 @@ export type TranslationKey = {
     stoppingMessage: string
     restartingMessage: string
     powerError: string
+    controlsTitle: string
+    controlsDescription: string
+    consoleOutput: string
+    commandPlaceholder: string
+    consolePlaceholder: string
+    noJarError: string
   }
   dashboard: {
     title: string
@@ -487,6 +499,7 @@ export type TranslationKey = {
     versionUnsupported: string
     versionInfo: string
     errorVersions: string
+    installPrompt: string
   }
   whitelist: {
     title: string
@@ -512,6 +525,36 @@ export type TranslationKey = {
     created: string
     yes: string
     no: string
+  }
+  ui?: {
+    modernInterface: string
+    dashboard: string
+    overview: string
+    systemInfo: string
+    quickActions: string
+    recentActivity: string
+    statistics: string
+    performance: string
+    monitoring: string
+    alerts: string
+    notifications: string
+    trends: string
+    analytics: string
+    insights: string
+    metrics: string
+    realTime: string
+    lastUpdated: string
+    autoRefresh: string
+    refreshRate: string
+    viewDetails: string
+    expandCard: string
+    collapseCard: string
+    toggleView: string
+    filterData: string
+    exportData: string
+    shareView: string
+    monitoringIntro?: string
+    alertsIntro?: string
   }
 }
 

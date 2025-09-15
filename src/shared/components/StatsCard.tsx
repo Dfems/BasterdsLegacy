@@ -9,7 +9,9 @@ type StatsCardProps = {
   value: string | number
   subtitle?: string
   icon?: string
+  inset?: boolean
   color?: string
+  size?: 'sm' | 'md' | 'lg'
   badge?: {
     text: string
     color: string
@@ -31,33 +33,46 @@ export const StatsCard = ({
   value,
   subtitle,
   icon,
+  inset = false,
   color = 'accent.fg',
+  size = 'md',
   badge,
   trend,
   action,
   isLoading = false,
-  minH = '120px',
+  minH,
 }: StatsCardProps): JSX.Element => (
   <GlassCard
-    p={{ base: 4, md: 5 }}
+    p={size === 'sm' ? { base: 3, md: 4 } : size === 'lg' ? { base: 5, md: 6 } : { base: 4, md: 5 }}
     h="100%"
-    minH={minH}
+    minH={minH ?? (size === 'sm' ? '96px' : size === 'lg' ? '140px' : '120px')}
     display="flex"
     flexDirection="column"
     justifyContent="space-between"
     position="relative"
     overflow="hidden"
+    bg={inset ? 'surface' : 'surfaceSolid'}
+    boxShadow={inset ? 'sm' : 'md'}
+    style={{ backdropFilter: 'blur(12px) saturate(130%)' }}
+    _before={{
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      pointerEvents: 'none',
+      background: 'radial-gradient(420px circle at 0 0, rgba(255,255,255,0.1), transparent 45%)',
+    }}
   >
     {/* Background icon */}
     {icon && (
       <Box
         position="absolute"
-        top="8px"
+        bottom="8px"
         right="8px"
-        fontSize="2xl"
-        opacity={0.3}
+        fontSize={size === 'sm' ? 'xl' : size === 'lg' ? '3xl' : '2xl'}
+        opacity={0.28}
         color={color}
         zIndex={0}
+        pointerEvents="none"
       >
         {icon}
       </Box>
@@ -65,15 +80,34 @@ export const StatsCard = ({
 
     <VStack align="stretch" gap={3} position="relative" zIndex={1}>
       {/* Header with title and badge */}
-      <HStack justify="space-between" align="flex-start">
-        <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold" color="textMuted">
+      <HStack justify="space-between" align="flex-start" gap={2}>
+        <Text
+          fontSize={
+            size === 'sm'
+              ? { base: 'xs', md: 'sm' }
+              : size === 'lg'
+                ? { base: 'md', md: 'lg' }
+                : { base: 'sm', md: 'md' }
+          }
+          fontWeight="bold"
+          color="textMuted"
+          truncate
+          minW={0}
+          flex="1 1 auto"
+        >
           {title}
         </Text>
         {badge && (
           <Badge
             colorPalette={badge.color}
             variant={badge.variant || 'solid'}
-            fontSize={{ base: 'xs', md: 'sm' }}
+            fontSize={size === 'sm' ? 'xs' : { base: 'xs', md: 'sm' }}
+            px={size === 'sm' ? 2 : 2}
+            py={size === 'sm' ? 0.5 : 1}
+            maxW={size === 'sm' ? '58%' : '65%'}
+            overflow="hidden"
+            whiteSpace="nowrap"
+            textOverflow="ellipsis"
           >
             {badge.text}
           </Badge>
@@ -83,11 +117,41 @@ export const StatsCard = ({
       {/* Main value */}
       <Box>
         {isLoading ? (
-          <Text fontSize={{ base: 'xl', md: '2xl' }} fontWeight="bold" color={color}>
+          <Text
+            fontSize={
+              size === 'sm'
+                ? { base: 'lg', md: 'xl' }
+                : size === 'lg'
+                  ? { base: '2xl', md: '3xl' }
+                  : { base: 'xl', md: '2xl' }
+            }
+            fontWeight="bold"
+            color={color}
+            truncate
+            minW={0}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+          >
             ...
           </Text>
         ) : (
-          <Text fontSize={{ base: 'xl', md: '2xl' }} fontWeight="bold" color={color}>
+          <Text
+            fontSize={
+              size === 'sm'
+                ? { base: 'lg', md: 'xl' }
+                : size === 'lg'
+                  ? { base: '2xl', md: '3xl' }
+                  : { base: 'xl', md: '2xl' }
+            }
+            fontWeight="bold"
+            color={color}
+            truncate
+            minW={0}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+          >
             {value}
           </Text>
         )}
@@ -104,7 +168,15 @@ export const StatsCard = ({
 
       {/* Subtitle */}
       {subtitle && (
-        <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
+        <Text
+          fontSize={size === 'sm' ? 'xs' : { base: 'xs', md: 'sm' }}
+          color="textMuted"
+          truncate
+          minW={0}
+          overflow="hidden"
+          textOverflow="ellipsis"
+          whiteSpace="nowrap"
+        >
           {subtitle}
         </Text>
       )}
