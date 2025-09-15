@@ -27,7 +27,7 @@ export const ModernTabs = ({
   if (variant === 'underlined') {
     return (
       <Box borderBottomWidth="1px" borderColor="whiteAlpha.200">
-        <HStack spacing={0} overflowX="auto" pb={2}>
+        <HStack gap={0} overflowX="auto" pb={2}>
           {tabs.map((tab) => (
             <Box
               key={tab.id}
@@ -48,7 +48,7 @@ export const ModernTabs = ({
               }}
               whiteSpace="nowrap"
             >
-              <HStack spacing={2}>
+              <HStack gap={2}>
                 <Text>{tab.icon}</Text>
                 <Text>{tab.label}</Text>
                 {tab.count !== undefined && (
@@ -75,14 +75,13 @@ export const ModernTabs = ({
   }
 
   return (
-    <HStack spacing={2} wrap="wrap" justify="center">
+    <HStack gap={2} wrap="wrap" justify="center">
       {tabs.map((tab) => (
         <GlassButton
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           variant={activeTab === tab.id ? 'solid' : 'ghost'}
           size={{ base: 'sm', md: 'md' }}
-          leftIcon={<Text>{tab.icon}</Text>}
           position="relative"
         >
           {tab.label}

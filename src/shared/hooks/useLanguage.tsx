@@ -2,7 +2,7 @@ import { useTranslation } from '@/shared/libs/i18n'
 
 export default function useLanguage() {
   const { t, language, setLanguage, isLoading } = useTranslation()
-  
+
   return {
     language,
     setLanguage,
@@ -37,7 +37,7 @@ export default function useLanguage() {
       toggleView: 'Cambia vista',
       filterData: 'Filtra dati',
       exportData: 'Esporta dati',
-      shareView: 'Condividi vista'
+      shareView: 'Condividi vista',
     },
     server: t.server,
     dashboard: t.dashboard,
@@ -50,6 +50,6 @@ export default function useLanguage() {
     auth: t.auth,
     modal: t.modal,
     navigation: t.navigation,
-    t // Mantengo anche t per compatibilità
+    t, // Mantengo anche t per compatibilità
   }
 }

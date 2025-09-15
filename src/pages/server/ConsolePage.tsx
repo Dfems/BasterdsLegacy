@@ -197,9 +197,9 @@ export default function ConsolePage(): JSX.Element {
       )}
 
       {/* Main Console Grid */}
-      <Box 
-        display="grid" 
-        gridTemplateColumns={{ base: '1fr', lg: '300px 1fr' }} 
+      <Box
+        display="grid"
+        gridTemplateColumns={{ base: '1fr', lg: '300px 1fr' }}
         gap={6}
         alignItems="start"
       >
@@ -220,7 +220,7 @@ export default function ConsolePage(): JSX.Element {
             >
               {serverRunning ? '⏹️ Ferma Server' : '▶️ Avvia Server'}
             </GlassButton>
-            
+
             <GlassButton
               size={{ base: 'sm', md: 'md' }}
               onClick={() => void power('restart')}
@@ -230,7 +230,7 @@ export default function ConsolePage(): JSX.Element {
             >
               🔄 Riavvia Server
             </GlassButton>
-            
+
             <GlassButton
               size={{ base: 'sm', md: 'md' }}
               onClick={clearConsoleOutput}
@@ -257,7 +257,7 @@ export default function ConsolePage(): JSX.Element {
                 value={command}
                 onChange={(e) => setCommand(e.target.value)}
                 disabled={busy || !serverRunning}
-                placeholder={serverRunning ? "Inserisci comando..." : "Server non avviato"}
+                placeholder={serverRunning ? 'Inserisci comando...' : 'Server non avviato'}
                 flex="1"
                 minH="44px"
                 fontSize={{ base: 'sm', md: 'md' }}

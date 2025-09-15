@@ -54,11 +54,7 @@ export const StatusIndicator = ({
       </Text>
       <HStack gap={2}>
         <Text fontSize={badgeSize}>{config.icon}</Text>
-        <Badge
-          colorPalette={config.color}
-          variant="solid"
-          fontSize={badgeSize}
-        >
+        <Badge colorPalette={config.color} variant="solid" fontSize={badgeSize}>
           {config.text}
         </Badge>
       </HStack>

@@ -15,10 +15,12 @@ type StatsCardProps = {
     color: string
     variant?: 'solid' | 'outline'
   }
-  trend?: {
-    value: number
-    isPositive?: boolean
-  } | undefined
+  trend?:
+    | {
+        value: number
+        isPositive?: boolean
+      }
+    | undefined
   action?: ReactNode
   isLoading?: boolean
   minH?: string
@@ -89,14 +91,11 @@ export const StatsCard = ({
             {value}
           </Text>
         )}
-        
+
         {/* Trend indicator */}
         {trend && (
           <HStack gap={1} mt={1}>
-            <Text
-              fontSize="sm"
-              color={trend.isPositive ? 'green.400' : 'red.400'}
-            >
+            <Text fontSize="sm" color={trend.isPositive ? 'green.400' : 'red.400'}>
               {trend.isPositive ? '↗' : '↘'} {Math.abs(trend.value)}%
             </Text>
           </HStack>

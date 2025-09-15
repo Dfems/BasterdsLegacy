@@ -41,7 +41,7 @@ export const QuickActionCard = ({
       {icon}
     </Box>
 
-    <VStack spacing={4} align="stretch" position="relative" zIndex={1}>
+    <VStack gap={4} align="stretch" position="relative" zIndex={1}>
       {/* Header */}
       <Box textAlign="center">
         <Text fontSize="3xl" mb={2}>

@@ -1,14 +1,6 @@
 import { type JSX } from 'react'
 
-import {
-  Badge,
-  Box,
-  Link as ChakraLink,
-  Grid,
-  HStack,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
+import { Badge, Box, Link as ChakraLink, Grid, HStack, Stack, Text } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
@@ -141,11 +133,7 @@ const LoggedInHomePage = (): JSX.Element => {
       </Box>
 
       {/* Main Dashboard Grid */}
-      <Grid
-        templateColumns={{ base: '1fr', xl: 'repeat(3, 1fr)' }}
-        gap={{ base: 6, md: 8 }}
-        mb={8}
-      >
+      <Grid templateColumns={{ base: '1fr', xl: 'repeat(3, 1fr)' }} gap={{ base: 6, md: 8 }} mb={8}>
         {/* Quick Actions */}
         <QuickActionCard
           title={ui.quickActions}
@@ -154,48 +142,28 @@ const LoggedInHomePage = (): JSX.Element => {
           gradient="linear(135deg, green.500/10, emerald.500/10)"
         >
           <Stack gap={3}>
-            <GlassButton
-              as={ChakraLink}
-              href="/app/dashboard"
-              size="md"
-              w="100%"
-            >
+            <GlassButton as={ChakraLink} href="/app/dashboard" size="md" w="100%">
               <HStack>
                 <Text>📊</Text>
                 <Text>Dashboard Avanzata</Text>
               </HStack>
             </GlassButton>
 
-            <GlassButton
-              as={ChakraLink}
-              href="/app/console"
-              size="md"
-              w="100%"
-            >
+            <GlassButton as={ChakraLink} href="/app/console" size="md" w="100%">
               <HStack>
                 <Text>💻</Text>
                 <Text>Console Server</Text>
               </HStack>
             </GlassButton>
 
-            <GlassButton
-              as={ChakraLink}
-              href="/app/files"
-              size="md"
-              w="100%"
-            >
+            <GlassButton as={ChakraLink} href="/app/files" size="md" w="100%">
               <HStack>
                 <Text>📁</Text>
                 <Text>Gestione File</Text>
               </HStack>
             </GlassButton>
 
-            <GlassButton
-              as={ChakraLink}
-              href="/app/modpack"
-              size="md"
-              w="100%"
-            >
+            <GlassButton as={ChakraLink} href="/app/modpack" size="md" w="100%">
               <HStack>
                 <Text>📦</Text>
                 <Text>Modpack Manager</Text>
@@ -256,13 +224,7 @@ const LoggedInHomePage = (): JSX.Element => {
               </HStack>
             )}
 
-            <GlassButton
-              as={ChakraLink}
-              href="/app/dashboard"
-              size="sm"
-              w="100%"
-              variant="outline"
-            >
+            <GlassButton as={ChakraLink} href="/app/dashboard" size="sm" w="100%" variant="outline">
               Visualizza Dettagli Completi
             </GlassButton>
           </Stack>

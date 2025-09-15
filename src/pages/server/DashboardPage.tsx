@@ -1,6 +1,6 @@
 import { useMemo, useState, type JSX } from 'react'
 
-import { Box, Grid, GridItem, HStack, Text } from '@chakra-ui/react'
+import { Box, Grid, HStack, Text } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
@@ -50,7 +50,7 @@ const DashboardPage = (): JSX.Element => {
   const [note, setNote] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [requiresRestart, setRequiresRestart] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
-  
+
   const { data, error, isFetching } = useQuery({
     queryKey: ['status'],
     queryFn: async (): Promise<Status> => {
@@ -171,7 +171,13 @@ const DashboardPage = (): JSX.Element => {
           >
             <StatsCard
               title={dashboard.state}
-              value={data?.state ? getStateText(data.state) : isFetching ? common.loading : dashboard.unknown}
+              value={
+                data?.state
+                  ? getStateText(data.state)
+                  : isFetching
+                    ? common.loading
+                    : dashboard.unknown
+              }
               icon="🖥️"
               color={stateColor}
               subtitle={data?.pid ? `PID: ${data.pid}` : '-'}
@@ -189,25 +195,45 @@ const DashboardPage = (): JSX.Element => {
 
             <StatsCard
               title={dashboard.playersOnline}
-              value={data?.players && data.rconAvailable ? `${data.players.online}/${data.players.max}` : data?.rconAvailable ? '-' : 'N/A'}
+              value={
+                data?.players && data.rconAvailable
+                  ? `${data.players.online}/${data.players.max}`
+                  : data?.rconAvailable
+                    ? '-'
+                    : 'N/A'
+              }
               icon="👥"
               color="blue.400"
-              subtitle={!data?.rconAvailable ? dashboard.rconRequired : data?.state === 'RUNNING' ? dashboard.online : dashboard.offline}
-              action={!data?.rconAvailable ? (
-                <GlassButton
-                  size="sm"
-                  onClick={() => enableRconMutation.mutate()}
-                  loading={enableRconMutation.isPending}
-                >
-                  {dashboard.enableRcon}
-                </GlassButton>
-              ) : undefined}
+              subtitle={
+                !data?.rconAvailable
+                  ? dashboard.rconRequired
+                  : data?.state === 'RUNNING'
+                    ? dashboard.online
+                    : dashboard.offline
+              }
+              action={
+                !data?.rconAvailable ? (
+                  <GlassButton
+                    size="sm"
+                    onClick={() => enableRconMutation.mutate()}
+                    loading={enableRconMutation.isPending}
+                  >
+                    {dashboard.enableRcon}
+                  </GlassButton>
+                ) : undefined
+              }
               isLoading={isFetching}
             />
 
             <StatsCard
               title={dashboard.tickTime}
-              value={data?.tickTimeMs && data.state === 'RUNNING' && data.rconAvailable ? `${data.tickTimeMs.toFixed(1)} ms` : data?.rconAvailable ? '-' : 'N/A'}
+              value={
+                data?.tickTimeMs && data.state === 'RUNNING' && data.rconAvailable
+                  ? `${data.tickTimeMs.toFixed(1)} ms`
+                  : data?.rconAvailable
+                    ? '-'
+                    : 'N/A'
+              }
               icon="🎯"
               color={
                 data?.state !== 'RUNNING' || !data?.rconAvailable
@@ -229,15 +255,17 @@ const DashboardPage = (): JSX.Element => {
                         : dashboard.slow
                     : dashboard.notAvailable
               }
-              action={!data?.rconAvailable ? (
-                <GlassButton
-                  size="sm"
-                  onClick={() => enableRconMutation.mutate()}
-                  loading={enableRconMutation.isPending}
-                >
-                  {dashboard.enableRcon}
-                </GlassButton>
-              ) : undefined}
+              action={
+                !data?.rconAvailable ? (
+                  <GlassButton
+                    size="sm"
+                    onClick={() => enableRconMutation.mutate()}
+                    loading={enableRconMutation.isPending}
+                  >
+                    {dashboard.enableRcon}
+                  </GlassButton>
+                ) : undefined
+              }
               isLoading={isFetching}
             />
           </Grid>
@@ -268,19 +296,35 @@ const DashboardPage = (): JSX.Element => {
 
             <StatsCard
               title={dashboard.systemMemory}
-              value={data?.systemMemory ? `${data.systemMemory.usedGB}/${data.systemMemory.totalGB} GB` : '-'}
+              value={
+                data?.systemMemory
+                  ? `${data.systemMemory.usedGB}/${data.systemMemory.totalGB} GB`
+                  : '-'
+              }
               icon="💾"
               color="cyan.400"
-              subtitle={data?.systemMemory ? `${Math.round((data.systemMemory.usedGB / data.systemMemory.totalGB) * 100)}% ${dashboard.utilized}` : ''}
+              subtitle={
+                data?.systemMemory
+                  ? `${Math.round((data.systemMemory.usedGB / data.systemMemory.totalGB) * 100)}% ${dashboard.utilized}`
+                  : ''
+              }
               isLoading={isFetching}
             />
 
             <StatsCard
               title={dashboard.diskStorage}
-              value={data?.disk && data.disk.totalGB > 0 ? `${data.disk.usedGB}/${data.disk.totalGB} GB` : dashboard.notAvailable}
+              value={
+                data?.disk && data.disk.totalGB > 0
+                  ? `${data.disk.usedGB}/${data.disk.totalGB} GB`
+                  : dashboard.notAvailable
+              }
               icon="💿"
               color="purple.400"
-              subtitle={data?.disk && data.disk.totalGB > 0 ? `${Math.round((data.disk.usedGB / data.disk.totalGB) * 100)}% ${dashboard.utilized_masculine}` : dashboard.checkingSpace}
+              subtitle={
+                data?.disk && data.disk.totalGB > 0
+                  ? `${Math.round((data.disk.usedGB / data.disk.totalGB) * 100)}% ${dashboard.utilized_masculine}`
+                  : dashboard.checkingSpace
+              }
               isLoading={isFetching}
             />
           </Grid>
@@ -302,9 +346,7 @@ const DashboardPage = (): JSX.Element => {
               <Text fontSize="lg" fontWeight="bold" mb={4} color="accent.fg">
                 🔔 {ui.alerts}
               </Text>
-              <Text color="textMuted">
-                Sistema di allerta e notifiche intelligenti in arrivo.
-              </Text>
+              <Text color="textMuted">Sistema di allerta e notifiche intelligenti in arrivo.</Text>
             </GlassCard>
           </Grid>
         )
@@ -341,11 +383,10 @@ const DashboardPage = (): JSX.Element => {
                 loading={powerMutation.isPending}
                 w={{ base: '100%', sm: '150px' }}
                 minH="56px"
-                leftIcon={<Text fontSize="xl">▶️</Text>}
               >
                 {dashboard.start}
               </GlassButton>
-              
+
               <GlassButton
                 size={{ base: 'md', md: 'lg' }}
                 onClick={() => powerMutation.mutate('stop')}
@@ -353,11 +394,10 @@ const DashboardPage = (): JSX.Element => {
                 loading={powerMutation.isPending}
                 w={{ base: '100%', sm: '150px' }}
                 minH="56px"
-                leftIcon={<Text fontSize="xl">⏹️</Text>}
               >
                 {dashboard.stop}
               </GlassButton>
-              
+
               <GlassButton
                 size={{ base: 'md', md: 'lg' }}
                 onClick={() => powerMutation.mutate('restart')}
@@ -366,7 +406,6 @@ const DashboardPage = (): JSX.Element => {
                 w={{ base: '100%', sm: '150px' }}
                 minH="56px"
                 colorPalette={requiresRestart ? 'orange' : undefined}
-                leftIcon={<Text fontSize="xl">🔄</Text>}
               >
                 {requiresRestart ? dashboard.restartServer : dashboard.restart}
               </GlassButton>
@@ -392,7 +431,7 @@ const DashboardPage = (): JSX.Element => {
       {/* Error Message */}
       {err && (
         <GlassCard p={4} mb={6} bg="red.500/10" borderColor="red.500/30">
-          <HStack spacing={3}>
+          <HStack gap={3}>
             <Text fontSize="2xl">❌</Text>
             <Box>
               <Text fontWeight="bold" color="red.400">
@@ -414,29 +453,20 @@ const DashboardPage = (): JSX.Element => {
           bg={note.type === 'success' ? 'green.500/10' : 'red.500/10'}
           borderColor={note.type === 'success' ? 'green.500/30' : 'red.500/30'}
         >
-          <HStack spacing={3}>
+          <HStack gap={3}>
             <Text fontSize="2xl">{note.type === 'success' ? '✅' : '❌'}</Text>
-            <Text color={note.type === 'success' ? 'green.400' : 'red.400'}>
-              {note.text}
-            </Text>
+            <Text color={note.type === 'success' ? 'green.400' : 'red.400'}>{note.text}</Text>
           </HStack>
         </GlassCard>
       )}
 
       {/* Modern Tabs */}
       <Box mb={8}>
-        <ModernTabs
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          variant="pills"
-        />
+        <ModernTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="pills" />
       </Box>
 
       {/* Tab Content */}
-      <Box minH="400px">
-        {renderTabContent()}
-      </Box>
+      <Box minH="400px">{renderTabContent()}</Box>
     </Box>
   )
 }
