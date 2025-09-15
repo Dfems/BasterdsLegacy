@@ -28,10 +28,12 @@ export type TranslationKey = {
     download: string
     status: string
     modpack: string
+    loader: string
     created: string
     size: string
     actions: string
     id: string
+    warning?: string
   }
   navigation: {
     home: string
@@ -258,6 +260,9 @@ export type TranslationKey = {
     maxPlayers: string
     loading: string
     errorLoad: string
+    headerDescription: string
+    ownerOnlyTitle: string
+    ownerOnlyDescription: string
     tabs: {
       overview: {
         title: string
@@ -368,12 +373,17 @@ export type TranslationKey = {
       toggle: string
       secondsLabel: string
       current: string
+      enabled: string
+      disabled: string
     }
     sftp: {
       title: string
       description: string
       ssh: string
       user: string
+      commandLabel?: string
+      exampleLabel?: string
+      exampleSsh?: string
     }
     theme: {
       title: string
@@ -382,6 +392,10 @@ export type TranslationKey = {
       dark: string
       light: string
       current: string
+    }
+    backgroundUpload: {
+      title: string
+      description: string
     }
     buttons: {
       title: string
@@ -402,6 +416,47 @@ export type TranslationKey = {
         version: { label: string; placeholder: string }
       }
     }
+    overview: {
+      java: string
+      directories: string
+      rconStatus: string
+      connection: string
+      disabled: string
+      backup: string
+      schedule: string
+      retention: string
+      retentionHelp?: string
+      days: string
+      weeks: string
+    }
+    advancedInfo?: {
+      security: {
+        title: string
+        description: string
+        authTitle: string
+        authDescription: string
+        permsTitle: string
+        permsDescription: string
+        backupsTitle: string
+        backupsDescription: string
+      }
+      system: {
+        title: string
+        description: string
+        osTitle: string
+        osDescription: string
+        javaTitle: string
+        javaDescription: string
+        processesTitle: string
+        processesDescription: string
+      }
+      warning: {
+        title: string
+        stability: string
+        backups: string
+        contactAdmin: string
+      }
+    }
   }
   modpack: {
     title: string
@@ -416,6 +471,13 @@ export type TranslationKey = {
     manual: string
     loader: string
     mcVersion: string
+    loaderVersionPlaceholder: string
+    mcVersionPlaceholder: string
+    metaConfigTitle: string
+    metaConfigDescription: string
+    metaSavedOk?: string
+    metaSavedError?: string
+    metaHint?: string
     jarFileName: string
     jarPlaceholder: string
     jarHelp: string

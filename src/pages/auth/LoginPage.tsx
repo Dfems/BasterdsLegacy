@@ -30,19 +30,11 @@ export default function Login(): JSX.Element {
 
   return (
     <Box p={{ base: 4, md: 6 }} display="flex" justifyContent="center">
-      {' '}
-      {/* Padding responsive */}
-      <GlassCard as="form" onSubmit={handleSubmit} maxW={440} w="100%" p={{ base: 4, md: 6 }}>
-        {' '}
-        {/* Padding responsive */}
+      <GlassCard inset as="form" onSubmit={handleSubmit} maxW={440} w="100%" p={{ base: 4, md: 6 }}>
         <Heading size={{ base: 'md', md: 'lg' }} mb={4} textAlign="center">
-          {' '}
-          {/* Font size responsive */}
           {auth.loginTitle}
         </Heading>
         <Stack gap={4}>
-          {' '}
-          {/* Aumentato gap per mobile */}
           <Box>
             <label
               htmlFor="username"
@@ -86,25 +78,23 @@ export default function Login(): JSX.Element {
               fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
             />
           </Box>
-          <GlassCard inset>
-            <Button
-              type="submit"
-              width="100%"
-              data-variant="glass"
-              bg="surface"
-              borderColor="borderAccent"
-              color="text"
-              minH="48px" // Touch target più grande per il pulsante principale
-              fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
-              _hover={{
-                bg: 'surfaceSolid',
-                borderColor: 'brand.primary',
-                transform: 'translateY(-1px)',
-              }}
-            >
-              {auth.loginButton}
-            </Button>
-          </GlassCard>
+          <Button
+            type="submit"
+            width="100%"
+            data-variant="glass"
+            bg="surface"
+            borderColor="borderAccent"
+            color="text"
+            minH="48px" // Touch target più grande per il pulsante principale
+            fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
+            _hover={{
+              bg: 'surfaceSolid',
+              borderColor: 'brand.primary',
+              transform: 'translateY(-1px)',
+            }}
+          >
+            {auth.loginButton}
+          </Button>
           {error && (
             <Text color="accent.danger" textAlign="center" fontSize={{ base: 'sm', md: 'md' }}>
               {error}

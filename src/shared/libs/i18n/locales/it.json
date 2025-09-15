@@ -264,6 +264,9 @@
     "maxPlayers": "Giocatori Massimi",
     "loading": "Caricamento…",
     "errorLoad": "Errore nel caricamento delle impostazioni",
+    "headerDescription": "Gestisci e personalizza ogni aspetto del tuo server Minecraft con un'interfaccia moderna e intuitiva",
+    "ownerOnlyTitle": "Accesso limitato agli owner",
+    "ownerOnlyDescription": "Solo i proprietari del server possono modificare queste configurazioni",
     "tabs": {
       "overview": {
         "title": "Panoramica",
@@ -285,6 +288,19 @@
         "title": "Avanzate",
         "description": "SFTP e configurazioni avanzate"
       }
+    },
+    "overview": {
+      "java": "Configurazione Java",
+      "directories": "Configurazione Directory",
+      "rconStatus": "Stato RCON",
+      "connection": "Connessione",
+      "disabled": "disabilitato",
+      "backup": "Configurazione Backup",
+      "schedule": "Schedule (CRON)",
+      "retention": "Retention",
+      "retentionHelp": "Conserva tutti i backup degli ultimi N giorni e, per le settimane precedenti, mantiene solo il più recente per ciascuna delle ultime M settimane.",
+      "days": "giorni",
+      "weeks": "settimane"
     },
     "environment": {
       "title": "Configurazioni Ambiente",
@@ -398,13 +414,22 @@
       "description": "Imposta l'intervallo (in secondi) per la rotazione degli sfondi pubblici in src/assets/background. Minimo 3 secondi. Si applica a tutti gli utenti non‑owner e ai visitatori non autenticati.",
       "toggle": "Abilita rotazione sfondi",
       "secondsLabel": "Intervallo rotazione (secondi)",
-      "current": "Attuale: {seconds}s"
+      "current": "Attuale: {seconds}s",
+      "enabled": "Rotazione sfondi abilitata",
+      "disabled": "Rotazione sfondi disabilitata"
+    },
+    "backgroundUpload": {
+      "title": "Caricamento Sfondi",
+      "description": "Carica e gestisci gli sfondi personalizzati del server"
     },
     "sftp": {
       "title": "SFTP OS‑level",
       "description": "Usa OpenSSH di sistema con utente dedicato, come descritto nel README.",
       "ssh": "ssh",
-      "user": "user@server"
+      "user": "user@server",
+      "commandLabel": "Comando SSH:",
+      "exampleLabel": "Esempio di connessione:",
+      "exampleSsh": "ssh minecraft@your-server.com"
     },
     "theme": {
       "title": "Tema",
@@ -444,6 +469,34 @@
           "placeholder": "1.0.0"
         }
       }
+    },
+    "advancedInfo": {
+      "security": {
+        "title": "Sicurezza & Accesso",
+        "description": "Informazioni importanti sulla sicurezza del server",
+        "authTitle": "Autenticazione",
+        "authDescription": "L'accesso SFTP utilizza chiavi SSH per la massima sicurezza",
+        "permsTitle": "Permessi File",
+        "permsDescription": "L'utente dedicato ha accesso limitato alle directory del server",
+        "backupsTitle": "Backup Automatici",
+        "backupsDescription": "I backup vengono eseguiti automaticamente secondo la pianificazione configurata"
+      },
+      "system": {
+        "title": "Informazioni Sistema",
+        "description": "Dettagli tecnici del server e dell'ambiente",
+        "osTitle": "Sistema Operativo",
+        "osDescription": "Linux con supporto OpenSSH nativo",
+        "javaTitle": "Runtime Java",
+        "javaDescription": "Java JRE/JDK configurato per Minecraft Server",
+        "processesTitle": "Gestione Processi",
+        "processesDescription": "Supervisione automatica e restart del server Minecraft"
+      },
+      "warning": {
+        "title": "Avviso Importante",
+        "stability": "Le modifiche avanzate possono influire sulla stabilità del server",
+        "backups": "Assicurati di avere backup recenti prima di apportare modifiche critiche",
+        "contactAdmin": "Contatta l'amministratore per supporto tecnico specializzato"
+      }
     }
   },
   "modpack": {
@@ -459,6 +512,13 @@
     "manual": "Manuale (JAR personalizzato)",
     "loader": "Loader",
     "mcVersion": "Versione Minecraft",
+    "metaConfigTitle": "Configurazione Meta Modpack",
+    "metaConfigDescription": "Configura i metadati del modpack corrente",
+    "metaSavedOk": "Meta salvato correttamente",
+    "metaSavedError": "Errore nel salvataggio del meta",
+    "metaHint": "Suggerimento: lascia vuoti i campi per eliminarli dal DB.",
+    "loaderVersionPlaceholder": "loaderVersion (es. 21.1.95)",
+    "mcVersionPlaceholder": "mcVersion (es. 1.21.1)",
     "jarFileName": "Nome file JAR",
     "jarPlaceholder": "Nome del file JAR (es. forge-installer.jar)",
     "jarHelp": "Il JAR deve essere già presente nella directory del server",

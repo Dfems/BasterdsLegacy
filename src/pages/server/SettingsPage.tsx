@@ -8,8 +8,8 @@ import {
   OverviewTab,
   ServerTab,
   SettingsTabNavigation,
-  type SettingsTab,
   UiTab,
+  type SettingsTab,
 } from '@/components/settings'
 import { useUiSettings } from '@/shared/hooks'
 import { useTranslation } from '@/shared/libs/i18n'
@@ -200,8 +200,7 @@ export default function SettingsPage(): JSX.Element {
             {t.settings.title}
           </Heading>
           <Text color="textMuted" fontSize={{ base: 'md', md: 'lg' }} maxW="2xl" mx="auto">
-            Gestisci e personalizza ogni aspetto del tuo server Minecraft con un'interfaccia moderna
-            e intuitiva
+            {t.settings.headerDescription}
           </Text>
         </Box>
       </Box>
@@ -217,20 +216,7 @@ export default function SettingsPage(): JSX.Element {
 
       {/* Tab Content */}
       <Box minH="500px" position="relative">
-        {/* Animated content transition */}
-        <Box
-          key={activeTab}
-          opacity={0}
-          transform="translateY(20px)"
-          animation="fadeIn 0.3s ease-out forwards"
-          css={{
-            '@keyframes fadeIn': {
-              to: { opacity: 1, transform: 'translateY(0)' },
-            },
-          }}
-        >
-          {renderTabContent()}
-        </Box>
+        {renderTabContent()}
       </Box>
     </Box>
   )

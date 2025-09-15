@@ -20,6 +20,7 @@ export const UiTab = ({ isOwner }: UiTabProps): JSX.Element => {
     <VStack gap={6} align="stretch">
       {/* Hero Card */}
       <GlassCard
+        inset
         bgGradient="linear(135deg, purple.100/10, pink.300/5)"
         borderColor="purple.200"
         p={8}
@@ -94,10 +95,10 @@ export const UiTab = ({ isOwner }: UiTabProps): JSX.Element => {
               <Text fontSize="2xl">🖼️</Text>
               <Box flex={1}>
                 <Text fontWeight="semibold" mb={2} fontSize="lg">
-                  Background Upload
+                  {t.settings.backgroundUpload.title}
                 </Text>
                 <Text color="textMuted" fontSize="sm" mb={4}>
-                  Carica e gestisci gli sfondi personalizzati del server
+                  {t.settings.backgroundUpload.description}
                 </Text>
                 <BackgroundUpload />
               </Box>
@@ -109,10 +110,10 @@ export const UiTab = ({ isOwner }: UiTabProps): JSX.Element => {
               <Text fontSize="2xl">🔄</Text>
               <Box flex={1}>
                 <Text fontWeight="semibold" mb={2} fontSize="lg">
-                  Background Rotation
+                  {t.settings.backgroundRotation.title}
                 </Text>
                 <Text color="textMuted" fontSize="sm" mb={4}>
-                  Configura la rotazione automatica degli sfondi
+                  {t.settings.backgroundRotation.description}
                 </Text>
                 <BackgroundRotationSettings />
               </Box>

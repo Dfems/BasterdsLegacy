@@ -53,10 +53,10 @@ export const EnvironmentTab = ({
         <VStack gap={4} p={6}>
           <Text fontSize="2xl">🔒</Text>
           <Text fontSize="lg" color="textMuted" textAlign="center">
-            Accesso limitato agli owner
+            {t.settings.ownerOnlyTitle}
           </Text>
           <Text color="textMuted" textAlign="center" fontSize="sm">
-            Solo i proprietari del server possono modificare le configurazioni di ambiente
+            {t.settings.ownerOnlyDescription}
           </Text>
         </VStack>
       </GlassCard>
@@ -66,7 +66,12 @@ export const EnvironmentTab = ({
   return (
     <VStack gap={6} align="stretch">
       {/* Hero Card */}
-      <GlassCard bgGradient="linear(135deg, blue.100/10, cyan.300/5)" borderColor="blue.200" p={8}>
+      <GlassCard
+        inset
+        bgGradient="linear(135deg, blue.100/10, cyan.300/5)"
+        borderColor="blue.200"
+        p={8}
+      >
         <VStack gap={4} textAlign="center">
           <Text fontSize="3xl">⚙️</Text>
           <Text fontSize="xl" fontWeight="bold" color="blue.fg">
@@ -85,7 +90,7 @@ export const EnvironmentTab = ({
             <Text fontSize="2xl">⚠️</Text>
             <Box>
               <Text color="red.500" fontWeight="semibold" mb={1}>
-                Errore configurazione ambiente
+                {t.settings.errorLoad}
               </Text>
               <Text color="red.400" fontSize="sm">
                 {envError}
@@ -107,7 +112,7 @@ export const EnvironmentTab = ({
         <GlassCard inset>
           <VStack gap={4} p={6}>
             <Text fontSize="2xl">⏳</Text>
-            <Text color="textMuted">Caricamento configurazioni...</Text>
+            <Text color="textMuted">{t.settings.loading}</Text>
           </VStack>
         </GlassCard>
       )}

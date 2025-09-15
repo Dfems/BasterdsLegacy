@@ -264,6 +264,9 @@
     "maxPlayers": "Max Players",
     "loading": "Loading…",
     "errorLoad": "Error loading settings",
+    "headerDescription": "Manage and customize every aspect of your Minecraft server with a modern, intuitive interface",
+    "ownerOnlyTitle": "Owner-only access",
+    "ownerOnlyDescription": "Only server owners can modify these settings",
     "tabs": {
       "overview": {
         "title": "Overview",
@@ -285,6 +288,19 @@
         "title": "Advanced",
         "description": "SFTP and advanced configurations"
       }
+    },
+    "overview": {
+      "java": "Java Configuration",
+      "directories": "Directory Configuration",
+      "rconStatus": "RCON Status",
+      "connection": "Connection",
+      "disabled": "disabled",
+      "backup": "Backup Configuration",
+      "schedule": "Schedule (CRON)",
+      "retention": "Retention",
+      "retentionHelp": "Keeps all backups from the last N days and, for older weeks, retains only the most recent backup for each of the last M weeks.",
+      "days": "days",
+      "weeks": "weeks"
     },
     "environment": {
       "title": "Environment Configuration",
@@ -398,13 +414,22 @@
       "description": "Set the interval (in seconds) for rotating public backgrounds in src/assets/background. Minimum 3 seconds. Applies to all non-owner users and unauthenticated visitors.",
       "toggle": "Enable background rotation",
       "secondsLabel": "Rotation interval (seconds)",
-      "current": "Current: {seconds}s"
+      "current": "Current: {seconds}s",
+      "enabled": "Background rotation enabled",
+      "disabled": "Background rotation disabled"
+    },
+    "backgroundUpload": {
+      "title": "Background Upload",
+      "description": "Upload and manage custom server backgrounds"
     },
     "sftp": {
       "title": "SFTP OS-level",
       "description": "Use system OpenSSH with dedicated user, as described in README.",
       "ssh": "ssh",
-      "user": "user@server"
+      "user": "user@server",
+      "commandLabel": "SSH Command:",
+      "exampleLabel": "Connection example:",
+      "exampleSsh": "ssh minecraft@your-server.com"
     },
     "theme": {
       "title": "Theme",
@@ -444,6 +469,34 @@
           "placeholder": "1.0.0"
         }
       }
+    },
+    "advancedInfo": {
+      "security": {
+        "title": "Security & Access",
+        "description": "Important information about server security",
+        "authTitle": "Authentication",
+        "authDescription": "SFTP access uses SSH keys for maximum security",
+        "permsTitle": "File Permissions",
+        "permsDescription": "The dedicated user has limited access to server directories",
+        "backupsTitle": "Automatic Backups",
+        "backupsDescription": "Backups run automatically according to the configured schedule"
+      },
+      "system": {
+        "title": "System Information",
+        "description": "Technical details of the server and environment",
+        "osTitle": "Operating System",
+        "osDescription": "Linux with native OpenSSH support",
+        "javaTitle": "Java Runtime",
+        "javaDescription": "Java JRE/JDK configured for Minecraft Server",
+        "processesTitle": "Process Management",
+        "processesDescription": "Automatic supervision and restart of the Minecraft server"
+      },
+      "warning": {
+        "title": "Important Warning",
+        "stability": "Advanced changes can affect server stability",
+        "backups": "Ensure you have recent backups before making critical changes",
+        "contactAdmin": "Contact the administrator for specialized technical support"
+      }
     }
   },
   "modpack": {
@@ -459,6 +512,13 @@
     "manual": "Manual (Custom JAR)",
     "loader": "Loader",
     "mcVersion": "Minecraft Version",
+    "metaConfigTitle": "Modpack Meta Configuration",
+    "metaConfigDescription": "Configure current modpack metadata",
+    "metaSavedOk": "Meta saved successfully",
+    "metaSavedError": "Error saving meta",
+    "metaHint": "Tip: leave fields empty to remove them from DB.",
+    "loaderVersionPlaceholder": "loaderVersion (e.g. 21.1.95)",
+    "mcVersionPlaceholder": "mcVersion (e.g. 1.21.1)",
     "jarFileName": "JAR file name",
     "jarPlaceholder": "JAR file name (e.g. forge-installer.jar)",
     "jarHelp": "The JAR must already be present in the server directory",

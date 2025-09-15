@@ -1,5 +1,4 @@
-import React from 'react'
-
+// no default React import needed with react-jsx runtime
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'

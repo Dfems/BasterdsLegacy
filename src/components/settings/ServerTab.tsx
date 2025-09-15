@@ -76,7 +76,7 @@ export const ServerTab = ({
         },
         body: JSON.stringify(body),
       })
-      if (!r.ok) throw new Error('Failed to save modpack meta')
+      if (!r.ok) throw new Error(t.common.error)
       setMetaSaved('ok')
 
       try {
@@ -98,6 +98,7 @@ export const ServerTab = ({
     <VStack gap={6} align="stretch">
       {/* Hero Card */}
       <GlassCard
+        inset
         bgGradient="linear(135deg, green.100/10, teal.300/5)"
         borderColor="green.200"
         p={8}
@@ -120,10 +121,10 @@ export const ServerTab = ({
             <Text fontSize="2xl">🔘</Text>
             <Box flex={1}>
               <Text fontWeight="semibold" mb={2} fontSize="lg">
-                Download Buttons
+                {t.settings.buttons.title}
               </Text>
               <Text color="textMuted" fontSize="sm" mb={4}>
-                Configura i pulsanti di download e i loro percorsi
+                {t.settings.buttons.description}
               </Text>
               <ButtonsConfigForm
                 initialConfig={{
@@ -147,10 +148,10 @@ export const ServerTab = ({
             <Text fontSize="2xl">📦</Text>
             <Box flex={1}>
               <Text fontWeight="semibold" mb={2} fontSize="lg">
-                Modpack Meta Configuration
+                {t.modpack.metaConfigTitle}
               </Text>
               <Text color="textMuted" fontSize="sm" mb={4}>
-                Configura i metadati del modpack corrente
+                {t.modpack.metaConfigDescription}
               </Text>
 
               {metaErr && (
@@ -161,7 +162,7 @@ export const ServerTab = ({
 
               {metaSaved === 'ok' && (
                 <Text color="green.500" fontSize="sm" mb={4}>
-                  Meta salvato correttamente
+                  {t.modpack.metaSavedOk ?? t.common.success}
                 </Text>
               )}
 
@@ -181,9 +182,9 @@ export const ServerTab = ({
                       }))
                     }
                   >
-                    <option value="">(nessuno)</option>
-                    <option value="automatic">automatic</option>
-                    <option value="manual">manual</option>
+                    <option value="">(—)</option>
+                    <option value="automatic">{t.modpack.automatic}</option>
+                    <option value="manual">{t.modpack.manual}</option>
                   </NativeSelect.Field>
                 </NativeSelect.Root>
 
@@ -202,7 +203,7 @@ export const ServerTab = ({
                       }))
                     }
                   >
-                    <option value="">(loader)</option>
+                    <option value="">{t.common.loader}</option>
                     <option value="Vanilla">Vanilla</option>
                     <option value="Fabric">Fabric</option>
                     <option value="Forge">Forge</option>
@@ -212,7 +213,7 @@ export const ServerTab = ({
                 </NativeSelect.Root>
 
                 <Input
-                  placeholder="loaderVersion (es. 21.1.95)"
+                  placeholder={t.modpack.loaderVersionPlaceholder}
                   value={meta?.loaderVersion ?? ''}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setMeta((m) => ({
@@ -223,7 +224,7 @@ export const ServerTab = ({
                 />
 
                 <Input
-                  placeholder="mcVersion (es. 1.21.1)"
+                  placeholder={t.modpack.mcVersionPlaceholder}
                   value={meta?.mcVersion ?? ''}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setMeta((m) => ({
@@ -234,12 +235,12 @@ export const ServerTab = ({
                 />
 
                 <Button onClick={saveMeta} loading={metaSaving} disabled={metaSaving}>
-                  Salva
+                  {t.common.save}
                 </Button>
               </Stack>
 
               <Text mt={3} color="textMuted" fontSize="xs">
-                Suggerimento: lascia vuoti i campi per eliminarli dal DB.
+                {t.modpack.metaHint ?? ''}
               </Text>
             </Box>
           </HStack>
@@ -252,10 +253,10 @@ export const ServerTab = ({
           <VStack gap={4} p={6}>
             <Text fontSize="2xl">🔒</Text>
             <Text fontSize="lg" color="textMuted" textAlign="center">
-              Configurazioni server limitate
+              {t.settings.ownerOnlyTitle}
             </Text>
             <Text color="textMuted" textAlign="center" fontSize="sm">
-              Solo i proprietari possono modificare le configurazioni del server
+              {t.settings.ownerOnlyDescription}
             </Text>
           </VStack>
         </GlassCard>
