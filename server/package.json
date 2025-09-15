@@ -24,6 +24,7 @@
     "start": "node dist/app.js",
     "type-check": "tsc -p tsconfig.json --noEmit"
   },
+  "overrides": {},
   "dependencies": {
     "@fastify/cors": "^11.1.0",
     "@fastify/helmet": "^13.0.1",
