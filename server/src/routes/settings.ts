@@ -60,7 +60,7 @@ const writeServerProperties = (properties: Record<string, string>): void => {
       const trimmed = line.trim()
       if (trimmed && !trimmed.startsWith('#')) {
         const [key] = trimmed.split('=')
-        if (key && properties.hasOwnProperty(key.trim())) {
+        if (key && Object.prototype.hasOwnProperty.call(properties, key.trim())) {
           // Usa hasOwnProperty per controllare anche valori false/0/""
           updatedLines.push(`${key.trim()}=${properties[key.trim()]}`)
           processedKeys.add(key.trim())

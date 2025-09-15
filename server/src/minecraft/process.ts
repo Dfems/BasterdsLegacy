@@ -478,6 +478,8 @@ class ProcessManager extends EventEmitter {
     return await new Promise<void>((resolve) => {
       let exited = false
       const timeoutMs = 15000 // 15s timeout prima di forzare
+      // eslint-disable-next-line prefer-const
+      let killTimer: NodeJS.Timeout | undefined
 
       const clearAll = () => {
         if (killTimer) clearTimeout(killTimer)
@@ -507,20 +509,23 @@ class ProcessManager extends EventEmitter {
         // Se fallisce procedi a kill immediato
         try {
           proc.kill()
-        } catch {}
+        } catch {
+          // Kill may fail if already exited
+        }
       }
-
       // Timer di sicurezza: se non esce entro timeout, forza kill
-      const killTimer =
-        setTimeout(() => {
+      killTimer =
+        (setTimeout(() => {
           if (exited) return
           try {
             const evt: LogEvent = { ts: Date.now(), line: '[SYSTEM] Stop timeout, killing process' }
             appendLog(evt)
             this.emit('log', evt.line)
             proc.kill('SIGKILL')
-          } catch {}
-        }, timeoutMs).unref?.() ?? undefined
+          } catch {
+            // Ignore kill errors
+          }
+        }, timeoutMs).unref?.() as unknown as NodeJS.Timeout) ?? undefined
     })
   }
 

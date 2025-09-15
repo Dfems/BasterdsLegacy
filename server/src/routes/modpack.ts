@@ -101,7 +101,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
           cmd: `modpack install ${body.loader} ${body.mcVersion}`,
           userId: req.user?.sub,
         })
-      } catch {}
+      } catch {
+        // Audit log unavailable; proceed without blocking response
+      }
       return res
     }
   )

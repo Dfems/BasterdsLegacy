@@ -19,7 +19,9 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         await (
           await import('../lib/audit.js')
         ).auditLog({ type: 'power', op: action, userId: req.user?.sub })
-      } catch {}
+      } catch {
+        // Audit log unavailable; non-blocking
+      }
       return { ok: true }
     }
   )
