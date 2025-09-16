@@ -165,11 +165,16 @@ export type TranslationKey = {
   }
   files: {
     title: string
+    headerTitle?: string
+    headerDescription?: string
     up: string
     refresh: string
     loading: string
+    loadingDir?: string
+    connectionError?: string
     loadError: string
     noItems: string
+    emptyHint: string
     folder: string
     rename: string
     delete: string
@@ -181,9 +186,30 @@ export type TranslationKey = {
     modified: string
     actions: string
     upload: string
+    systemFiles: string
+    directories: string
+    storage: string
+    many: string
+    manageable: string
+    organized: string
+    high: string
+    ok: string
+    navigationTitle: string
+    navigationDescription: string
+    uploadTitle: string
+    uploadDescription: string
+    contentsTitle: string
+    open: string
+    accessible: string
+    readable: string
+    tagDirectory: string
+    tagFile: string
+    emptyLabel: string
   }
   backups: {
     title: string
+    headerTitle?: string
+    headerDescription?: string
     create: string
     restore: string
     download: string
@@ -192,6 +218,17 @@ export type TranslationKey = {
     creating: string
     restoring: string
     noBackups: string
+    emptyHint?: string
+    availableBackups?: string
+    storageUsed?: string
+    systemStatus?: string
+    fullBackupTitle?: string
+    fullBackupDescription?: string
+    startFullBackup?: string
+    worldBackupTitle?: string
+    worldBackupDescription?: string
+    startWorldBackup?: string
+    ready?: string
     schedule: {
       title: string
       enabled: string
@@ -503,6 +540,8 @@ export type TranslationKey = {
   }
   whitelist: {
     title: string
+    headerTitle?: string
+    headerDescription?: string
     username: string
     usernamePlaceholder: string
     addUser: string
@@ -510,6 +549,20 @@ export type TranslationKey = {
     loading: string
     error: string
     noPlayers: string
+    emptyHint?: string
+    addPlayerTitle?: string
+    addPlayerDescription?: string
+    totalPlayers?: string
+    whitelistSystem?: string
+    serverStatus?: string
+    populated?: string
+    small?: string
+    secure?: string
+    authorizedPlayers?: string
+    authorized?: string
+    loadingData?: string
+    connectionError?: string
+    whitelistLabel?: string
   }
   users: {
     title: string

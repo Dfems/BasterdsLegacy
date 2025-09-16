@@ -36,7 +36,7 @@ const human = (n: number) => {
 }
 
 export default function FilesPage(): JSX.Element {
-  const { files } = useLanguage()
+  const { files, common } = useLanguage()
   const qc = useQueryClient()
   const [path, setPath] = useState<string>('/')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -110,10 +110,9 @@ export default function FilesPage(): JSX.Element {
 
   return (
     <Box>
-      {/* Modern Header with stunning animations and gradients */}
       <ModernHeader
-        title="📁 Gestione File Server"
-        description="Sistema avanzato di navigazione e gestione file del server"
+        title={`📁 ${files.headerTitle ?? files.title}`}
+        description={files.headerDescription ?? ''}
         emoji="🗂️"
       />
 
@@ -122,40 +121,48 @@ export default function FilesPage(): JSX.Element {
           {/* Stats Cards Section */}
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
             <StatsCard
-              title="File di Sistema"
+              inset
+              title={files.systemFiles}
               value={totalFiles}
               icon="📄"
               badge={
                 totalFiles > 100
-                  ? { text: 'Numerosi', color: 'orange' }
-                  : { text: 'Gestibili', color: 'green' }
+                  ? { text: files.many, color: 'orange' }
+                  : { text: files.manageable, color: 'green' }
               }
+              size="sm"
             />
             <StatsCard
-              title="Directory"
+              inset
+              title={files.directories}
               value={totalFolders}
               icon="📁"
-              badge={{ text: 'Organizzate', color: 'blue' }}
+              badge={{ text: files.organized, color: 'blue' }}
+              size="sm"
             />
             <StatsCard
-              title="Storage"
+              inset
+              title={files.storage}
               value={human(totalSize)}
               icon="💾"
               badge={
                 totalSize > 100 * 1024 * 1024
-                  ? { text: 'Alto', color: 'orange' }
-                  : { text: 'OK', color: 'green' }
+                  ? { text: files.high, color: 'orange' }
+                  : { text: files.ok, color: 'green' }
               }
+              size="sm"
             />
           </Grid>
 
           {/* Navigation and Actions Section */}
           <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
             <QuickActionCard
-              title="Navigazione Directory"
-              description={`Posizione corrente: ${path}`}
+              inset
+              title={files.navigationTitle}
+              description={files.navigationDescription.replace('{path}', path)}
               icon="🧭"
               gradient="linear(to-r, blue.400, cyan.500)"
+              size="sm"
             >
               <VStack gap={3} w="full">
                 <HStack gap={2} w="full">
@@ -188,10 +195,12 @@ export default function FilesPage(): JSX.Element {
               </VStack>
             </QuickActionCard>
             <QuickActionCard
-              title="Carica File"
-              description="Seleziona un file da caricare nella directory corrente"
+              inset
+              title={files.uploadTitle}
+              description={files.uploadDescription}
               icon="📤"
               gradient="linear(to-r, green.400, teal.500)"
+              size="sm"
             >
               <Input
                 type="file"
@@ -207,38 +216,38 @@ export default function FilesPage(): JSX.Element {
 
           {/* Error/Loading States */}
           {isLoading && (
-            <GlassCard p={6} textAlign="center">
+            <GlassCard inset p={6} textAlign="center">
               <VStack gap={3}>
                 <Text fontSize="lg" color="textMuted">
-                  🔄 {files.loading}
+                  🔄 {files.loadingDir ?? files.loading}
                 </Text>
-                <StatusIndicator status="loading" label="Caricamento directory..." />
+                <StatusIndicator status="loading" label={files.loadingDir ?? files.loading} />
               </VStack>
             </GlassCard>
           )}
 
           {isError && (
-            <GlassCard p={6} textAlign="center" borderColor="red.200">
+            <GlassCard inset p={6} textAlign="center" borderColor="red.200">
               <VStack gap={3}>
                 <Text fontSize="lg" color="red.500">
                   ⚠️ {files.loadError}
                 </Text>
-                <StatusIndicator status="error" label="Errore di caricamento" />
+                <StatusIndicator status="error" label={files.connectionError ?? files.loadError} />
               </VStack>
             </GlassCard>
           )}
 
           {/* Empty Directory State */}
           {!isLoading && !isError && rows.length === 0 && (
-            <GlassCard p={6} textAlign="center">
+            <GlassCard inset p={6} textAlign="center">
               <VStack gap={3}>
                 <Text fontSize="lg" color="textMuted" mb={2}>
                   📂 {files.noItems}
                 </Text>
                 <Text fontSize="sm" color="textMuted">
-                  Questa directory è vuota. Carica un file per iniziare!
+                  {files.emptyHint}
                 </Text>
-                <StatusIndicator status="offline" label="Directory vuota" />
+                <StatusIndicator status="offline" label={files.emptyLabel} />
               </VStack>
             </GlassCard>
           )}
@@ -247,43 +256,43 @@ export default function FilesPage(): JSX.Element {
           {!isLoading && !isError && rows.length > 0 && (
             <VStack gap={4} align="stretch">
               <Heading size="md" color="brand.primary">
-                📂 Contenuto Directory ({rows.length} elementi)
+                📂 {files.contentsTitle} ({rows.length})
               </Heading>
 
               {/* Mobile: Card layout */}
               <Box display={{ base: 'block', md: 'none' }}>
                 {rows.map((entry) => (
-                  <GlassCard key={entry.name} mb={3} p={4}>
+                  <GlassCard inset key={entry.name} mb={3} p={4}>
                     <VStack align="stretch" gap={3}>
                       <HStack justify="space-between" align="center">
                         <Badge
                           colorScheme={entry.type === 'dir' ? 'blue' : 'green'}
                           variant="subtle"
                         >
-                          {entry.type === 'dir' ? 'DIRECTORY' : 'FILE'}
+                          {entry.type === 'dir' ? files.tagDirectory : files.tagFile}
                         </Badge>
                         <StatusIndicator
                           status="online"
-                          label={entry.type === 'dir' ? 'Accessibile' : 'Leggibile'}
+                          label={entry.type === 'dir' ? files.accessible : files.readable}
                           size="sm"
                         />
                       </HStack>
                       <Box>
                         <Text color="textMuted" fontSize="sm">
-                          {entry.type === 'dir' ? 'Nome directory' : 'Nome file'}
+                          {files.name}
                         </Text>
                         <Text fontSize="lg" fontWeight="bold" color="brand.primary" mb={2}>
                           {entry.type === 'dir' ? '📁' : '📄'} {entry.name}
                         </Text>
                         <Grid templateColumns="1fr 1fr" gap={2} fontSize="sm">
                           <Box>
-                            <Text color="textMuted">Dimensione</Text>
+                            <Text color="textMuted">{files.size}</Text>
                             <Text fontWeight="medium">
                               {entry.type === 'file' ? human(entry.size) : files.folder}
                             </Text>
                           </Box>
                           <Box>
-                            <Text color="textMuted">Modificato</Text>
+                            <Text color="textMuted">{files.modified}</Text>
                             <Text fontWeight="medium">
                               {new Date(entry.mtime).toLocaleDateString()}
                             </Text>
@@ -298,7 +307,7 @@ export default function FilesPage(): JSX.Element {
                             size="sm"
                             flex="1"
                           >
-                            📂 Apri
+                            📂 {files.open}
                           </GlassButton>
                         )}
                         <GlassButton
@@ -313,7 +322,7 @@ export default function FilesPage(): JSX.Element {
                           size="sm"
                           flex="1"
                         >
-                          ✏️ {files.rename}
+                          ✏️
                         </GlassButton>
                         <GlassButton
                           colorScheme="red"
@@ -324,7 +333,7 @@ export default function FilesPage(): JSX.Element {
                           size="sm"
                           flex="1"
                         >
-                          🗑️ {files.delete}
+                          🗑️
                         </GlassButton>
                       </HStack>
                     </VStack>
@@ -364,7 +373,7 @@ export default function FilesPage(): JSX.Element {
                       <Table.ColumnHeader color="brand.primary">
                         <HStack>
                           <Text>⚡</Text>
-                          <Text>Status</Text>
+                          <Text>{common.status}</Text>
                         </HStack>
                       </Table.ColumnHeader>
                       <Table.ColumnHeader color="brand.primary">
@@ -390,10 +399,11 @@ export default function FilesPage(): JSX.Element {
                               </GlassButton>
                             ) : (
                               <>
-                                <Badge colorScheme="green" variant="outline">
-                                  FILE
-                                </Badge>
-                                <Text fontWeight="medium">📄 {entry.name}</Text>
+                                {/* <Badge colorScheme="green" variant="outline">
+                                  {files.tagFile ?? 'FILE'}
+                                </Badge> */}
+                                {/* <Text fontWeight="medium">📄 {entry.name}</Text> */}
+                                <Text fontWeight="medium">{entry.name}</Text>
                               </>
                             )}
                           </HStack>
@@ -403,11 +413,13 @@ export default function FilesPage(): JSX.Element {
                             colorScheme={entry.type === 'dir' ? 'blue' : 'green'}
                             variant="subtle"
                           >
-                            {entry.type === 'dir' ? 'DIRECTORY' : 'FILE'}
+                            {entry.type === 'dir'
+                              ? (files.tagDirectory ?? 'DIRECTORY')
+                              : (files.tagFile ?? 'FILE')}
                           </Badge>
                         </Table.Cell>
                         <Table.Cell bg="transparent" boxShadow="none" textAlign="end">
-                          <Badge colorScheme="purple" variant="outline">
+                          <Badge colorScheme="purple" variant="plain" color={'text'}>
                             {entry.type === 'file' ? human(entry.size) : '-'}
                           </Badge>
                         </Table.Cell>
@@ -417,7 +429,11 @@ export default function FilesPage(): JSX.Element {
                         <Table.Cell bg="transparent" boxShadow="none">
                           <StatusIndicator
                             status="online"
-                            label={entry.type === 'dir' ? 'Accessibile' : 'Leggibile'}
+                            label={
+                              entry.type === 'dir'
+                                ? (files.accessible ?? 'Accessibile')
+                                : (files.readable ?? 'Leggibile')
+                            }
                             size="sm"
                           />
                         </Table.Cell>
@@ -434,7 +450,7 @@ export default function FilesPage(): JSX.Element {
                               }}
                               colorScheme="orange"
                             >
-                              ✏️ {files.rename}
+                              ✏️
                             </GlassButton>
                             <GlassButton
                               size="xs"
@@ -445,7 +461,7 @@ export default function FilesPage(): JSX.Element {
                                   remove.mutate(p)
                               }}
                             >
-                              🗑️ {files.delete}
+                              🗑️
                             </GlassButton>
                           </HStack>
                         </Table.Cell>

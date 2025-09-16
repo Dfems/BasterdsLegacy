@@ -12,7 +12,7 @@ import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import useLanguage from '@/shared/hooks/useLanguage'
 
 export default function WhitelistPage(): JSX.Element {
-  const { whitelist } = useLanguage()
+  const { whitelist, dashboard } = useLanguage()
   const qc = useQueryClient()
   const [name, setName] = useState('')
   const { data, isLoading, isError } = useQuery<{ players: string[] }>({
@@ -45,10 +45,9 @@ export default function WhitelistPage(): JSX.Element {
 
   return (
     <Box>
-      {/* Modern Header with stunning animations and gradients */}
       <ModernHeader
-        title="👥 Gestione Whitelist"
-        description="Controllo accesso giocatori con sistema whitelist avanzato"
+        title={`👥 ${whitelist.headerTitle ?? whitelist.title}`}
+        description={whitelist.headerDescription ?? ''}
         emoji="🛡️"
       />
 
@@ -57,41 +56,50 @@ export default function WhitelistPage(): JSX.Element {
           {/* Stats Cards Section */}
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
             <StatsCard
-              title="Giocatori Totali"
+              title={whitelist.totalPlayers ?? 'Giocatori Totali'}
               value={totalPlayers}
               icon="👥"
               badge={
                 totalPlayers > 10
-                  ? { text: 'Popolato', color: 'green' }
-                  : { text: 'Piccolo', color: 'blue' }
+                  ? { text: whitelist.populated ?? 'Popolato', color: 'green' }
+                  : { text: whitelist.small ?? 'Piccolo', color: 'blue' }
               }
+              size="sm"
             />
             <StatsCard
-              title="Sistema Whitelist"
-              value={whitelistStatus === 'active' ? 'Attivo' : 'Inattivo'}
+              title={whitelist.whitelistSystem ?? 'Sistema Whitelist'}
+              value={whitelistStatus === 'active' ? dashboard.online : dashboard.offline}
               icon="🛡️"
               badge={
                 whitelistStatus === 'active'
-                  ? { text: 'Sicuro', color: 'green' }
-                  : { text: 'Offline', color: 'red' }
+                  ? { text: whitelist.secure ?? 'Sicuro', color: 'green' }
+                  : { text: dashboard.offline, color: 'red' }
               }
+              size="sm"
             />
             <StatsCard
-              title="Status Server"
-              value={isLoading ? 'Caricamento...' : 'Operativo'}
+              title={whitelist.serverStatus ?? 'Status Server'}
+              value={isLoading ? whitelist.loading : dashboard.online}
               icon="⚡"
               badge={
-                isLoading ? { text: 'Loading', color: 'blue' } : { text: 'Online', color: 'green' }
+                isLoading
+                  ? { text: whitelist.loading ?? 'Loading', color: 'blue' }
+                  : { text: dashboard.online, color: 'green' }
               }
+              size="sm"
             />
           </Grid>
 
           {/* Quick Actions Section */}
           <QuickActionCard
-            title="Aggiungi Nuovo Giocatore"
-            description="Inserisci l'username Minecraft per autorizzare l'accesso al server"
+            title={whitelist.addPlayerTitle ?? 'Aggiungi Nuovo Giocatore'}
+            description={
+              whitelist.addPlayerDescription ??
+              "Inserisci l'username Minecraft per autorizzare l'accesso al server"
+            }
             icon="➕"
             gradient="linear(to-r, green.400, teal.500)"
+            size="sm"
           >
             <HStack gap={3} w="full">
               <Input
@@ -128,7 +136,10 @@ export default function WhitelistPage(): JSX.Element {
                 <Text fontSize="lg" color="textMuted">
                   🔄 {whitelist.loading}
                 </Text>
-                <StatusIndicator status="loading" label="Caricamento dati..." />
+                <StatusIndicator
+                  status="loading"
+                  label={whitelist.loadingData ?? 'Caricamento dati...'}
+                />
               </VStack>
             </GlassCard>
           )}
@@ -139,7 +150,10 @@ export default function WhitelistPage(): JSX.Element {
                 <Text fontSize="lg" color="red.500">
                   ⚠️ {whitelist.error}
                 </Text>
-                <StatusIndicator status="error" label="Errore di connessione" />
+                <StatusIndicator
+                  status="error"
+                  label={whitelist.connectionError ?? 'Errore di connessione'}
+                />
               </VStack>
             </GlassCard>
           )}
@@ -152,9 +166,10 @@ export default function WhitelistPage(): JSX.Element {
                   👤 {whitelist.noPlayers}
                 </Text>
                 <Text fontSize="sm" color="textMuted">
-                  Aggiungi il primo giocatore per iniziare a gestire l'accesso al server!
+                  {whitelist.emptyHint ??
+                    "Aggiungi il primo giocatore per iniziare a gestire l'accesso al server!"}
                 </Text>
-                <StatusIndicator status="offline" label="Lista vuota" />
+                <StatusIndicator status="offline" label={whitelist.noPlayers} />
               </VStack>
             </GlassCard>
           )}
@@ -163,7 +178,7 @@ export default function WhitelistPage(): JSX.Element {
           {!isLoading && !isError && players.length > 0 && (
             <VStack gap={4} align="stretch">
               <Heading size="md" color="brand.primary">
-                🎮 Giocatori Autorizzati ({players.length})
+                🎮 {whitelist.authorizedPlayers ?? 'Giocatori Autorizzati'} ({players.length})
               </Heading>
 
               {/* Mobile: Card layout */}
@@ -174,14 +189,18 @@ export default function WhitelistPage(): JSX.Element {
                       <HStack justify="space-between" align="center">
                         <HStack>
                           <Badge colorScheme="green" variant="subtle">
-                            AUTORIZZATO
+                            {whitelist.authorized ?? 'AUTORIZZATO'}
                           </Badge>
-                          <StatusIndicator status="online" label="Whitelist" size="sm" />
+                          <StatusIndicator
+                            status="online"
+                            label={whitelist.whitelistLabel ?? 'Whitelist'}
+                            size="sm"
+                          />
                         </HStack>
                       </HStack>
                       <Box>
                         <Text color="textMuted" fontSize="sm">
-                          Username Minecraft
+                          {whitelist.username}
                         </Text>
                         <Text fontSize="lg" fontWeight="bold" color="brand.primary">
                           🎮 {player}
@@ -212,13 +231,13 @@ export default function WhitelistPage(): JSX.Element {
                     <VStack align="stretch" gap={3}>
                       <HStack justify="space-between" align="center">
                         <Badge colorScheme="green" variant="subtle">
-                          AUTORIZZATO
+                          {whitelist.authorized ?? 'AUTORIZZATO'}
                         </Badge>
-                        <StatusIndicator status="online" label="Attivo" size="sm" />
+                        <StatusIndicator status="online" label={dashboard.online} size="sm" />
                       </HStack>
                       <Box textAlign="center">
                         <Text color="textMuted" fontSize="sm" mb={1}>
-                          Username Minecraft
+                          {whitelist.username}
                         </Text>
                         <Text fontSize="xl" fontWeight="bold" color="brand.primary">
                           🎮 {player}

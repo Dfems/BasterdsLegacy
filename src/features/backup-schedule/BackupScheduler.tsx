@@ -163,7 +163,7 @@ export const BackupScheduler = (): JSX.Element => {
   return (
     <VStack gap={6} align="stretch">
       {/* Current Status */}
-      <GlassCard p={{ base: 4, md: 6 }}>
+      <GlassCard inset p={{ base: 4, md: 6 }}>
         <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
           {backups.schedule.title}
         </Heading>
@@ -223,7 +223,7 @@ export const BackupScheduler = (): JSX.Element => {
       </GlassCard>
 
       {/* Configuration */}
-      <GlassCard p={{ base: 4, md: 6 }}>
+      <GlassCard inset p={{ base: 4, md: 6 }}>
         <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
           {backups.schedule.configuration}
         </Heading>

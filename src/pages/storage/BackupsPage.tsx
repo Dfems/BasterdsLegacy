@@ -20,7 +20,7 @@ type NotificationState = {
 }
 
 export default function BackupsPage(): JSX.Element {
-  const { backups, common } = useLanguage()
+  const { backups, common, dashboard } = useLanguage()
   const qc = useQueryClient()
   const [notification, setNotification] = useState<NotificationState>({ type: null, message: '' })
   const { data, isLoading } = useQuery<Backup[]>({
@@ -96,10 +96,9 @@ export default function BackupsPage(): JSX.Element {
 
   return (
     <Box>
-      {/* Modern Header with stunning animations and gradients */}
       <ModernHeader
-        title="🗄️ Gestione Backup"
-        description="Sistema avanzato di backup e ripristino dati server"
+        title={`🗄️ ${backups.headerTitle ?? backups.title}`}
+        description={backups.headerDescription ?? ''}
         emoji="💾"
       />
 
@@ -134,42 +133,54 @@ export default function BackupsPage(): JSX.Element {
           {/* Stats Cards Section */}
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
             <StatsCard
-              title="Backup Disponibili"
+              inset
+              title={backups.availableBackups ?? 'Backup Disponibili'}
               value={totalBackups}
               icon="📦"
               badge={
                 totalBackups > 0
-                  ? { text: 'Attivi', color: 'green' }
-                  : { text: 'Vuoto', color: 'gray' }
+                  ? { text: dashboard.online, color: 'green' }
+                  : { text: backups.noBackups, color: 'gray' }
               }
+              size="sm"
             />
             <StatsCard
-              title="Storage Utilizzato"
+              inset
+              title={backups.storageUsed ?? 'Storage Utilizzato'}
               value={`${totalSizeMB.toFixed(1)} MB`}
               icon="💽"
               badge={
                 totalSizeMB > 1000
-                  ? { text: 'Alto', color: 'orange' }
+                  ? { text: common.error ?? 'Alto', color: 'orange' }
                   : { text: 'OK', color: 'green' }
               }
+              size="sm"
             />
             <StatsCard
-              title="Status Sistema"
-              value={isLoading ? 'Caricamento...' : 'Operativo'}
+              inset
+              title={backups.systemStatus ?? 'Status Sistema'}
+              value={isLoading ? backups.creating : dashboard.online}
               icon="⚡"
               badge={
-                isLoading ? { text: 'Loading', color: 'blue' } : { text: 'Online', color: 'green' }
+                isLoading
+                  ? { text: backups.creating ?? 'Loading', color: 'blue' }
+                  : { text: dashboard.online, color: 'green' }
               }
+              size="sm"
             />
           </Grid>
 
           {/* Quick Actions Section */}
           <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
             <QuickActionCard
-              title="Backup Completo"
-              description="Crea un backup completo di tutto il server"
+              inset
+              title={backups.fullBackupTitle ?? 'Backup Completo'}
+              description={
+                backups.fullBackupDescription ?? 'Crea un backup completo di tutto il server'
+              }
               icon="🔄"
               gradient="linear(to-r, blue.400, purple.500)"
+              size="sm"
             >
               <GlassButton
                 onClick={() => create.mutate('full')}
@@ -178,14 +189,18 @@ export default function BackupsPage(): JSX.Element {
                 loading={create.isPending}
                 w="full"
               >
-                Avvia Backup Completo
+                {backups.startFullBackup ?? 'Avvia Backup Completo'}
               </GlassButton>
             </QuickActionCard>
             <QuickActionCard
-              title="Backup del Mondo"
-              description="Crea un backup rapido solo del mondo di gioco"
+              inset
+              title={backups.worldBackupTitle ?? 'Backup del Mondo'}
+              description={
+                backups.worldBackupDescription ?? 'Crea un backup rapido solo del mondo di gioco'
+              }
               icon="🌍"
               gradient="linear(to-r, green.400, teal.500)"
+              size="sm"
             >
               <GlassButton
                 onClick={() => create.mutate('world')}
@@ -194,7 +209,7 @@ export default function BackupsPage(): JSX.Element {
                 loading={create.isPending}
                 w="full"
               >
-                Backup Solo Mondo
+                {backups.startWorldBackup ?? 'Backup Solo Mondo'}
               </GlassButton>
             </QuickActionCard>
           </Grid>
@@ -205,12 +220,13 @@ export default function BackupsPage(): JSX.Element {
           {/* Backup List */}
           <Box>
             {!isLoading && rows.length === 0 && (
-              <GlassCard p={6} textAlign="center">
+              <GlassCard inset p={6} textAlign="center">
                 <Text fontSize="lg" color="textMuted" mb={2}>
                   📦 {backups.noBackups}
                 </Text>
                 <Text fontSize="sm" color="textMuted">
-                  Crea il tuo primo backup per iniziare a proteggere i tuoi dati!
+                  {backups.emptyHint ??
+                    'Crea il tuo primo backup per iniziare a proteggere i tuoi dati!'}
                 </Text>
               </GlassCard>
             )}
@@ -218,7 +234,7 @@ export default function BackupsPage(): JSX.Element {
             {/* Mobile: Card layout */}
             <Box display={{ base: 'block', md: 'none' }}>
               {rows.map((b) => (
-                <GlassCard key={b.id} mb={3} p={4}>
+                <GlassCard inset key={b.id} mb={3} p={4}>
                   <VStack align="stretch" gap={3}>
                     <HStack justify="space-between" align="start">
                       <Box flex="1" minW="0">
@@ -226,17 +242,21 @@ export default function BackupsPage(): JSX.Element {
                           <Text fontSize="md" fontWeight="bold" color="brand.primary">
                             📦 {b.id}
                           </Text>
-                          <StatusIndicator status="online" label="Pronto" size="sm" />
+                          <StatusIndicator
+                            status="online"
+                            label={backups.ready ?? 'Pronto'}
+                            size="sm"
+                          />
                         </HStack>
                         <Grid templateColumns="1fr 1fr" gap={2} fontSize="sm">
                           <Box>
-                            <Text color="textMuted">Dimensione</Text>
+                            <Text color="textMuted">{common.size}</Text>
                             <Text fontWeight="medium">
                               {(b.size / (1024 * 1024)).toFixed(1)} MB
                             </Text>
                           </Box>
                           <Box>
-                            <Text color="textMuted">Data creazione</Text>
+                            <Text color="textMuted">{common.created}</Text>
                             <Text fontWeight="medium">
                               {new Date(b.createdAt).toLocaleDateString()}
                             </Text>
@@ -285,7 +305,7 @@ export default function BackupsPage(): JSX.Element {
                       <Table.ColumnHeader color="brand.primary">
                         <HStack>
                           <Text>⚡</Text>
-                          <Text>Status</Text>
+                          <Text>{common.status}</Text>
                         </HStack>
                       </Table.ColumnHeader>
                       <Table.ColumnHeader color="brand.primary">
@@ -314,7 +334,7 @@ export default function BackupsPage(): JSX.Element {
                           </Badge>
                         </Table.Cell>
                         <Table.Cell>
-                          <StatusIndicator status="online" label="Pronto" />
+                          <StatusIndicator status="online" label={backups.ready ?? 'Pronto'} />
                         </Table.Cell>
                         <Table.Cell bg="transparent" boxShadow="none">
                           <GlassButton
