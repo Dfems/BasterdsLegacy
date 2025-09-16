@@ -90,7 +90,7 @@ describe('ModpackPage', () => {
 
   it('should render modpack page title', () => {
     renderWithProviders(<ModpackPage />)
-    expect(screen.getByText('Modpack')).toBeInTheDocument()
+    expect(screen.getByText('📦 Gestione Modpack')).toBeInTheDocument()
   })
 
   it('should show loading state initially', () => {

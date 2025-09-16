@@ -1,10 +1,13 @@
 import { useMemo, useState, type JSX } from 'react'
 
-import { Badge, Box, Heading, HStack, Input, Text, Textarea, VStack } from '@chakra-ui/react'
+import { Badge, Box, Grid, HStack, Input, Text, Textarea, VStack } from '@chakra-ui/react'
 
 import { GlassButton } from '@/shared/components/GlassButton'
-import { GlassCard } from '@/shared/components/GlassCard'
+import { ModernHeader } from '@/shared/components/ModernHeader'
+import { QuickActionCard } from '@/shared/components/QuickActionCard'
 import { SimpleSelect } from '@/shared/components/SimpleSelect'
+import { StatsCard } from '@/shared/components/StatsCard'
+import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useModpackInstallProgress } from '@/shared/hooks/useModpackInstallProgress'
 import { useModpackVersions } from '@/shared/hooks/useModpackVersions'
@@ -77,180 +80,291 @@ export default function ModpackPage(): JSX.Element {
     return !jarFileName.trim()
   }
 
-  return (
-    <Box p={{ base: 4, md: 6 }}>
-      {' '}
-      {/* Padding responsive */}
-      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
-        {modpack.title}
-      </Heading>{' '}
-      {/* Font size responsive */}
-      {/* Stato Modpack Esistente */}
-      {jarStatus && (
-        <GlassCard mb={4} p={{ base: 3, md: 4 }}>
-          <HStack gap={3} align="center" wrap="wrap">
-            <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">
-              Stato Attuale:
-            </Text>
-            <Badge colorPalette={jarStatus.hasJar ? 'green' : 'orange'} variant="solid">
-              {jarStatus.hasJar ? 'Modpack Installato' : 'Nessun Modpack'}
-            </Badge>
-            {jarStatus.hasJar && jarStatus.jarName && (
-              <>
-                <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.400">
-                  {jarStatus.jarName}
-                </Text>
-                {jarStatus.jarType && (
-                  <Badge colorPalette="blue" variant="outline">
-                    {jarStatus.jarType.toUpperCase()}
-                  </Badge>
-                )}
-              </>
-            )}
-          </HStack>
-        </GlassCard>
-      )}
-      {versionsError && (
-        <GlassCard mb={4} bg="red.900" borderColor="red.600" p={{ base: 3, md: 4 }}>
-          {' '}
-          {/* Padding responsive */}
-          <Text color="red.200" fontSize={{ base: 'sm', md: 'md' }}>
-            {' '}
-            {/* Font size responsive */}
-            {modpack.errorVersions.replace('{error}', (versionsError as Error).message)}
-          </Text>
-        </GlassCard>
-      )}
-      <GlassCard mb={4} p={{ base: 3, md: 4 }}>
-        {' '}
-        {/* Padding responsive */}
-        <VStack gap={4} align="stretch">
-          {/* Modalità di installazione */}
-          <HStack gap={3} wrap="wrap">
-            <Text minWidth="fit-content" fontSize={{ base: 'sm', md: 'md' }}>
-              {' '}
-              {/* Font size responsive */}
-              {modpack.mode}:
-            </Text>
-            <SimpleSelect
-              value={installMode}
-              onChange={(v) => setInstallMode(v as InstallMode)}
-              options={[
-                { value: 'automatic', label: modpack.automatic },
-                { value: 'manual', label: modpack.manual },
-              ]}
-            />
-          </HStack>
+  // Calculate stats for the modern header
+  const totalVersions = versionData?.minecraft.length || 0
+  const supportedLoaders = versionData ? Object.keys(versionData.loaders).length : 0
+  const installStatus = jarStatus?.hasJar ? 'Installato' : 'Non installato'
 
-          {/* Configurazione per modalità automatica */}
-          {installMode === 'automatic' && (
-            <VStack gap={3} align="stretch">
+  return (
+    <Box>
+      {/* Modern Header with stunning animations and gradients */}
+      <ModernHeader
+        title="📦 Gestione Modpack"
+        description="Sistema avanzato per installazione e configurazione modpack server"
+        emoji="⚙️"
+      />
+
+      <Box p={{ base: 4, md: 6 }}>
+        <VStack gap={6} align="stretch">
+          {/* Stats Cards Section */}
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
+            <StatsCard
+              title="Versioni Disponibili"
+              value={totalVersions}
+              icon="🎮"
+              badge={
+                totalVersions > 0
+                  ? { text: 'Disponibili', color: 'green' }
+                  : { text: 'Caricamento', color: 'blue' }
+              }
+            />
+            <StatsCard
+              title="Loader Supportati"
+              value={supportedLoaders}
+              icon="⚙️"
+              badge={{ text: 'Compatibili', color: 'blue' }}
+            />
+            <StatsCard
+              title="Status Modpack"
+              value={installStatus}
+              icon="📋"
+              badge={
+                jarStatus?.hasJar
+                  ? { text: 'Attivo', color: 'green' }
+                  : { text: 'Richiesto', color: 'orange' }
+              }
+            />
+          </Grid>
+
+          {/* Current Modpack Status */}
+          {jarStatus && (
+            <QuickActionCard
+              title="📦 Status Modpack Corrente"
+              description="Informazioni sul modpack attualmente installato"
+              icon="ℹ️"
+              gradient="linear(to-r, blue.400, cyan.500)"
+            >
+              <VStack gap={3} align="stretch">
+                <HStack gap={3} align="center" wrap="wrap">
+                  <StatusIndicator
+                    status={jarStatus.hasJar ? 'online' : 'offline'}
+                    label={jarStatus.hasJar ? 'Installato' : 'Non installato'}
+                  />
+                  <Badge colorPalette={jarStatus.hasJar ? 'green' : 'orange'} variant="solid">
+                    {jarStatus.hasJar ? 'Modpack Attivo' : 'Nessun Modpack'}
+                  </Badge>
+                </HStack>
+                {jarStatus.hasJar && jarStatus.jarName && (
+                  <VStack align="stretch" gap={2}>
+                    <Text fontSize="sm" color="textMuted">
+                      File JAR
+                    </Text>
+                    <Text fontSize="md" fontWeight="bold" color="brand.primary">
+                      📄 {jarStatus.jarName}
+                    </Text>
+                    {jarStatus.jarType && (
+                      <Badge colorPalette="blue" variant="outline" alignSelf="start">
+                        {jarStatus.jarType.toUpperCase()}
+                      </Badge>
+                    )}
+                  </VStack>
+                )}
+              </VStack>
+            </QuickActionCard>
+          )}
+
+          {/* Error State */}
+          {versionsError && (
+            <QuickActionCard
+              title="⚠️ Errore di Caricamento"
+              description="Si è verificato un problema durante il caricamento delle versioni"
+              icon="❌"
+              gradient="linear(to-r, red.400, orange.500)"
+            >
+              <VStack gap={3}>
+                <StatusIndicator status="error" label="Errore di connessione" />
+                <Text color="red.200" fontSize="sm">
+                  {modpack.errorVersions.replace('{error}', (versionsError as Error).message)}
+                </Text>
+              </VStack>
+            </QuickActionCard>
+          )}
+
+          {/* Installation Mode Selection */}
+          <QuickActionCard
+            title="🛠️ Modalità di Installazione"
+            description="Scegli il metodo di installazione più adatto alle tue esigenze"
+            icon="⚙️"
+            gradient="linear(to-r, purple.400, pink.500)"
+          >
+            <VStack gap={4} align="stretch">
               <HStack gap={3} wrap="wrap">
+                <Text
+                  minWidth="fit-content"
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  fontWeight="medium"
+                >
+                  {modpack.mode}:
+                </Text>
                 <SimpleSelect
-                  value={loader}
-                  onChange={(v) => setLoader(v as LoaderType)}
+                  value={installMode}
+                  onChange={(v) => setInstallMode(v as InstallMode)}
                   options={[
-                    { value: 'Vanilla', label: 'Vanilla' },
-                    { value: 'Fabric', label: 'Fabric' },
-                    { value: 'Forge', label: 'Forge' },
-                    { value: 'Quilt', label: 'Quilt' },
-                    { value: 'NeoForge', label: 'NeoForge' },
+                    { value: 'automatic', label: modpack.automatic },
+                    { value: 'manual', label: modpack.manual },
                   ]}
-                />
-                <SimpleSelect
-                  value={mcVersion}
-                  onChange={(v) => setMcVersion(v)}
-                  options={mcVersionOptions}
                 />
               </HStack>
 
-              {!isVersionSupported && (
-                <Text fontSize={{ base: 'sm', md: 'md' }} color="orange.400">
-                  {' '}
-                  {/* Font size responsive */}
-                  {modpack.versionUnsupported
-                    .replace('{version}', mcVersion)
-                    .replace('{loader}', loader)}
-                </Text>
+              {/* Configurazione per modalità automatica */}
+              {installMode === 'automatic' && (
+                <VStack gap={3} align="stretch">
+                  <Text fontSize="sm" fontWeight="medium" color="textMuted">
+                    Configurazione automatica
+                  </Text>
+                  <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={3}>
+                    <Box>
+                      <Text fontSize="sm" color="textMuted" mb={1}>
+                        Loader
+                      </Text>
+                      <SimpleSelect
+                        value={loader}
+                        onChange={(v) => setLoader(v as LoaderType)}
+                        options={[
+                          { value: 'Vanilla', label: 'Vanilla' },
+                          { value: 'Fabric', label: 'Fabric' },
+                          { value: 'Forge', label: 'Forge' },
+                          { value: 'Quilt', label: 'Quilt' },
+                          { value: 'NeoForge', label: 'NeoForge' },
+                        ]}
+                      />
+                    </Box>
+                    <Box>
+                      <Text fontSize="sm" color="textMuted" mb={1}>
+                        Versione Minecraft
+                      </Text>
+                      <SimpleSelect
+                        value={mcVersion}
+                        onChange={(v) => setMcVersion(v)}
+                        options={mcVersionOptions}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {!isVersionSupported && (
+                    <HStack gap={2}>
+                      <StatusIndicator status="warning" label="Versione non supportata" />
+                      <Text fontSize="sm" color="orange.400">
+                        {modpack.versionUnsupported
+                          .replace('{version}', mcVersion)
+                          .replace('{loader}', loader)}
+                      </Text>
+                    </HStack>
+                  )}
+
+                  {versionData && isVersionSupported && (
+                    <HStack gap={2}>
+                      <StatusIndicator status="online" label="Versione supportata" />
+                      <Text fontSize="sm" color="green.400">
+                        {modpack.versionInfo
+                          .replace('{loader}', loader)
+                          .replace(
+                            '{version}',
+                            versionData.loaders[loader]?.versions[mcVersion] || ''
+                          )}
+                      </Text>
+                    </HStack>
+                  )}
+                </VStack>
               )}
 
-              {versionData && isVersionSupported && (
-                <Text fontSize={{ base: 'sm', md: 'md' }} color="gray.400">
-                  {modpack.versionInfo
-                    .replace('{loader}', loader)
-                    .replace('{version}', versionData.loaders[loader]?.versions[mcVersion] || '')}
-                </Text>
+              {/* Configurazione per modalità manuale */}
+              {installMode === 'manual' && (
+                <VStack gap={3} align="stretch">
+                  <Text fontSize="sm" fontWeight="medium" color="textMuted">
+                    Configurazione manuale
+                  </Text>
+                  <Box>
+                    <Text fontSize="sm" color="textMuted" mb={1}>
+                      Nome file JAR
+                    </Text>
+                    <Input
+                      value={jarFileName}
+                      onChange={(e) => setJarFileName(e.target.value)}
+                      placeholder={modpack.jarPlaceholder}
+                      data-variant="glass"
+                      minH="44px"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                    />
+                  </Box>
+                  <Text fontSize="sm" color="gray.500">
+                    {modpack.jarHelp}
+                  </Text>
+                </VStack>
               )}
+
+              {/* Pulsante di installazione */}
+              <HStack wrap="wrap" gap={3}>
+                <GlassButton
+                  onClick={runInstall}
+                  disabled={isInstallDisabled()}
+                  loading={busy || versionsLoading}
+                  size="md"
+                  colorScheme="green"
+                  minH="44px"
+                >
+                  {busy ? modpack.installing : versionsLoading ? common.loading : modpack.install}
+                </GlassButton>
+                {installMode === 'automatic' && !versionsLoading && (
+                  <Text fontSize="sm" color="gray.500">
+                    {modpack.installAuto
+                      .replace('{loader}', loader)
+                      .replace('{version}', mcVersion)}
+                  </Text>
+                )}
+              </HStack>
             </VStack>
-          )}
+          </QuickActionCard>
 
-          {/* Configurazione per modalità manuale */}
-          {installMode === 'manual' && (
-            <VStack gap={3} align="stretch">
-              <Input
-                value={jarFileName}
-                onChange={(e) => setJarFileName(e.target.value)}
-                placeholder={modpack.jarPlaceholder}
+          {/* Installation Progress */}
+          <QuickActionCard
+            title="📋 Log di Installazione"
+            description="Progresso e output dell'installazione in tempo reale"
+            icon="📝"
+            gradient="linear(to-r, gray.600, gray.800)"
+          >
+            <VStack gap={4} align="stretch">
+              {/* Status indicators */}
+              <HStack gap={4} wrap="wrap">
+                {progress.installing && (
+                  <HStack>
+                    <StatusIndicator status="loading" label="Installazione in corso" />
+                    <Text fontSize="sm" color="blue.400">
+                      ⏳ Installazione in corso...
+                    </Text>
+                  </HStack>
+                )}
+                {progress.completed && (
+                  <HStack>
+                    <StatusIndicator status="online" label="Completata" />
+                    <Text fontSize="sm" color="green.400">
+                      ✅ Installazione completata!
+                    </Text>
+                  </HStack>
+                )}
+                {progress.error && (
+                  <HStack>
+                    <StatusIndicator status="error" label="Errore" />
+                    <Text fontSize="sm" color="red.400">
+                      ❌ {progress.error}
+                    </Text>
+                  </HStack>
+                )}
+              </HStack>
+
+              <Textarea
+                value={progress.progress.join('\n')}
+                readOnly
+                rows={12}
+                width="100%"
                 data-variant="glass"
-                minH="44px" // Touch target
-                fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
+                fontSize={{ base: 'xs', md: 'sm' }}
+                fontFamily="mono"
               />
-              <Text fontSize={{ base: 'sm', md: 'md' }} color="gray.500">
-                {modpack.jarHelp}
-              </Text>
             </VStack>
-          )}
-
-          {/* Pulsante di installazione */}
-          <HStack wrap="wrap">
-            <GlassButton
-              onClick={runInstall}
-              disabled={isInstallDisabled()}
-              size={{ base: 'sm', md: 'md' }} // Size responsive
-              minH="44px" // Touch target
-            >
-              {busy ? modpack.installing : versionsLoading ? common.loading : modpack.install}
-            </GlassButton>
-            {installMode === 'automatic' && !versionsLoading && (
-              <Text fontSize={{ base: 'sm', md: 'md' }} color="gray.500">
-                {modpack.installAuto.replace('{loader}', loader).replace('{version}', mcVersion)}
-              </Text>
-            )}
-          </HStack>
+          </QuickActionCard>
         </VStack>
-      </GlassCard>
-      <GlassCard inset p={{ base: 3, md: 4 }}>
-        {' '}
-        {/* Padding responsive */}
-        <Text mb={2} fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">
-          {' '}
-          {/* Font size responsive */}
-          {modpack.notes}
-        </Text>
-        <Textarea
-          value={progress.progress.join('\n')}
-          readOnly
-          rows={12}
-          width="100%"
-          data-variant="glass"
-          fontSize={{ base: 'xs', md: 'sm' }} // Font size responsive per note
-        />
-        {progress.installing && (
-          <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="blue.400">
-            ⏳ Installazione in corso...
-          </Text>
-        )}
-        {progress.completed && (
-          <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="green.400">
-            ✅ Installazione completata!
-          </Text>
-        )}
-        {progress.error && (
-          <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} color="red.400">
-            ❌ {progress.error}
-          </Text>
-        )}
-      </GlassCard>
+      </Box>
     </Box>
   )
 }
