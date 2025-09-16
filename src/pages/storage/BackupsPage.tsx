@@ -1,11 +1,15 @@
 import { useMemo, useState, type JSX } from 'react'
 
-import { Box, Button, Heading, HStack, Table, Text, VStack } from '@chakra-ui/react'
+import { Badge, Box, Button, Grid, HStack, Table, Text, VStack } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { BackupScheduler } from '@/features/backup-schedule'
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { ModernHeader } from '@/shared/components/ModernHeader'
+import { QuickActionCard } from '@/shared/components/QuickActionCard'
+import { StatsCard } from '@/shared/components/StatsCard'
+import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import useLanguage from '@/shared/hooks/useLanguage'
 
 type Backup = { id: string; size: number; createdAt: number }
@@ -85,134 +89,252 @@ export default function BackupsPage(): JSX.Element {
 
   const rows = useMemo(() => data ?? [], [data])
 
+  // Calculate stats for the modern header
+  const totalBackups = rows.length
+  const totalSize = rows.reduce((sum, backup) => sum + backup.size, 0)
+  const totalSizeMB = totalSize / (1024 * 1024)
+
   return (
-    <Box p={{ base: 4, md: 6 }}>
-      {' '}
-      {/* Padding responsive */}
-      {/* Notification */}
-      {notification.type && (
-        <Box
-          bg={notification.type === 'success' ? 'green.100' : 'red.100'}
-          color={notification.type === 'success' ? 'green.800' : 'red.800'}
-          p={4}
-          mb={4}
-          borderRadius="md"
-          position="relative"
-          border="1px solid"
-          borderColor={notification.type === 'success' ? 'green.200' : 'red.200'}
-        >
-          <Text>{notification.message}</Text>
-          <Button
-            size="xs"
-            variant="ghost"
-            position="absolute"
-            right={2}
-            top={2}
-            onClick={() => setNotification({ type: null, message: '' })}
+    <Box>
+      {/* Modern Header with stunning animations and gradients */}
+      <ModernHeader
+        title="🗄️ Gestione Backup"
+        description="Sistema avanzato di backup e ripristino dati server"
+        emoji="💾"
+      />
+
+      <Box p={{ base: 4, md: 6 }}>
+        {/* Notification */}
+        {notification.type && (
+          <Box
+            bg={notification.type === 'success' ? 'green.100' : 'red.100'}
+            color={notification.type === 'success' ? 'green.800' : 'red.800'}
+            p={4}
+            mb={4}
+            borderRadius="md"
+            position="relative"
+            border="1px solid"
+            borderColor={notification.type === 'success' ? 'green.200' : 'red.200'}
           >
-            ✕
-          </Button>
-        </Box>
-      )}
-      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
-        {backups.title}
-      </Heading>{' '}
-      {/* Font size responsive */}
-      <VStack gap={6} align="stretch">
-        {/* Backup Scheduling Section */}
-        <BackupScheduler />
-
-        {/* Manual Backup Creation */}
-        <GlassCard p={{ base: 3, md: 4 }}>
-          {' '}
-          {/* Padding responsive */}
-          <Heading size={{ base: 'sm', md: 'md' }} mb={3}>
-            Backup Manuali
-          </Heading>
-          <HStack gap={3} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
-            {' '}
-            {/* Centrato su mobile */}
-            <GlassButton
-              onClick={() => create.mutate('full')}
-              size={{ base: 'sm', md: 'md' }} // Size responsive
-              minH="44px" // Touch target
+            <Text>{notification.message}</Text>
+            <Button
+              size="xs"
+              variant="ghost"
+              position="absolute"
+              right={2}
+              top={2}
+              onClick={() => setNotification({ type: null, message: '' })}
             >
-              Crea backup completo
-            </GlassButton>
-            <GlassButton
-              onClick={() => create.mutate('world')}
-              size={{ base: 'sm', md: 'md' }} // Size responsive
-              minH="44px" // Touch target
-            >
-              Crea backup del mondo
-            </GlassButton>
-          </HStack>
-        </GlassCard>
-
-        {/* Backup List */}
-        <Box>
-          {!isLoading && rows.length === 0 && (
-            <Text fontSize={{ base: 'sm', md: 'md' }}>{backups.noBackups}</Text>
-          )}{' '}
-          {/* Font size responsive */}
-          {/* Mobile: Card layout */}
-          <Box display={{ base: 'block', md: 'none' }}>
-            {rows.map((b) => (
-              <GlassCard key={b.id} mb={3} p={3}>
-                <HStack justify="space-between" align="start" wrap="wrap">
-                  <Box flex="1" minW="0">
-                    <Text fontWeight="bold" fontSize="sm" mb={1} truncate>
-                      📦 {b.id}
-                    </Text>
-                    <Text fontSize="xs" color="textMuted" mb={1}>
-                      {(b.size / (1024 * 1024)).toFixed(1)} MB
-                    </Text>
-                    <Text fontSize="xs" color="textMuted">
-                      {new Date(b.createdAt).toLocaleDateString()}
-                    </Text>
-                  </Box>
-                  <GlassButton size="xs" minH="32px" onClick={() => restore.mutate(b.id)}>
-                    {backups.restore}
-                  </GlassButton>
-                </HStack>
-              </GlassCard>
-            ))}
+              ✕
+            </Button>
           </Box>
-          {/* Desktop: Table layout */}
-          {rows.length > 0 && (
-            <GlassCard inset display={{ base: 'none', md: 'block' }}>
-              <Table.Root data-variant="glass">
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeader color="brand.primary">{common.id}</Table.ColumnHeader>
-                    <Table.ColumnHeader color="brand.primary">{common.created}</Table.ColumnHeader>
-                    <Table.ColumnHeader textAlign="end" color="brand.primary">
-                      {common.size}
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader color="brand.primary">{common.actions}</Table.ColumnHeader>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {rows.map((b) => (
-                    <Table.Row key={b.id}>
-                      <Table.Cell>{b.id}</Table.Cell>
-                      <Table.Cell>{new Date(b.createdAt).toLocaleString()}</Table.Cell>
-                      <Table.Cell textAlign="end">
-                        {(b.size / (1024 * 1024)).toFixed(1)} MB
-                      </Table.Cell>
-                      <Table.Cell bg="transparent" boxShadow="none">
-                        <GlassButton size="xs" onClick={() => restore.mutate(b.id)}>
-                          {backups.restore}
-                        </GlassButton>
-                      </Table.Cell>
+        )}
+
+        <VStack gap={6} align="stretch">
+          {/* Stats Cards Section */}
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
+            <StatsCard
+              title="Backup Disponibili"
+              value={totalBackups}
+              icon="📦"
+              badge={
+                totalBackups > 0
+                  ? { text: 'Attivi', color: 'green' }
+                  : { text: 'Vuoto', color: 'gray' }
+              }
+            />
+            <StatsCard
+              title="Storage Utilizzato"
+              value={`${totalSizeMB.toFixed(1)} MB`}
+              icon="💽"
+              badge={
+                totalSizeMB > 1000
+                  ? { text: 'Alto', color: 'orange' }
+                  : { text: 'OK', color: 'green' }
+              }
+            />
+            <StatsCard
+              title="Status Sistema"
+              value={isLoading ? 'Caricamento...' : 'Operativo'}
+              icon="⚡"
+              badge={
+                isLoading ? { text: 'Loading', color: 'blue' } : { text: 'Online', color: 'green' }
+              }
+            />
+          </Grid>
+
+          {/* Quick Actions Section */}
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
+            <QuickActionCard
+              title="Backup Completo"
+              description="Crea un backup completo di tutto il server"
+              icon="🔄"
+              gradient="linear(to-r, blue.400, purple.500)"
+            >
+              <GlassButton
+                onClick={() => create.mutate('full')}
+                size="md"
+                colorScheme="blue"
+                loading={create.isPending}
+                w="full"
+              >
+                Avvia Backup Completo
+              </GlassButton>
+            </QuickActionCard>
+            <QuickActionCard
+              title="Backup del Mondo"
+              description="Crea un backup rapido solo del mondo di gioco"
+              icon="🌍"
+              gradient="linear(to-r, green.400, teal.500)"
+            >
+              <GlassButton
+                onClick={() => create.mutate('world')}
+                size="md"
+                colorScheme="green"
+                loading={create.isPending}
+                w="full"
+              >
+                Backup Solo Mondo
+              </GlassButton>
+            </QuickActionCard>
+          </Grid>
+
+          {/* Backup Scheduling Section */}
+          <BackupScheduler />
+
+          {/* Backup List */}
+          <Box>
+            {!isLoading && rows.length === 0 && (
+              <GlassCard p={6} textAlign="center">
+                <Text fontSize="lg" color="textMuted" mb={2}>
+                  📦 {backups.noBackups}
+                </Text>
+                <Text fontSize="sm" color="textMuted">
+                  Crea il tuo primo backup per iniziare a proteggere i tuoi dati!
+                </Text>
+              </GlassCard>
+            )}
+
+            {/* Mobile: Card layout */}
+            <Box display={{ base: 'block', md: 'none' }}>
+              {rows.map((b) => (
+                <GlassCard key={b.id} mb={3} p={4}>
+                  <VStack align="stretch" gap={3}>
+                    <HStack justify="space-between" align="start">
+                      <Box flex="1" minW="0">
+                        <HStack align="center" mb={2}>
+                          <Text fontSize="md" fontWeight="bold" color="brand.primary">
+                            📦 {b.id}
+                          </Text>
+                          <StatusIndicator status="online" label="Pronto" size="sm" />
+                        </HStack>
+                        <Grid templateColumns="1fr 1fr" gap={2} fontSize="sm">
+                          <Box>
+                            <Text color="textMuted">Dimensione</Text>
+                            <Text fontWeight="medium">
+                              {(b.size / (1024 * 1024)).toFixed(1)} MB
+                            </Text>
+                          </Box>
+                          <Box>
+                            <Text color="textMuted">Data creazione</Text>
+                            <Text fontWeight="medium">
+                              {new Date(b.createdAt).toLocaleDateString()}
+                            </Text>
+                          </Box>
+                        </Grid>
+                      </Box>
+                    </HStack>
+                    <GlassButton
+                      onClick={() => restore.mutate(b.id)}
+                      loading={restore.isPending}
+                      colorScheme="orange"
+                      size="sm"
+                      w="full"
+                    >
+                      🔄 {backups.restore}
+                    </GlassButton>
+                  </VStack>
+                </GlassCard>
+              ))}
+            </Box>
+
+            {/* Desktop: Enhanced Table layout */}
+            {rows.length > 0 && (
+              <GlassCard inset display={{ base: 'none', md: 'block' }}>
+                <Table.Root data-variant="glass">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>📦</Text>
+                          <Text>{common.id}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>📅</Text>
+                          <Text>{common.created}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader textAlign="end" color="brand.primary">
+                        <HStack justify="end">
+                          <Text>💽</Text>
+                          <Text>{common.size}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>⚡</Text>
+                          <Text>Status</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>🔧</Text>
+                          <Text>{common.actions}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
                     </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Root>
-            </GlassCard>
-          )}
-        </Box>
-      </VStack>
+                  </Table.Header>
+                  <Table.Body>
+                    {rows.map((b) => (
+                      <Table.Row key={b.id}>
+                        <Table.Cell>
+                          <HStack>
+                            <Badge colorScheme="blue" variant="subtle">
+                              BACKUP
+                            </Badge>
+                            <Text fontWeight="medium">{b.id}</Text>
+                          </HStack>
+                        </Table.Cell>
+                        <Table.Cell>{new Date(b.createdAt).toLocaleString()}</Table.Cell>
+                        <Table.Cell textAlign="end">
+                          <Badge colorScheme="green" variant="outline">
+                            {(b.size / (1024 * 1024)).toFixed(1)} MB
+                          </Badge>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <StatusIndicator status="online" label="Pronto" />
+                        </Table.Cell>
+                        <Table.Cell bg="transparent" boxShadow="none">
+                          <GlassButton
+                            size="sm"
+                            onClick={() => restore.mutate(b.id)}
+                            loading={restore.isPending}
+                            colorScheme="orange"
+                          >
+                            🔄 {backups.restore}
+                          </GlassButton>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              </GlassCard>
+            )}
+          </Box>
+        </VStack>
+      </Box>
     </Box>
   )
 }
