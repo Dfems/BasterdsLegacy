@@ -1,8 +1,19 @@
 import multipart from '@fastify/multipart'
 import type { FastifyInstance, FastifyPluginCallback } from 'fastify'
+import fs from 'node:fs'
+import path from 'node:path'
 
-import { list, rename as mv, remove, saveStream, unzipFile, zipPaths } from '../filemgr/fs.js'
+import {
+  list,
+  rename as mv,
+  remove,
+  saveStream,
+  unzipFile,
+  zipPaths,
+  resolveSafe,
+} from '../filemgr/fs.js'
 import { auditLog } from '../lib/audit.js'
+import { getConfig } from '../lib/config.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
   fastify.register(multipart)
@@ -103,6 +114,103 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         userId: req.user?.sub,
       })
       return { dir }
+    }
+  )
+
+  // Download file endpoint
+  fastify.get(
+    '/api/files/download',
+    {
+      // Public route with internal guard: only specific configured files are public
+      config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
+    },
+    async (req, reply) => {
+      try {
+        const { path: p } = req.query as { path?: string }
+        if (!p) return reply.status(400).send({ error: 'Missing path' })
+
+        // Build whitelist of publicly downloadable absolute paths (can be inside or outside sandbox)
+        const cfg = await getConfig()
+        const whitelistAbs: string[] = []
+        {
+          const base = path.resolve(cfg.MC_DIR)
+          for (const val of [cfg.CONFIG_BTN_PATH, cfg.LAUNCHER_BTN_PATH]) {
+            if (!val) continue
+            if (path.isAbsolute(val)) {
+              whitelistAbs.push(path.resolve(val))
+            } else {
+              // sanitize relative path and ensure it stays under base
+              const cleaned = String(val).replaceAll('..', '')
+              const candidate = path.resolve(base, '.' + path.sep + cleaned)
+              const rel = path.relative(base, candidate)
+              if (!rel.startsWith('..') && !path.isAbsolute(rel)) {
+                whitelistAbs.push(candidate)
+              }
+            }
+          }
+        }
+
+        // Resolve requested path to an absolute candidate
+        let abs = ''
+        if (path.isAbsolute(p)) {
+          abs = path.resolve(p)
+        } else {
+          try {
+            abs = resolveSafe(p)
+          } catch {
+            return reply.status(400).send({ error: 'Invalid path' })
+          }
+        }
+
+        const stat = await fs.promises.stat(abs).catch(() => null)
+        if (!stat || !stat.isFile()) return reply.status(404).send({ error: 'Not found' })
+
+        // Public allowed if the absolute path matches a whitelisted configured button path
+        const isPublicAllowed = whitelistAbs.includes(abs)
+
+        // If not public, require JWT and enforce sandbox for non-whitelisted paths
+        if (!isPublicAllowed) {
+          try {
+            await req.jwtVerify()
+          } catch {
+            return reply.status(401).send({ error: 'Unauthorized' })
+          }
+          const base = path.resolve(cfg.MC_DIR)
+          const rel = path.relative(base, abs)
+          if (rel.startsWith('..') || path.isAbsolute(rel)) {
+            return reply.status(403).send({ error: 'Path outside server directory' })
+          }
+        }
+
+        const filename = path.basename(abs)
+        const ext = path.extname(filename).toLowerCase()
+        const mime =
+          ext === '.zip'
+            ? 'application/zip'
+            : ext === '.jar'
+              ? 'application/java-archive'
+              : ext === '.json'
+                ? 'application/json'
+                : ext === '.txt' || ext === '.log'
+                  ? 'text/plain; charset=utf-8'
+                  : 'application/octet-stream'
+
+        reply.header('Content-Type', mime)
+        reply.header('Content-Disposition', `attachment; filename="${filename}"`)
+
+        await auditLog({
+          type: 'file',
+          op: 'download',
+          path: p,
+          userId: req.user?.sub,
+        })
+
+        const stream = fs.createReadStream(abs)
+        return reply.send(stream)
+      } catch (err) {
+        req.log.error({ err }, 'download error')
+        return reply.status(500).send({ error: 'Download failed' })
+      }
     }
   )
 

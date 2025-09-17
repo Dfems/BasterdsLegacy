@@ -8,11 +8,14 @@ import {
   type JSX,
 } from 'react'
 
-import { Badge, Box, HStack, Heading, Input, Stack, Text, Textarea } from '@chakra-ui/react'
+import { Badge, Box, HStack, Input, Stack, Text, Textarea } from '@chakra-ui/react'
 
 import AuthContext from '@/entities/user/AuthContext'
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { ModernHeader } from '@/shared/components/ModernHeader'
+import { QuickActionCard } from '@/shared/components/QuickActionCard'
+import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import { useConsoleContext } from '@/shared/contexts/useConsoleContext'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
@@ -20,7 +23,7 @@ import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 type WsMsg = { type?: string; data?: unknown }
 
 export default function ConsolePage(): JSX.Element {
-  const { t, server } = useLanguage()
+  const { server, common, home, modpack } = useLanguage()
   const { token } = useContext(AuthContext)
   const { data: jarStatus, isLoading: jarLoading } = useServerJarStatus()
   const { output, setOutput, clearOutput } = useConsoleContext()
@@ -104,10 +107,7 @@ export default function ConsolePage(): JSX.Element {
       try {
         // Controllo aggiuntivo: non permettere start se non c'è JAR
         if (action === 'start' && (!jarStatus?.canStart || !jarStatus?.hasJar)) {
-          setOutput(
-            (o: string) =>
-              o + 'Errore: Nessun JAR del server trovato. Installa un modpack prima di avviare.\n'
-          )
+          setOutput((o: string) => o + server.noJarError + '\n')
           return
         }
 
@@ -134,6 +134,7 @@ export default function ConsolePage(): JSX.Element {
       server.stoppingMessage,
       server.restartingMessage,
       server.powerError,
+      server.noJarError,
       jarStatus?.canStart,
       jarStatus?.hasJar,
       setOutput,
@@ -143,30 +144,34 @@ export default function ConsolePage(): JSX.Element {
   const clearConsoleOutput = () => clearOutput()
 
   return (
-    <Box p={{ base: 4, md: 6 }}>
-      {' '}
-      {/* Padding responsive */}
-      <Heading mb={2} fontSize={{ base: 'md', md: 'lg' }}>
-        {t.consoleTitle}
-      </Heading>{' '}
-      {/* Font size responsive */}
-      {/* Stato Server */}
-      <HStack mb={4} gap={3} align="center" wrap="wrap">
-        <Text fontSize={{ base: 'sm', md: 'md' }}>{server.serverStatus}</Text>{' '}
-        {/* Font size responsive */}
-        <Badge colorPalette={serverRunning ? 'green' : 'red'} variant="solid">
-          {serverRunning ? server.running : server.stopped}
-        </Badge>
-      </HStack>
-      {/* Stato JAR/Modpack */}
+    <Box p={{ base: 4, md: 6, lg: 8 }} maxW="7xl" mx="auto">
+      {/* Modern Header */}
+      <ModernHeader
+        title={server.consoleTitle}
+        description={server.consoleDescription}
+        emoji="💻"
+        gradient="linear(135deg, green.500/15, emerald.500/15, teal.500/10)"
+      />
+
+      {/* Server Status */}
+      <Box mb={6}>
+        <StatusIndicator
+          status={serverRunning ? 'online' : 'offline'}
+          label={server.serverStatus.replace(/:?$/, '')}
+          details={serverRunning ? server.running : server.stopped}
+          size="md"
+        />
+      </Box>
+
+      {/* Modpack Status */}
       {!jarLoading && jarStatus && (
-        <GlassCard inset mb={4} p={{ base: 3, md: 4 }}>
+        <GlassCard inset p={4} mb={6}>
           <HStack gap={3} align="center" wrap="wrap">
             <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">
-              Stato Modpack:
+              📦 {common.status} {common.modpack}:
             </Text>
             <Badge colorPalette={jarStatus.hasJar ? 'green' : 'orange'} variant="solid">
-              {jarStatus.hasJar ? 'Installato' : 'Non trovato'}
+              {jarStatus.hasJar ? home.loggedIn.modpackInstalled : home.loggedIn.modpackNotFound}
             </Badge>
             {jarStatus.hasJar && jarStatus.jarName && (
               <>
@@ -183,109 +188,107 @@ export default function ConsolePage(): JSX.Element {
           </HStack>
           {!jarStatus.hasJar && (
             <Text fontSize={{ base: 'xs', md: 'sm' }} color="orange.300" mt={2}>
-              💡 Vai alla pagina Modpack per installare un server prima di avviarlo
+              💡 {modpack.installPrompt}
             </Text>
           )}
         </GlassCard>
       )}
-      <Stack direction={{ base: 'column', md: 'row' }} gap={4} align="stretch">
-        <Box
-          p={4}
-          borderWidth="1px"
-          rounded="md"
-          bg="whiteAlpha.100"
-          borderColor="whiteAlpha.200"
-          minW={{ md: '220px' }}
-          boxShadow="md"
-          style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
+
+      {/* Main Console Grid */}
+      <Box
+        display="grid"
+        gridTemplateColumns={{ base: '1fr', lg: '300px 1fr' }}
+        gap={6}
+        alignItems="start"
+      >
+        {/* Server Controls */}
+        <QuickActionCard
+          inset
+          title={server.controlsTitle}
+          description={server.controlsDescription}
+          icon="🎮"
+          gradient="linear(135deg, blue.500/10, cyan.500/10)"
         >
           <Stack gap={3}>
-            {' '}
-            {/* Aumentato gap per mobile */}
             <GlassButton
-              size={{ base: 'sm', md: 'md' }} // Size responsive
+              size={{ base: 'sm', md: 'md' }}
               onClick={() => void power(serverRunning ? 'stop' : 'start')}
               disabled={busy || (!serverRunning && !jarStatus?.canStart)}
-              minH="44px" // Touch target minimo
+              w="100%"
+              minH="44px"
             >
-              {serverRunning ? server.stop : server.start}
+              {serverRunning ? `⏹️ ${server.stop}` : `▶️ ${server.start}`}
             </GlassButton>
+
             <GlassButton
-              size={{ base: 'sm', md: 'md' }} // Size responsive
+              size={{ base: 'sm', md: 'md' }}
               onClick={() => void power('restart')}
               disabled={busy || !serverRunning}
-              minH="44px" // Touch target minimo
+              w="100%"
+              minH="44px"
             >
-              {server.restart}
+              🔄 {server.restart}
             </GlassButton>
+
             <GlassButton
-              size={{ base: 'sm', md: 'md' }} // Size responsive
+              size={{ base: 'sm', md: 'md' }}
               onClick={clearConsoleOutput}
               disabled={busy}
-              minH="44px" // Touch target minimo
+              w="100%"
+              minH="44px"
+              variant="outline"
             >
-              {server.clear}
+              🗑️ {server.clear}
             </GlassButton>
           </Stack>
-        </Box>
+        </QuickActionCard>
 
-        <Box
-          flex="1"
-          p={4}
-          borderWidth="1px"
-          rounded="md"
-          bg="whiteAlpha.100"
-          borderColor="whiteAlpha.200"
-          boxShadow="md"
-          style={{ backdropFilter: 'blur(10px) saturate(120%)' }}
-        >
-          <Box as="form" onSubmit={handleSubmit} mb={3} display="flex" gap={2} flexWrap="wrap">
-            <label
-              htmlFor="command"
-              style={{
-                alignSelf: 'center',
-                fontSize: '14px', // Font size specifico per label
-                minWidth: '100%', // Su mobile va su riga separata
-              }}
-            >
-              {t.commandLabel}
-            </label>
-            <Input
-              id="command"
-              value={command}
-              onChange={(e) => setCommand(e.target.value)}
-              disabled={busy || !serverRunning}
-              flex="1"
-              minW={{ base: '100%', sm: '280px' }}
-              minH="44px" // Touch target minimo
-              fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
-            />
-            <GlassButton
-              type="submit"
-              size={{ base: 'sm', md: 'md' }} // Size responsive
-              disabled={busy || !serverRunning}
-              minH="44px" // Touch target minimo
-              w={{ base: '100%', sm: 'auto' }} // Full width su mobile
-            >
-              {server.send}
-            </GlassButton>
+        {/* Console Output and Input */}
+        <GlassCard inset p={6}>
+          <Text fontSize="lg" fontWeight="bold" mb={4} color="accent.fg">
+            💻 {server.consoleOutput}
+          </Text>
+
+          {/* Command Input */}
+          <Box as="form" onSubmit={handleSubmit} mb={4}>
+            <HStack gap={3}>
+              <Input
+                value={command}
+                onChange={(e) => setCommand(e.target.value)}
+                disabled={busy || !serverRunning}
+                placeholder={serverRunning ? server.commandPlaceholder : server.stopped}
+                flex="1"
+                minH="44px"
+                fontSize={{ base: 'sm', md: 'md' }}
+              />
+              <GlassButton
+                type="submit"
+                size={{ base: 'sm', md: 'md' }}
+                disabled={busy || !serverRunning}
+                minH="44px"
+                px={6}
+              >
+                {server.send}
+              </GlassButton>
+            </HStack>
           </Box>
 
-          <Heading size={{ base: 'sm', md: 'md' }} mb={2}>
-            {' '}
-            {/* Font size responsive */}
-            {t.consoleOutputTitle}
-          </Heading>
+          {/* Output Area */}
           <Textarea
             ref={outputRef}
             readOnly
-            rows={15} // Valore fisso, ottimizzato per mobile
+            rows={20}
             value={output}
             resize="vertical"
-            fontSize={{ base: 'xs', md: 'sm' }} // Font size responsive per output
+            fontSize={{ base: 'xs', md: 'sm' }}
+            fontFamily="monospace"
+            bg="blackAlpha.300"
+            borderColor="whiteAlpha.300"
+            _focus={{ borderColor: 'accent.fg' }}
+            placeholder={server.consolePlaceholder}
           />
-        </Box>
-      </Stack>
+        </GlassCard>
+      </Box>
     </Box>
   )
 }

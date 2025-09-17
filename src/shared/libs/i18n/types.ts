@@ -6,6 +6,7 @@ export type TranslationKey = {
     appName: string
     login: string
     logout: string
+    admin: string
     username: string
     password: string
     name: string
@@ -57,12 +58,28 @@ export type TranslationKey = {
     launcherBtn: string
     donateBtn: string
     footer: string
+    guide?: {
+      title: string
+      step1Title: string
+      step1Text: string
+      step2Title: string
+      step2Text: string
+      step3Title: string
+      step3Text: string
+      step4Title: string
+      step4Text: string
+    }
     loggedIn: {
       welcomeBack: string
       serverOverview: string
       quickActions: string
       systemInfo: string
       downloadSection: string
+      description?: string
+      currentModpack?: string
+      currentVersion: string
+      modpackInstalled: string
+      modpackNotFound: string
       cpu: string
       memory: string
       uptime: string
@@ -94,6 +111,7 @@ export type TranslationKey = {
   server: {
     commandLabel: string
     consoleTitle: string
+    consoleDescription: string
     backToHome: string
     consoleLoginMessage: string
     serverStatus: string
@@ -108,6 +126,12 @@ export type TranslationKey = {
     stoppingMessage: string
     restartingMessage: string
     powerError: string
+    controlsTitle: string
+    controlsDescription: string
+    consoleOutput: string
+    commandPlaceholder: string
+    consolePlaceholder: string
+    noJarError: string
   }
   dashboard: {
     title: string
@@ -153,11 +177,16 @@ export type TranslationKey = {
   }
   files: {
     title: string
+    headerTitle?: string
+    headerDescription?: string
     up: string
     refresh: string
     loading: string
+    loadingDir?: string
+    connectionError?: string
     loadError: string
     noItems: string
+    emptyHint: string
     folder: string
     rename: string
     delete: string
@@ -169,9 +198,30 @@ export type TranslationKey = {
     modified: string
     actions: string
     upload: string
+    systemFiles: string
+    directories: string
+    storage: string
+    many: string
+    manageable: string
+    organized: string
+    high: string
+    ok: string
+    navigationTitle: string
+    navigationDescription: string
+    uploadTitle: string
+    uploadDescription: string
+    contentsTitle: string
+    open: string
+    accessible: string
+    readable: string
+    tagDirectory: string
+    tagFile: string
+    emptyLabel: string
   }
   backups: {
     title: string
+    headerTitle?: string
+    headerDescription?: string
     create: string
     restore: string
     download: string
@@ -180,6 +230,17 @@ export type TranslationKey = {
     creating: string
     restoring: string
     noBackups: string
+    emptyHint?: string
+    availableBackups?: string
+    storageUsed?: string
+    systemStatus?: string
+    fullBackupTitle?: string
+    fullBackupDescription?: string
+    startFullBackup?: string
+    worldBackupTitle?: string
+    worldBackupDescription?: string
+    startWorldBackup?: string
+    ready?: string
     schedule: {
       title: string
       enabled: string
@@ -197,6 +258,8 @@ export type TranslationKey = {
       enable: string
       disable: string
       save: string
+      stateLabel?: string
+      cronPatternLabel?: string
       preset: {
         disabled: string
         daily_3am: string
@@ -459,6 +522,7 @@ export type TranslationKey = {
     }
   }
   modpack: {
+    managementTitle?: string
     title: string
     upload: string
     install: string
@@ -487,9 +551,14 @@ export type TranslationKey = {
     versionUnsupported: string
     versionInfo: string
     errorVersions: string
+    installPrompt: string
+    installSectionDescription?: string
+    progressSectionDescription?: string
   }
   whitelist: {
     title: string
+    headerTitle?: string
+    headerDescription?: string
     username: string
     usernamePlaceholder: string
     addUser: string
@@ -497,6 +566,20 @@ export type TranslationKey = {
     loading: string
     error: string
     noPlayers: string
+    emptyHint?: string
+    addPlayerTitle?: string
+    addPlayerDescription?: string
+    totalPlayers?: string
+    whitelistSystem?: string
+    serverStatus?: string
+    populated?: string
+    small?: string
+    secure?: string
+    authorizedPlayers?: string
+    authorized?: string
+    loadingData?: string
+    connectionError?: string
+    whitelistLabel?: string
   }
   users: {
     title: string
@@ -512,6 +595,36 @@ export type TranslationKey = {
     created: string
     yes: string
     no: string
+  }
+  ui?: {
+    modernInterface: string
+    dashboard: string
+    overview: string
+    systemInfo: string
+    quickActions: string
+    recentActivity: string
+    statistics: string
+    performance: string
+    monitoring: string
+    alerts: string
+    notifications: string
+    trends: string
+    analytics: string
+    insights: string
+    metrics: string
+    realTime: string
+    lastUpdated: string
+    autoRefresh: string
+    refreshRate: string
+    viewDetails: string
+    expandCard: string
+    collapseCard: string
+    toggleView: string
+    filterData: string
+    exportData: string
+    shareView: string
+    monitoringIntro?: string
+    alertsIntro?: string
   }
 }
 

@@ -1,19 +1,13 @@
 import { type JSX } from 'react'
 
-import {
-  Badge,
-  Box,
-  Link as ChakraLink,
-  Grid,
-  HStack,
-  Heading,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
+import { Badge, Box, Link as ChakraLink, Grid, HStack, Stack, Text } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { ModernHeader } from '@/shared/components/ModernHeader'
+import { QuickActionCard } from '@/shared/components/QuickActionCard'
+import { StatsCard } from '@/shared/components/StatsCard'
 import { useButtonsSettings } from '@/shared/hooks/useButtonsSettings'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useModpackInfo } from '@/shared/hooks/useModpackInfo'
@@ -26,6 +20,17 @@ type Status = {
   cpu: number
   memMB: number
   running?: boolean
+  disk?: {
+    usedGB: number
+    totalGB: number
+    freeGB: number
+  }
+  players?: {
+    online: number
+    max: number
+  }
+  tickTimeMs?: number
+  rconAvailable?: boolean
 }
 
 const fmtUptime = (ms: number): string => {
@@ -37,7 +42,7 @@ const fmtUptime = (ms: number): string => {
 }
 
 const LoggedInHomePage = (): JSX.Element => {
-  const { home, common } = useLanguage()
+  const { home, common, ui, dashboard, navigation } = useLanguage()
   const { data: jarStatus } = useServerJarStatus()
   const { data: buttonsSettings } = useButtonsSettings()
   const { data: modpackInfo } = useModpackInfo()
@@ -54,200 +59,274 @@ const LoggedInHomePage = (): JSX.Element => {
   })
 
   const isServerRunning = status?.state === 'RUNNING' || status?.running === true
-
-  // Determina le informazioni del modpack da mostrare
-  // Priorità: informazioni reali del server > configurazioni admin > fallback
-  // const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
-  const displayVersion = modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '1.0.0'
+  const toDownloadLink = (p?: string | null): string => {
+    if (!p) return '#'
+    if (/^https?:\/\//i.test(p)) return p
+    return `/api/files/download?path=${encodeURIComponent(p)}`
+  }
+  const hasJar = Boolean(jarStatus?.hasJar)
+  const displayVersion = hasJar
+    ? (modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '-')
+    : dashboard.notAvailable
 
   return (
-    <Box p={{ base: 4, md: 6 }}>
-      <GlassCard inset maxW="1200px" mx="auto" p={{ base: 4, md: 6 }}>
-        {/* Header di benvenuto */}
-        <Box textAlign="center" mb={6}>
-          <Heading mb={3} fontSize={{ base: 'xl', md: '2xl' }}>
-            {home.loggedIn?.welcomeBack ?? 'Bentornato, amministratore!'}
-          </Heading>
-          <Text fontSize={{ base: 'sm', md: 'md' }} color="textMuted">
-            {home.welcomePart}
-          </Text>
-        </Box>
+    <Box p={{ base: 4, md: 6, lg: 8 }} maxW="7xl" mx="auto">
+      {/* Modern Header with Animation */}
+      <ModernHeader
+        title={home.loggedIn.welcomeBack}
+        description={home.loggedIn.downloadSection}
+        emoji="🎮"
+        gradient="linear(135deg, blue.500/15, purple.500/15, pink.500/10)"
+      />
 
-        {/* Grid principale */}
+      {/* Server Status Overview */}
+      <Box mb={8}>
+        <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold" mb={4} color="accent.fg">
+          🖥️ {ui.overview}
+        </Text>
         <Grid
-          templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }}
-          gap={{ base: 4, md: 6 }}
-          mb={6}
+          templateColumns={{
+            base: '1fr',
+            sm: 'repeat(2, 1fr)',
+            lg: 'repeat(4, 1fr)',
+            xl: 'repeat(4, 1fr)',
+          }}
+          gap={{ base: 3, md: 4 }}
         >
-          {/* Panoramica Server */}
-          <GlassCard inset p={{ base: 4, md: 5 }}>
-            <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
-              🖥️ {home.loggedIn?.serverOverview ?? 'Panoramica Server'}
-            </Heading>
+          <StatsCard
+            inset
+            title={common.status}
+            value={isServerRunning ? dashboard.online : dashboard.offline}
+            icon="🟢"
+            color={isServerRunning ? 'green.400' : 'red.400'}
+            size="sm"
+            badge={{
+              text: isServerRunning ? home.loggedIn.serverRunning : home.loggedIn.serverStopped,
+              color: isServerRunning ? 'green' : 'red',
+            }}
+            subtitle={status?.pid ? `PID: ${status.pid}` : dashboard.offline}
+          />
 
-            {/* Stato Server */}
-            <HStack mb={3} justify="space-between" wrap="wrap">
-              <Text fontSize={{ base: 'sm', md: 'md' }}>{common.status}:</Text>
-              <Badge
-                colorPalette={isServerRunning ? 'green' : 'red'}
-                variant="solid"
-                fontSize={{ base: 'xs', md: 'sm' }}
-              >
-                {isServerRunning
-                  ? (home.loggedIn?.serverRunning ?? 'Attivo')
-                  : (home.loggedIn?.serverStopped ?? 'Spento')}
-              </Badge>
+          <StatsCard
+            inset
+            title={common.modpack}
+            value={
+              jarStatus?.hasJar ? home.loggedIn.modpackInstalled : home.loggedIn.modpackNotFound
+            }
+            icon="📦"
+            color={jarStatus?.hasJar ? 'blue.400' : 'orange.400'}
+            size="sm"
+            badge={{
+              text: jarStatus?.jarType?.toUpperCase() ?? dashboard.notAvailable,
+              color: jarStatus?.hasJar ? 'blue' : 'orange',
+            }}
+            subtitle={
+              hasJar
+                ? (home.loggedIn.currentVersion ?? 'Version: {version}').replace(
+                    '{version}',
+                    displayVersion
+                  )
+                : dashboard.notAvailable
+            }
+          />
+
+          <StatsCard
+            inset
+            title={ui.performance}
+            value={status?.cpu ? `${status.cpu.toFixed(1)}%` : '-'}
+            icon="⚡"
+            color="yellow.400"
+            size="sm"
+            subtitle={
+              status?.memMB ? `${dashboard.processMemory}: ${status.memMB} MB` : common.error
+            }
+            trend={
+              status?.cpu && status.cpu > 0
+                ? {
+                    value: status.cpu,
+                    isPositive: status.cpu < 50,
+                  }
+                : undefined
+            }
+          />
+
+          <StatsCard
+            inset
+            title={dashboard.uptime}
+            value={status?.uptimeMs ? fmtUptime(status.uptimeMs) : '-'}
+            icon="⏱️"
+            color="purple.400"
+            size="sm"
+            subtitle={isServerRunning ? home.loggedIn.serverRunning : home.loggedIn.serverStopped}
+          />
+        </Grid>
+      </Box>
+
+      {/* Main Dashboard Grid */}
+      <Grid templateColumns={{ base: '1fr', lg: 'repeat(3, 1fr)' }} gap={{ base: 5, md: 6 }} mb={8}>
+        {/* Quick Actions */}
+        <QuickActionCard
+          inset
+          title={ui.quickActions}
+          description={home.loggedIn.serverOverview}
+          icon="⚡"
+          gradient="linear(135deg, green.500/10, emerald.500/10)"
+          size="sm"
+        >
+          <Stack gap={3}>
+            <GlassButton as={ChakraLink} href="/app/dashboard" size="md" w="100%">
+              <HStack>
+                <Text>📊</Text>
+                <Text>{ui.dashboard}</Text>
+              </HStack>
+            </GlassButton>
+
+            <GlassButton as={ChakraLink} href="/app/console" size="md" w="100%">
+              <HStack>
+                <Text>💻</Text>
+                <Text>{navigation.console}</Text>
+              </HStack>
+            </GlassButton>
+
+            <GlassButton as={ChakraLink} href="/app/files" size="md" w="100%">
+              <HStack>
+                <Text>📁</Text>
+                <Text>{navigation.files}</Text>
+              </HStack>
+            </GlassButton>
+
+            <GlassButton as={ChakraLink} href="/app/modpack" size="md" w="100%">
+              <HStack>
+                <Text>📦</Text>
+                <Text>{common.modpack}</Text>
+              </HStack>
+            </GlassButton>
+          </Stack>
+        </QuickActionCard>
+
+        {/* System Information */}
+        <QuickActionCard
+          inset
+          title={ui.systemInfo}
+          description={ui.monitoringIntro ?? ''}
+          icon="📊"
+          gradient="linear(135deg, blue.500/10, cyan.500/10)"
+          size="sm"
+        >
+          <Stack gap={4}>
+            <HStack justify="space-between">
+              <Text fontSize="sm" color="textMuted">
+                {navigation.server}:
+              </Text>
+              <HStack gap={2}>
+                <Text fontSize={'md'}>{isServerRunning ? '🟢' : '🔴'}</Text>
+                <Badge
+                  colorPalette={isServerRunning ? 'green' : 'red'}
+                  variant="solid"
+                  fontSize={'md'}
+                >
+                  {isServerRunning ? 'Online' : 'Offline'}
+                </Badge>
+              </HStack>
             </HStack>
 
-            {/* Stato Modpack */}
-            {jarStatus && (
-              <HStack mb={3} justify="space-between" wrap="wrap">
-                <Text fontSize={{ base: 'sm', md: 'md' }}>{common.modpack}:</Text>
-                <HStack gap={2}>
-                  <Badge
-                    colorPalette={jarStatus.hasJar ? 'green' : 'orange'}
-                    variant="solid"
-                    fontSize={{ base: 'xs', md: 'sm' }}
-                  >
-                    {jarStatus.hasJar ? 'Installed' : 'Not Found'}
-                  </Badge>
-                  {/* {jarStatus.hasJar && jarStatus.jarType && (
-                    <Badge
-                      colorPalette="blue"
-                      variant="outline"
-                      fontSize={{ base: 'xs', md: 'sm' }}
-                    >
-                      {jarStatus.jarType.toUpperCase()}
-                    </Badge>
-                  )} */}
-                </HStack>
+            {status?.players && (
+              <HStack justify="space-between">
+                <Text fontSize="sm" color="textMuted">
+                  {dashboard.playersOnline}:
+                </Text>
+                <Badge colorPalette="blue" variant="solid" fontSize="xs" px={2} py={0.5}>
+                  {status.players.online}/{status.players.max}
+                </Badge>
               </HStack>
             )}
 
-            {/* Informazioni modpack corrente */}
-            {(modpackInfo || buttonsSettings) && (
-              <>
-                {/* <HStack mb={2} justify="space-between">
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>Modpack:</Text>
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{displayName}</Text>
-                </HStack> */}
-                {modpackInfo?.loader && (
-                  <HStack mb={3} justify="space-between">
-                    <Text fontSize={{ base: 'sm', md: 'md' }}>Loader:</Text>
-                    <Badge colorPalette="blue" variant="solid" fontSize={{ base: 'xs', md: 'sm' }}>
-                      {modpackInfo.loader}
-                    </Badge>
-                  </HStack>
-                )}
-                <HStack mb={3} justify="space-between">
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>Versione:</Text>
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{displayVersion}</Text>
-                </HStack>
-              </>
+            {status?.disk && (
+              <HStack justify="space-between">
+                <Text fontSize="sm" color="textMuted">
+                  {dashboard.diskStorage}:
+                </Text>
+                <Text
+                  fontSize="sm"
+                  minW={0}
+                  maxW={{ base: '55%', md: '60%' }}
+                  textAlign="right"
+                  truncate
+                >
+                  {status.disk.usedGB.toFixed(1)}/{status.disk.totalGB.toFixed(0)} GB
+                </Text>
+              </HStack>
             )}
 
-            {/* Informazioni sistema se disponibili */}
-            {status && isServerRunning && (
-              <>
-                <HStack mb={2} justify="space-between">
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{home.loggedIn?.cpu ?? 'CPU'}:</Text>
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{status.cpu.toFixed(1)}%</Text>
-                </HStack>
-                <HStack mb={2} justify="space-between">
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>
-                    {home.loggedIn?.memory ?? 'Memoria'}:
-                  </Text>
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{status.memMB} MB</Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>
-                    {home.loggedIn?.uptime ?? 'Uptime'}:
-                  </Text>
-                  <Text fontSize={{ base: 'sm', md: 'md' }}>{fmtUptime(status.uptimeMs)}</Text>
-                </HStack>
-              </>
-            )}
-
-            {error && (
-              <Text color="accent.danger" fontSize={{ base: 'xs', md: 'sm' }} mt={2}>
-                {common.error}: {(error as Error).message}
+            <HStack justify="space-between">
+              <Text fontSize="sm" color="textMuted">
+                {dashboard.tickTime}:
               </Text>
-            )}
-          </GlassCard>
-
-          {/* Azioni Rapide */}
-          <GlassCard inset p={{ base: 4, md: 5 }}>
-            <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
-              ⚡ {home.loggedIn?.quickActions ?? 'Azioni Rapide'}
-            </Heading>
-
-            <Stack gap={3}>
-              <GlassButton
-                as={ChakraLink}
-                href="/app/dashboard"
-                size={{ base: 'sm', md: 'md' }}
-                w="100%"
-                textAlign="left"
-                justifyContent="flex-start"
+              <Badge
+                colorPalette={
+                  status?.state === 'RUNNING' &&
+                  status?.rconAvailable &&
+                  typeof status?.tickTimeMs === 'number'
+                    ? status.tickTimeMs <= 50
+                      ? 'green'
+                      : status.tickTimeMs <= 55
+                        ? 'yellow'
+                        : 'red'
+                    : 'gray'
+                }
+                variant="solid"
               >
-                {home.loggedIn?.goToDashboard ?? '📊 Vai al Dashboard'}
-              </GlassButton>
+                {status?.state === 'RUNNING' &&
+                status?.rconAvailable &&
+                typeof status?.tickTimeMs === 'number'
+                  ? `${status.tickTimeMs.toFixed(1)}ms`
+                  : dashboard.notAvailable}
+              </Badge>
+            </HStack>
 
-              <GlassButton
-                as={ChakraLink}
-                href="/app/console"
-                size={{ base: 'sm', md: 'md' }}
-                w="100%"
-                textAlign="left"
-                justifyContent="flex-start"
-              >
-                {home.loggedIn?.goToConsole ?? '💻 Apri Console'}
-              </GlassButton>
+            <GlassButton as={ChakraLink} href="/app/dashboard" size="sm" w="100%" variant="outline">
+              {ui.viewDetails}
+            </GlassButton>
+          </Stack>
+        </QuickActionCard>
 
-              <GlassButton
-                as={ChakraLink}
-                href="/app/files"
-                size={{ base: 'sm', md: 'md' }}
-                w="100%"
-                textAlign="left"
-                justifyContent="flex-start"
-              >
-                {home.loggedIn?.goToFiles ?? '📁 Gestisci File'}
-              </GlassButton>
-            </Stack>
-          </GlassCard>
-        </Grid>
-
-        {/* Sezione Download & Supporto */}
-        <GlassCard inset p={{ base: 4, md: 5 }}>
-          <Heading size={{ base: 'sm', md: 'md' }} mb={4} textAlign="center">
-            📦 {home.loggedIn?.downloadSection ?? 'Download & Supporto'}
-          </Heading>
-
-          <Stack direction={{ base: 'column', sm: 'row' }} gap={3} align="center" justify="center">
-            {/* Pulsante Config - mostra solo se visible è true */}
+        {/* Downloads & Support */}
+        <QuickActionCard
+          inset
+          title={common.download}
+          description={home.loggedIn.downloadSection}
+          icon="📥"
+          gradient="linear(135deg, purple.500/10, pink.500/10)"
+          size="sm"
+        >
+          <Stack gap={3}>
             {buttonsSettings?.config.visible && (
               <GlassButton
                 as={ChakraLink}
-                href={buttonsSettings.config.path}
+                href={toDownloadLink(buttonsSettings.config.path)}
                 download
-                size={{ base: 'sm', md: 'md' }}
-                minH="44px"
+                size="md"
+                w="100%"
               >
-                {home.configBtn}
+                <HStack>
+                  <Text>⚙️</Text>
+                  <Text>{home.configBtn}</Text>
+                </HStack>
               </GlassButton>
             )}
 
-            {/* Pulsante Launcher - mostra solo se visible è true */}
             {buttonsSettings?.launcher.visible && (
               <GlassButton
                 as={ChakraLink}
-                href={buttonsSettings.launcher.path}
-                download
-                size={{ base: 'sm', md: 'md' }}
-                minH="44px"
+                href={toDownloadLink(buttonsSettings.launcher.path)}
+                download={!/^https?:\/\//i.test(buttonsSettings.launcher.path ?? '')}
+                size="md"
+                w="100%"
               >
-                {home.launcherBtn}
+                <HStack>
+                  <Text>🚀</Text>
+                  <Text>{home.launcherBtn}</Text>
+                </HStack>
               </GlassButton>
             )}
 
@@ -256,19 +335,42 @@ const LoggedInHomePage = (): JSX.Element => {
               href="https://ko-fi.com/dfems"
               target="_blank"
               rel="noopener noreferrer"
-              size={{ base: 'sm', md: 'md' }}
-              minH="44px"
+              size="md"
+              w="100%"
               colorPalette="purple"
             >
-              {home.donateBtn}
+              <HStack>
+                <Text>☕</Text>
+                <Text>{home.donateBtn}</Text>
+              </HStack>
             </GlassButton>
           </Stack>
-        </GlassCard>
+        </QuickActionCard>
+      </Grid>
 
-        <Text mt={6} fontSize={{ base: 'xs', md: 'sm' }} color="textMuted" textAlign="center">
+      {/* Recent Activity & Alerts */}
+      {error && (
+        <GlassCard p={4} mb={6}>
+          <HStack gap={3}>
+            <Text fontSize="2xl">⚠️</Text>
+            <Box>
+              <Text fontWeight="bold" color="orange.400">
+                {common.warning ?? 'Warning'}
+              </Text>
+              <Text fontSize="sm" color="textMuted">
+                {common.error}: {(error as Error).message}
+              </Text>
+            </Box>
+          </HStack>
+        </GlassCard>
+      )}
+
+      {/* Footer */}
+      <Box textAlign="center" pt={8} borderTopWidth="1px" borderColor="whiteAlpha.200">
+        <Text fontSize={{ base: 'xs', md: 'sm' }} color="textMuted">
           {home.footer}
         </Text>
-      </GlassCard>
+      </Box>
     </Box>
   )
 }

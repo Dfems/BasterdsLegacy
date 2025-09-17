@@ -12,6 +12,7 @@ import ModpackPage from '@/pages/management/ModpackPage'
 vi.mock('@/shared/hooks/useLanguage', () => ({
   default: () => ({
     modpack: {
+      managementTitle: 'Gestione Modpack',
       title: 'Modpack',
       mode: 'Modalità',
       automatic: 'Automatica',
@@ -90,7 +91,7 @@ describe('ModpackPage', () => {
 
   it('should render modpack page title', () => {
     renderWithProviders(<ModpackPage />)
-    expect(screen.getByText('Modpack')).toBeInTheDocument()
+    expect(screen.getByText('📦 Gestione Modpack')).toBeInTheDocument()
   })
 
   it('should show loading state initially', () => {

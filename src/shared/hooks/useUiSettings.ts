@@ -19,7 +19,8 @@ export const useUiSettings = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('/api/settings/ui', { headers: authHeaders })
+      const url = token ? '/api/settings/ui' : '/api/settings/ui-public'
+      const response = await fetch(url, { headers: authHeaders })
       if (!response.ok) {
         throw new Error('Failed to fetch UI settings')
       }
@@ -30,7 +31,7 @@ export const useUiSettings = () => {
     } finally {
       setLoading(false)
     }
-  }, [authHeaders])
+  }, [authHeaders, token])
 
   const updateBackgroundImage = useCallback(
     async (backgroundImage: string | null): Promise<void> => {

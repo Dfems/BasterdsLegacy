@@ -1,10 +1,14 @@
 import { useCallback, useMemo, useRef, useState, type ChangeEvent, type JSX } from 'react'
 
-import { Box, Heading, HStack, Input, Table, Text } from '@chakra-ui/react'
+import { Badge, Box, Grid, Heading, HStack, Input, Table, Text, VStack } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { ModernHeader } from '@/shared/components/ModernHeader'
+import { QuickActionCard } from '@/shared/components/QuickActionCard'
+import { StatsCard } from '@/shared/components/StatsCard'
+import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import useLanguage from '@/shared/hooks/useLanguage'
 
 type Entry = {
@@ -97,187 +101,402 @@ export default function FilesPage(): JSX.Element {
 
   const rows = useMemo(() => data?.entries ?? [], [data])
 
+  // Calculate stats for the modern header
+  const totalFiles = rows.filter((entry) => entry.type === 'file').length
+  const totalFolders = rows.filter((entry) => entry.type === 'dir').length
+  const totalSize = rows
+    .filter((entry) => entry.type === 'file')
+    .reduce((sum, entry) => sum + entry.size, 0)
+
   return (
-    <Box p={{ base: 4, md: 6 }}>
-      {' '}
-      {/* Padding responsive */}
-      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
-        {files.title}
-      </Heading>{' '}
-      {/* Font size responsive */}
-      <GlassCard mb={4} p={{ base: 3, md: 4 }}>
-        {' '}
-        {/* Padding responsive */}
-        <HStack gap={3} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
-          {' '}
-          {/* Centrato su mobile */}
-          <GlassButton
-            onClick={() => goTo(parentPath(path))}
-            disabled={path === '/'}
-            size={{ base: 'sm', md: 'md' }} // Size responsive
-            minH="44px" // Touch target
-          >
-            {files.up}
-          </GlassButton>
-          <Input
-            value={path}
-            onChange={(e) => setPath(e.target.value || '/')}
-            width="auto"
-            data-variant="glass"
-            minW={{ base: '200px', sm: 'auto' }} // Larghezza minima su mobile
-            minH="44px" // Touch target
-            fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
-          />
-          <GlassButton
-            onClick={() => qc.invalidateQueries({ queryKey: ['files'] })}
-            size={{ base: 'sm', md: 'md' }} // Size responsive
-            minH="44px" // Touch target
-          >
-            {files.refresh}
-          </GlassButton>
-          <Input
-            type="file"
-            ref={fileInputRef}
-            onChange={onUploadChange}
-            width="auto"
-            data-variant="glass"
-            minW={{ base: '200px', sm: 'auto' }} // Larghezza minima su mobile
-            minH="44px" // Touch target
-            fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
-          />
-        </HStack>
-      </GlassCard>
-      {isLoading && <Text fontSize={{ base: 'sm', md: 'md' }}>{files.loading}</Text>}
-      {isError && (
-        <Text color="red" fontSize={{ base: 'sm', md: 'md' }}>
-          {files.loadError}
-        </Text>
-      )}
-      {!isLoading && rows.length === 0 && (
-        <Text fontSize={{ base: 'sm', md: 'md' }}>{files.noItems}</Text>
-      )}
-      {/* Mobile: Card layout */}
-      <Box display={{ base: 'block', md: 'none' }}>
-        {rows.map((e) => (
-          <GlassCard key={e.name} mb={3} p={3}>
-            <HStack justify="space-between" align="start" wrap="wrap">
-              <Box flex="1" minW="0">
-                <Text fontWeight="bold" fontSize="sm" mb={1} truncate>
-                  {' '}
-                  {/* truncate invece di noOfLines */}
-                  {e.type === 'dir' ? (
-                    <GlassButton size="xs" onClick={() => goTo(joinPath(path, e.name))} minH="32px">
-                      📁 {e.name}
-                    </GlassButton>
-                  ) : (
-                    <>📄 {e.name}</>
-                  )}
+    <Box>
+      <ModernHeader
+        title={`📁 ${files.headerTitle ?? files.title}`}
+        description={files.headerDescription ?? ''}
+        emoji="🗂️"
+      />
+
+      <Box p={{ base: 4, md: 6 }}>
+        <VStack gap={6} align="stretch">
+          {/* Stats Cards Section */}
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
+            <StatsCard
+              inset
+              title={files.systemFiles}
+              value={totalFiles}
+              icon="📄"
+              badge={
+                totalFiles > 100
+                  ? { text: files.many, color: 'orange' }
+                  : { text: files.manageable, color: 'green' }
+              }
+              size="sm"
+            />
+            <StatsCard
+              inset
+              title={files.directories}
+              value={totalFolders}
+              icon="📁"
+              badge={{ text: files.organized, color: 'blue' }}
+              size="sm"
+            />
+            <StatsCard
+              inset
+              title={files.storage}
+              value={human(totalSize)}
+              icon="💾"
+              badge={
+                totalSize > 100 * 1024 * 1024
+                  ? { text: files.high, color: 'orange' }
+                  : { text: files.ok, color: 'green' }
+              }
+              size="sm"
+            />
+          </Grid>
+
+          {/* Navigation and Actions Section */}
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
+            <QuickActionCard
+              inset
+              title={files.navigationTitle}
+              description={files.navigationDescription.replace('{path}', path)}
+              icon="🧭"
+              gradient="linear(to-r, blue.400, cyan.500)"
+              size="sm"
+            >
+              <VStack gap={3} w="full">
+                <HStack gap={2} w="full">
+                  <GlassButton
+                    onClick={() => goTo(parentPath(path))}
+                    disabled={path === '/'}
+                    size="sm"
+                    colorScheme="blue"
+                    flex="0 0 auto"
+                  >
+                    ⬆️ {files.up}
+                  </GlassButton>
+                  <Input
+                    value={path}
+                    onChange={(e) => setPath(e.target.value || '/')}
+                    data-variant="glass"
+                    minH="40px"
+                    fontSize="sm"
+                    flex="1"
+                  />
+                </HStack>
+                <GlassButton
+                  onClick={() => qc.invalidateQueries({ queryKey: ['files'] })}
+                  size="sm"
+                  colorScheme="green"
+                  w="full"
+                >
+                  🔄 {files.refresh}
+                </GlassButton>
+              </VStack>
+            </QuickActionCard>
+            <QuickActionCard
+              inset
+              title={files.uploadTitle}
+              description={files.uploadDescription}
+              icon="📤"
+              gradient="linear(to-r, green.400, teal.500)"
+              size="sm"
+            >
+              <Input
+                type="file"
+                ref={fileInputRef}
+                onChange={onUploadChange}
+                data-variant="glass"
+                minH="44px"
+                fontSize="sm"
+                w="full"
+              />
+            </QuickActionCard>
+          </Grid>
+
+          {/* Error/Loading States */}
+          {isLoading && (
+            <GlassCard inset p={6} textAlign="center">
+              <VStack gap={3}>
+                <Text fontSize="lg" color="textMuted">
+                  🔄 {files.loadingDir ?? files.loading}
                 </Text>
-                <Text fontSize="xs" color="textMuted" mb={1}>
-                  {e.type === 'file' ? human(e.size) : files.folder}
+                <StatusIndicator status="loading" label={files.loadingDir ?? files.loading} />
+              </VStack>
+            </GlassCard>
+          )}
+
+          {isError && (
+            <GlassCard inset p={6} textAlign="center" borderColor="red.200">
+              <VStack gap={3}>
+                <Text fontSize="lg" color="red.500">
+                  ⚠️ {files.loadError}
                 </Text>
-                <Text fontSize="xs" color="textMuted">
-                  {new Date(e.mtime).toLocaleDateString()}
+                <StatusIndicator status="error" label={files.connectionError ?? files.loadError} />
+              </VStack>
+            </GlassCard>
+          )}
+
+          {/* Empty Directory State */}
+          {!isLoading && !isError && rows.length === 0 && (
+            <GlassCard inset p={6} textAlign="center">
+              <VStack gap={3}>
+                <Text fontSize="lg" color="textMuted" mb={2}>
+                  📂 {files.noItems}
                 </Text>
+                <Text fontSize="sm" color="textMuted">
+                  {files.emptyHint}
+                </Text>
+                <StatusIndicator status="offline" label={files.emptyLabel} />
+              </VStack>
+            </GlassCard>
+          )}
+
+          {/* Files and Folders List */}
+          {!isLoading && !isError && rows.length > 0 && (
+            <VStack gap={4} align="stretch">
+              <Heading size="md" color="brand.primary">
+                📂 {files.contentsTitle} ({rows.length})
+              </Heading>
+
+              {/* Mobile: Card layout */}
+              <Box display={{ base: 'block', md: 'none' }}>
+                {rows.map((entry) => (
+                  <GlassCard inset key={entry.name} mb={3} p={4}>
+                    <VStack align="stretch" gap={3}>
+                      <HStack justify="space-between" align="center">
+                        <Badge
+                          colorScheme={entry.type === 'dir' ? 'blue' : 'green'}
+                          variant="subtle"
+                        >
+                          {entry.type === 'dir' ? files.tagDirectory : files.tagFile}
+                        </Badge>
+                        <StatusIndicator
+                          status="online"
+                          label={entry.type === 'dir' ? files.accessible : files.readable}
+                          size="sm"
+                        />
+                      </HStack>
+                      <Box>
+                        <Text color="textMuted" fontSize="sm">
+                          {files.name}
+                        </Text>
+                        <Text fontSize="lg" fontWeight="bold" color="brand.primary" mb={2}>
+                          {entry.type === 'dir' ? '📁' : '📄'} {entry.name}
+                        </Text>
+                        <Grid templateColumns="1fr 1fr" gap={2} fontSize="sm">
+                          <Box>
+                            <Text color="textMuted">{files.size}</Text>
+                            <Text fontWeight="medium">
+                              {entry.type === 'file' ? human(entry.size) : files.folder}
+                            </Text>
+                          </Box>
+                          <Box>
+                            <Text color="textMuted">{files.modified}</Text>
+                            <Text fontWeight="medium">
+                              {new Date(entry.mtime).toLocaleDateString()}
+                            </Text>
+                          </Box>
+                        </Grid>
+                      </Box>
+                      <HStack gap={2}>
+                        {entry.type === 'dir' && (
+                          <GlassButton
+                            onClick={() => goTo(joinPath(path, entry.name))}
+                            colorScheme="blue"
+                            size="sm"
+                            flex="1"
+                          >
+                            📂 {files.open}
+                          </GlassButton>
+                        )}
+                        {/* {entry.type === 'file' && (
+                          <GlassButton
+                            as={ChakraLink}
+                            href={`/api/files/download?path=${encodeURIComponent(joinPath(path, entry.name))}`}
+                            download
+                            colorScheme="green"
+                            size="sm"
+                            flex="1"
+                          >
+                            ⬇️
+                          </GlassButton>
+                        )} */}
+                        <GlassButton
+                          onClick={() => {
+                            const from = joinPath(path, entry.name)
+                            const nn = prompt(files.newName, entry.name)
+                            if (!nn || nn === entry.name) return
+                            const to = joinPath(path, nn)
+                            rename.mutate({ from, to })
+                          }}
+                          colorScheme="orange"
+                          size="sm"
+                          flex="1"
+                        >
+                          ✏️
+                        </GlassButton>
+                        <GlassButton
+                          colorScheme="red"
+                          onClick={() => {
+                            const p = joinPath(path, entry.name)
+                            if (confirm(files.confirmDelete.replace('{path}', p))) remove.mutate(p)
+                          }}
+                          size="sm"
+                          flex="1"
+                        >
+                          🗑️
+                        </GlassButton>
+                      </HStack>
+                    </VStack>
+                  </GlassCard>
+                ))}
               </Box>
-              <HStack gap={1} wrap="wrap">
-                <GlassButton
-                  size="xs"
-                  minH="32px"
-                  onClick={() => {
-                    const from = joinPath(path, e.name)
-                    const nn = prompt(files.newName, e.name)
-                    if (!nn || nn === e.name) return
-                    const to = joinPath(path, nn)
-                    rename.mutate({ from, to })
-                  }}
-                >
-                  {files.rename}
-                </GlassButton>
-                <GlassButton
-                  size="xs"
-                  minH="32px"
-                  colorScheme="red"
-                  onClick={() => {
-                    const p = joinPath(path, e.name)
-                    if (confirm(files.confirmDelete.replace('{path}', p))) remove.mutate(p)
-                  }}
-                >
-                  {files.delete}
-                </GlassButton>
-              </HStack>
-            </HStack>
-          </GlassCard>
-        ))}
+
+              {/* Desktop: Enhanced Table layout */}
+              <GlassCard inset display={{ base: 'none', md: 'block' }}>
+                <Table.Root data-variant="glass">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>📂</Text>
+                          <Text>{files.name}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>🏷️</Text>
+                          <Text>{files.type}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader textAlign="end" color="brand.primary">
+                        <HStack justify="end">
+                          <Text>💾</Text>
+                          <Text>{files.size}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>📅</Text>
+                          <Text>{files.modified}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                      {/* <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>⚡</Text>
+                          <Text>{common.status}</Text>
+                        </HStack>
+                      </Table.ColumnHeader> */}
+                      <Table.ColumnHeader color="brand.primary">
+                        <HStack>
+                          <Text>🔧</Text>
+                          <Text>{files.actions}</Text>
+                        </HStack>
+                      </Table.ColumnHeader>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {rows.map((entry) => (
+                      <Table.Row key={entry.name}>
+                        <Table.Cell bg="transparent" boxShadow="none">
+                          <HStack>
+                            {entry.type === 'dir' ? (
+                              <GlassButton
+                                size="sm"
+                                onClick={() => goTo(joinPath(path, entry.name))}
+                                colorScheme="blue"
+                              >
+                                📁 {entry.name}
+                              </GlassButton>
+                            ) : (
+                              <>
+                                {/* <Badge colorScheme="green" variant="outline">
+                                  {files.tagFile ?? 'FILE'}
+                                </Badge> */}
+                                {/* <Text fontWeight="medium">📄 {entry.name}</Text> */}
+                                <Text fontWeight="medium">{entry.name}</Text>
+                              </>
+                            )}
+                          </HStack>
+                        </Table.Cell>
+                        <Table.Cell bg="transparent" boxShadow="none">
+                          <Badge
+                            colorScheme={entry.type === 'dir' ? 'blue' : 'green'}
+                            variant="subtle"
+                          >
+                            {entry.type === 'dir'
+                              ? (files.tagDirectory ?? 'DIRECTORY')
+                              : (files.tagFile ?? 'FILE')}
+                          </Badge>
+                        </Table.Cell>
+                        <Table.Cell bg="transparent" boxShadow="none" textAlign="end">
+                          <Badge colorScheme="purple" variant="plain" color={'text'}>
+                            {entry.type === 'file' ? human(entry.size) : '-'}
+                          </Badge>
+                        </Table.Cell>
+                        <Table.Cell bg="transparent" boxShadow="none">
+                          {new Date(entry.mtime).toLocaleString()}
+                        </Table.Cell>
+                        {/* <Table.Cell bg="transparent" boxShadow="none">
+                          <StatusIndicator
+                            status="online"
+                            label={
+                              entry.type === 'dir'
+                                ? (files.accessible ?? 'Accessibile')
+                                : (files.readable ?? 'Leggibile')
+                            }
+                            size="sm"
+                          />
+                        </Table.Cell> */}
+                        <Table.Cell bg="transparent" boxShadow="none">
+                          <HStack gap={1} alignContent={'center'} justifyContent={'center'}>
+                            {/* {entry.type === 'file' && (
+                              <GlassButton
+                                as={ChakraLink}
+                                href={`/api/files/download?path=${encodeURIComponent(joinPath(path, entry.name))}`}
+                                download
+                                size="xs"
+                                colorScheme="green"
+                              >
+                                ⬇️
+                              </GlassButton>
+                            )} */}
+                            <GlassButton
+                              size="xs"
+                              onClick={() => {
+                                const from = joinPath(path, entry.name)
+                                const nn = prompt(files.newName, entry.name)
+                                if (!nn || nn === entry.name) return
+                                const to = joinPath(path, nn)
+                                rename.mutate({ from, to })
+                              }}
+                              colorScheme="orange"
+                            >
+                              ✏️
+                            </GlassButton>
+                            <GlassButton
+                              size="xs"
+                              colorScheme="red"
+                              onClick={() => {
+                                const p = joinPath(path, entry.name)
+                                if (confirm(files.confirmDelete.replace('{path}', p)))
+                                  remove.mutate(p)
+                              }}
+                            >
+                              🗑️
+                            </GlassButton>
+                          </HStack>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              </GlassCard>
+            </VStack>
+          )}
+        </VStack>
       </Box>
-      {/* Desktop: Table layout */}
-      {rows.length > 0 && (
-        <GlassCard inset display={{ base: 'none', md: 'block' }}>
-          <Table.Root data-variant="glass">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader color="brand.primary">{files.name}</Table.ColumnHeader>
-                <Table.ColumnHeader color="brand.primary">{files.type}</Table.ColumnHeader>
-                <Table.ColumnHeader textAlign="end" color="brand.primary">
-                  {files.size}
-                </Table.ColumnHeader>
-                <Table.ColumnHeader color="brand.primary">{files.modified}</Table.ColumnHeader>
-                <Table.ColumnHeader color="brand.primary">{files.actions}</Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {rows.map((e) => (
-                <Table.Row key={e.name}>
-                  <Table.Cell bg="transparent" boxShadow="none">
-                    {e.type === 'dir' ? (
-                      <GlassButton size="xs" onClick={() => goTo(joinPath(path, e.name))}>
-                        {e.name}
-                      </GlassButton>
-                    ) : (
-                      e.name
-                    )}
-                  </Table.Cell>
-                  <Table.Cell bg="transparent" boxShadow="none">
-                    {e.type}
-                  </Table.Cell>
-                  <Table.Cell bg="transparent" boxShadow="none" textAlign="end">
-                    {e.type === 'file' ? human(e.size) : '-'}
-                  </Table.Cell>
-                  <Table.Cell bg="transparent" boxShadow="none">
-                    {new Date(e.mtime).toLocaleString()}
-                  </Table.Cell>
-                  <Table.Cell bg="transparent" boxShadow="none">
-                    <HStack gap={2}>
-                      <GlassButton
-                        size="xs"
-                        onClick={() => {
-                          const from = joinPath(path, e.name)
-                          const nn = prompt(files.newName, e.name)
-                          if (!nn || nn === e.name) return
-                          const to = joinPath(path, nn)
-                          rename.mutate({ from, to })
-                        }}
-                      >
-                        {files.rename}
-                      </GlassButton>
-                      <GlassButton
-                        size="xs"
-                        colorScheme="red"
-                        onClick={() => {
-                          const p = joinPath(path, e.name)
-                          if (confirm(files.confirmDelete.replace('{path}', p))) remove.mutate(p)
-                        }}
-                      >
-                        {files.delete}
-                      </GlassButton>
-                    </HStack>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </GlassCard>
-      )}
     </Box>
   )
 }

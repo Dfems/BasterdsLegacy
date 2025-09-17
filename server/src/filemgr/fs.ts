@@ -14,11 +14,15 @@ type Entry = {
   mtime: number
 }
 
-const base = CONFIG.MC_DIR
+const base = path.resolve(CONFIG.MC_DIR)
 
 export const resolveSafe = (p: string): string => {
-  const target = path.resolve(base, '.' + path.sep + p.replaceAll('..', ''))
-  if (!target.startsWith(base)) throw new Error('Path outside sandbox')
+  // Normalize slashes and strip dangerous '..' sequences
+  const cleaned = String(p).replaceAll('..', '')
+  const target = path.resolve(base, '.' + path.sep + cleaned)
+  const rel = path.relative(base, target)
+  // If rel starts with '..' or is absolute, target is outside the sandbox
+  if (rel.startsWith('..') || path.isAbsolute(rel)) throw new Error('Path outside sandbox')
   return target
 }
 

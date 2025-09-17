@@ -1,10 +1,13 @@
 import { useMemo, useState, type JSX } from 'react'
 
-import { Box, Grid, GridItem, Heading, HStack, Text } from '@chakra-ui/react'
+import { Box, Grid, HStack, Text } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
+import { ModernHeader } from '@/shared/components/ModernHeader'
+import { ModernTabs } from '@/shared/components/ModernTabs'
+import { StatsCard } from '@/shared/components/StatsCard'
 import useLanguage from '@/shared/hooks/useLanguage'
 
 type Status = {
@@ -42,10 +45,12 @@ const fmtUptime = (ms: number): string => {
 }
 
 const DashboardPage = (): JSX.Element => {
-  const { dashboard, common } = useLanguage()
+  const { dashboard, common, ui, server } = useLanguage()
   const qc = useQueryClient()
   const [note, setNote] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [requiresRestart, setRequiresRestart] = useState(false)
+  const [activeTab, setActiveTab] = useState('overview')
+
   const { data, error, isFetching } = useQuery({
     queryKey: ['status'],
     queryFn: async (): Promise<Status> => {
@@ -149,289 +154,325 @@ const DashboardPage = (): JSX.Element => {
     }
   }
 
-  return (
-    <Box p={{ base: 4, md: 6 }}>
-      {' '}
-      {/* Padding responsive */}
-      <Heading mb={4} fontSize={{ base: 'md', md: 'lg' }}>
-        {dashboard.title}
-      </Heading>{' '}
-      {/* Font size responsive */}
-      {err && (
-        <Text color="accent.danger" mb={4} fontSize={{ base: 'sm', md: 'md' }}>
-          {' '}
-          {/* Font size responsive */}
-          {err}
-        </Text>
-      )}
-      {note && (
-        <Text
-          color={note.type === 'success' ? 'accent.success' : 'accent.danger'}
-          mb={2}
-          fontSize={{ base: 'sm', md: 'md' }} // Font size responsive
-        >
-          {note.text}
-        </Text>
-      )}
-      <Grid
-        templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }} // Aumentato per più cards
-        gridAutoRows="1fr"
-        gap={{ base: 3, md: 4 }} // Gap responsive
-        alignItems="stretch"
-      >
-        <GlassCard
-          h="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          p={{ base: 3, md: 4 }}
-        >
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.state}
-          </Text>
-          <Text color={stateColor} fontSize={{ base: 'sm', md: 'md' }}>
-            {data?.state
-              ? getStateText(data.state)
-              : isFetching
-                ? common.loading
-                : dashboard.unknown}
-          </Text>
-          <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            PID: {data?.pid ?? '-'}
-          </Text>
-        </GlassCard>
+  const tabs = [
+    { id: 'overview', label: ui.overview, icon: '📊' },
+    { id: 'performance', label: ui.performance, icon: '⚡' },
+    { id: 'monitoring', label: ui.monitoring, icon: '👁️' },
+    { id: 'actions', label: server?.controlsTitle ?? 'Controls', icon: '🎮' },
+  ]
 
-        <GlassCard
-          h="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          p={{ base: 3, md: 4 }}
-        >
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.cpu}
-          </Text>
-          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${data.cpu.toFixed(1)}%` : '-'}</Text>
-        </GlassCard>
-
-        <GlassCard
-          h="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          p={{ base: 3, md: 4 }}
-        >
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.processMemory}
-          </Text>
-          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? `${data.memMB} MB` : '-'}</Text>
-        </GlassCard>
-
-        <GlassCard
-          h="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          p={{ base: 3, md: 4 }}
-        >
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.uptime}
-          </Text>
-          <Text fontSize={{ base: 'sm', md: 'md' }}>{data ? fmtUptime(data.uptimeMs) : '-'}</Text>
-        </GlassCard>
-
-        {/* Nuove cards per le metriche del sistema */}
-        <GlassCard
-          h="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          p={{ base: 3, md: 4 }}
-        >
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.systemMemory}
-          </Text>
-          <Text fontSize={{ base: 'sm', md: 'md' }}>
-            {data?.systemMemory
-              ? `${data.systemMemory.usedGB}/${data.systemMemory.totalGB} GB`
-              : '-'}
-          </Text>
-          <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.systemMemory
-              ? `${Math.round((data.systemMemory.usedGB / data.systemMemory.totalGB) * 100)}% ${dashboard.utilized}`
-              : ''}
-          </Text>
-        </GlassCard>
-
-        <GlassCard
-          h="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          p={{ base: 3, md: 4 }}
-        >
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.diskStorage}
-          </Text>
-          <Text fontSize={{ base: 'sm', md: 'md' }}>
-            {data?.disk && data.disk.totalGB > 0
-              ? `${data.disk.usedGB}/${data.disk.totalGB} GB`
-              : dashboard.notAvailable}
-          </Text>
-          <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.disk && data.disk.totalGB > 0
-              ? `${Math.round((data.disk.usedGB / data.disk.totalGB) * 100)}% ${dashboard.utilized_masculine}`
-              : dashboard.checkingSpace}
-          </Text>
-        </GlassCard>
-
-        <GlassCard
-          h="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          p={{ base: 3, md: 4 }}
-        >
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.tickTime}
-          </Text>
-
-          {/* Se RCON non è disponibile, mostra il messaggio e il pulsante */}
-          {!data?.rconAvailable ? (
-            <>
-              <Text fontSize={{ base: 'sm', md: 'md' }} color="textMuted">
-                {dashboard.rconRequired}
-              </Text>
-              <GlassButton
-                size="sm"
-                onClick={() => enableRconMutation.mutate()}
-                loading={enableRconMutation.isPending}
-                mt={2}
-              >
-                {dashboard.enableRcon}
-              </GlassButton>
-            </>
-          ) : (
-            <>
-              <Text
-                fontSize={{ base: 'sm', md: 'md' }}
-                color={
-                  data?.state !== 'RUNNING'
-                    ? 'textMuted'
-                    : data?.tickTimeMs && data.tickTimeMs <= 50
-                      ? 'accent.success'
-                      : data?.tickTimeMs && data.tickTimeMs <= 55
-                        ? 'yellow.400'
-                        : 'accent.danger'
-                }
-              >
-                {data?.tickTimeMs && data.state === 'RUNNING'
-                  ? `${data.tickTimeMs.toFixed(1)} ms`
-                  : '-'}
-              </Text>
-              <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-                {data?.state === 'RUNNING'
-                  ? data?.tickTimeMs && data.tickTimeMs <= 50
-                    ? dashboard.perfect
-                    : data?.tickTimeMs && data.tickTimeMs <= 55
-                      ? dashboard.good
-                      : data?.tickTimeMs && data.tickTimeMs <= 70
-                        ? dashboard.acceptable
-                        : dashboard.slow
-                  : dashboard.notAvailable}
-              </Text>
-            </>
-          )}
-        </GlassCard>
-
-        <GlassCard
-          h="100%"
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          p={{ base: 3, md: 4 }}
-        >
-          <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
-            {dashboard.playersOnline}
-          </Text>
-
-          {!data?.rconAvailable ? (
-            <Text fontSize={{ base: 'sm', md: 'md' }} color="textMuted">
-              {dashboard.rconRequired}
-            </Text>
-          ) : (
-            <Text fontSize={{ base: 'sm', md: 'md' }}>
-              {data?.players ? `${data.players.online}/${data.players.max}` : '-'}
-            </Text>
-          )}
-
-          <Text color="textMuted" fontSize={{ base: 'xs', md: 'sm' }}>
-            {data?.state === 'RUNNING' && data?.rconAvailable
-              ? dashboard.online
-              : dashboard.offline}
-          </Text>
-        </GlassCard>
-
-        <GridItem colSpan={{ base: 1, sm: 2, lg: 4 }}>
-          <GlassCard
-            h="100%"
-            display="flex"
-            flexDirection="column"
-            justifyContent="space-between"
-            p={{ base: 3, md: 4 }}
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <Grid
+            templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }}
+            gap={{ base: 4, md: 6 }}
           >
-            <Text fontWeight="bold" mb={2} fontSize={{ base: 'sm', md: 'md' }}>
-              {dashboard.actions}
+            <StatsCard
+              inset
+              title={dashboard.state}
+              value={
+                data?.state
+                  ? getStateText(data.state)
+                  : isFetching
+                    ? common.loading
+                    : dashboard.unknown
+              }
+              icon="🖥️"
+              color={stateColor}
+              subtitle={data?.pid ? `PID: ${data.pid}` : '-'}
+              isLoading={isFetching}
+            />
+
+            <StatsCard
+              inset
+              title={dashboard.uptime}
+              value={data ? fmtUptime(data.uptimeMs) : '-'}
+              icon="⏱️"
+              color="purple.400"
+              subtitle={data?.state === 'RUNNING' ? dashboard.online : dashboard.offline}
+              isLoading={isFetching}
+            />
+
+            <StatsCard
+              inset
+              title={dashboard.playersOnline}
+              value={
+                data?.players && data.rconAvailable
+                  ? `${data.players.online}/${data.players.max}`
+                  : data?.rconAvailable
+                    ? '-'
+                    : 'N/A'
+              }
+              icon="👥"
+              color="blue.400"
+              subtitle={
+                !data?.rconAvailable
+                  ? dashboard.rconRequired
+                  : data?.state === 'RUNNING'
+                    ? dashboard.online
+                    : dashboard.offline
+              }
+              action={
+                !data?.rconAvailable ? (
+                  <GlassButton
+                    size="sm"
+                    onClick={() => enableRconMutation.mutate()}
+                    loading={enableRconMutation.isPending}
+                  >
+                    {dashboard.enableRcon}
+                  </GlassButton>
+                ) : undefined
+              }
+              isLoading={isFetching}
+            />
+
+            <StatsCard
+              inset
+              title={dashboard.tickTime}
+              value={
+                data?.tickTimeMs && data.state === 'RUNNING' && data.rconAvailable
+                  ? `${data.tickTimeMs.toFixed(1)} ms`
+                  : data?.rconAvailable
+                    ? '-'
+                    : 'N/A'
+              }
+              icon="🎯"
+              color={
+                data?.state !== 'RUNNING' || !data?.rconAvailable
+                  ? 'gray.400'
+                  : data?.tickTimeMs && data.tickTimeMs <= 50
+                    ? 'green.400'
+                    : data?.tickTimeMs && data.tickTimeMs <= 55
+                      ? 'yellow.400'
+                      : 'red.400'
+              }
+              subtitle={
+                !data?.rconAvailable
+                  ? dashboard.rconRequired
+                  : data?.state === 'RUNNING'
+                    ? data?.tickTimeMs && data.tickTimeMs <= 50
+                      ? dashboard.perfect
+                      : data?.tickTimeMs && data.tickTimeMs <= 55
+                        ? dashboard.good
+                        : dashboard.slow
+                    : dashboard.notAvailable
+              }
+              action={
+                !data?.rconAvailable ? (
+                  <GlassButton
+                    size="sm"
+                    onClick={() => enableRconMutation.mutate()}
+                    loading={enableRconMutation.isPending}
+                  >
+                    {dashboard.enableRcon}
+                  </GlassButton>
+                ) : undefined
+              }
+              isLoading={isFetching}
+            />
+          </Grid>
+        )
+
+      case 'performance':
+        return (
+          <Grid
+            templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }}
+            gap={{ base: 4, md: 6 }}
+          >
+            <StatsCard
+              inset
+              title={dashboard.cpu}
+              value={data ? `${data.cpu.toFixed(1)}%` : '-'}
+              icon="⚡"
+              color="yellow.400"
+              trend={data?.cpu ? { value: data.cpu, isPositive: data.cpu < 50 } : undefined}
+              isLoading={isFetching}
+            />
+
+            <StatsCard
+              inset
+              title={dashboard.processMemory}
+              value={data ? `${data.memMB} MB` : '-'}
+              icon="🧠"
+              color="blue.400"
+              isLoading={isFetching}
+            />
+
+            <StatsCard
+              inset
+              title={dashboard.systemMemory}
+              value={
+                data?.systemMemory
+                  ? `${data.systemMemory.usedGB}/${data.systemMemory.totalGB} GB`
+                  : '-'
+              }
+              icon="💾"
+              color="cyan.400"
+              subtitle={
+                data?.systemMemory
+                  ? `${Math.round((data.systemMemory.usedGB / data.systemMemory.totalGB) * 100)}% ${dashboard.utilized}`
+                  : ''
+              }
+              isLoading={isFetching}
+            />
+
+            <StatsCard
+              inset
+              title={dashboard.diskStorage}
+              value={
+                data?.disk && data.disk.totalGB > 0
+                  ? `${data.disk.usedGB}/${data.disk.totalGB} GB`
+                  : dashboard.notAvailable
+              }
+              icon="💿"
+              color="purple.400"
+              subtitle={
+                data?.disk && data.disk.totalGB > 0
+                  ? `${Math.round((data.disk.usedGB / data.disk.totalGB) * 100)}% ${dashboard.utilized_masculine}`
+                  : dashboard.checkingSpace
+              }
+              isLoading={isFetching}
+            />
+          </Grid>
+        )
+
+      case 'monitoring':
+        return (
+          <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={{ base: 4, md: 6 }}>
+            <GlassCard inset p={6}>
+              <Text fontSize="lg" fontWeight="bold" mb={4} color="accent.fg">
+                📈 {ui.realTime} {ui.monitoring}
+              </Text>
+              <Text color="textMuted">{ui.monitoringIntro ?? ''}</Text>
+            </GlassCard>
+
+            <GlassCard inset p={6}>
+              <Text fontSize="lg" fontWeight="bold" mb={4} color="accent.fg">
+                🔔 {ui.alerts}
+              </Text>
+              <Text color="textMuted">{ui.alertsIntro ?? ''}</Text>
+            </GlassCard>
+          </Grid>
+        )
+
+      case 'actions':
+        return (
+          <GlassCard inset p={6}>
+            <Text fontSize="lg" fontWeight="bold" mb={6} color="accent.fg">
+              🎮 {server?.controlsTitle ?? server?.consoleTitle ?? 'Controls'}
             </Text>
 
             {/* Messaggio di riavvio necessario se presente */}
             {requiresRestart && (
               <Text
                 color="orange.400"
-                fontSize={{ base: 'xs', md: 'sm' }}
-                mb={2}
+                fontSize={{ base: 'sm', md: 'md' }}
+                mb={4}
                 fontWeight="semibold"
+                p={3}
+                bg="orange.500/10"
+                borderRadius="md"
+                borderLeftWidth="4px"
+                borderColor="orange.400"
               >
-                {dashboard.restartRequired}
+                ⚠️ {dashboard.restartRequired}
               </Text>
             )}
 
-            <HStack gap={2} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
+            <HStack gap={4} wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
               <GlassButton
-                size={{ base: 'sm', md: 'md' }}
+                size={{ base: 'md', md: 'lg' }}
                 onClick={() => powerMutation.mutate('start')}
                 disabled={data?.state === 'RUNNING' || powerMutation.isPending}
                 loading={powerMutation.isPending}
-                w={{ base: '100%', sm: '130px' }}
-                minH="44px"
+                w={{ base: '100%', sm: '150px' }}
+                minH="56px"
               >
                 {dashboard.start}
               </GlassButton>
+
               <GlassButton
-                size={{ base: 'sm', md: 'md' }}
+                size={{ base: 'md', md: 'lg' }}
                 onClick={() => powerMutation.mutate('stop')}
                 disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
                 loading={powerMutation.isPending}
-                w={{ base: '100%', sm: '130px' }}
-                minH="44px"
+                w={{ base: '100%', sm: '150px' }}
+                minH="56px"
               >
                 {dashboard.stop}
               </GlassButton>
+
               <GlassButton
-                size={{ base: 'sm', md: 'md' }}
+                size={{ base: 'md', md: 'lg' }}
                 onClick={() => powerMutation.mutate('restart')}
                 disabled={data?.state !== 'RUNNING' || powerMutation.isPending}
                 loading={powerMutation.isPending}
-                w={{ base: '100%', sm: '130px' }}
-                minH="44px"
+                w={{ base: '100%', sm: '150px' }}
+                minH="56px"
                 colorPalette={requiresRestart ? 'orange' : undefined}
               >
                 {requiresRestart ? dashboard.restartServer : dashboard.restart}
               </GlassButton>
             </HStack>
           </GlassCard>
-        </GridItem>
-      </Grid>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  return (
+    <Box p={{ base: 4, md: 6, lg: 8 }} maxW="7xl" mx="auto">
+      {/* Modern Header */}
+      <ModernHeader
+        title={dashboard.title}
+        description={ui.modernInterface ?? ui.dashboard}
+        emoji="📊"
+        gradient="linear(135deg, cyan.500/15, blue.500/15, purple.500/10)"
+      />
+
+      {/* Error Message */}
+      {err && (
+        <GlassCard p={4} mb={6} bg="red.500/10" borderColor="red.500/30">
+          <HStack gap={3}>
+            <Text fontSize="2xl">❌</Text>
+            <Box>
+              <Text fontWeight="bold" color="red.400">
+                {common.error}
+              </Text>
+              <Text fontSize="sm" color="textMuted">
+                {err}
+              </Text>
+            </Box>
+          </HStack>
+        </GlassCard>
+      )}
+
+      {/* Success/Error Notification */}
+      {note && (
+        <GlassCard
+          p={4}
+          mb={6}
+          bg={note.type === 'success' ? 'green.500/10' : 'red.500/10'}
+          borderColor={note.type === 'success' ? 'green.500/30' : 'red.500/30'}
+        >
+          <HStack gap={3}>
+            <Text fontSize="2xl">{note.type === 'success' ? '✅' : '❌'}</Text>
+            <Text color={note.type === 'success' ? 'green.400' : 'red.400'}>{note.text}</Text>
+          </HStack>
+        </GlassCard>
+      )}
+
+      {/* Modern Tabs */}
+      <Box mb={8}>
+        <ModernTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="pills" />
+      </Box>
+
+      {/* Tab Content */}
+      <Box minH="400px">{renderTabContent()}</Box>
     </Box>
   )
 }

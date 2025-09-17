@@ -10,7 +10,7 @@ export type AuditEvent =
     }
   | { type: 'login'; userId: string }
   | { type: 'logout'; userId?: string | undefined }
-  | { type: 'file'; op: 'rename' | 'delete' | 'upload' | 'zip' | 'unzip'; path: string; userId?: string | undefined }
+  | { type: 'file'; op: 'rename' | 'delete' | 'upload' | 'zip' | 'unzip' | 'download'; path: string; userId?: string | undefined }
   | { type: 'power'; op: 'start' | 'stop' | 'restart'; userId?: string | undefined }
   | { type: 'backup'; op: 'create' | 'restore' | 'schedule_update' | 'schedule_save' | 'schedule_save_error' | 'schedule_load'; id?: string | undefined; userId?: string | undefined; details?: Record<string, unknown> | undefined }
   | { type: 'job'; name: string; op: 'start' | 'end' | 'error'; durationMs?: number | undefined; details?: Record<string, unknown> | undefined }
@@ -55,6 +55,7 @@ const getHumanMessage = (evt: AuditEvent): string => {
       case 'rename': return `File renamed: ${evt.path}`
       case 'zip': return `Files compressed: ${evt.path}`
       case 'unzip': return `Archive extracted: ${evt.path}`
+      case 'download': return `File downloaded: ${evt.path}`
     }
   } else if (evt.type === 'power') {
     switch (evt.op) {
