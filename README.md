@@ -193,7 +193,7 @@ Il sistema gestisce automaticamente:
   - `docs/api.md` — Riferimento API (REST + WebSocket)
   - `docs/sftp.md` — SFTP livello OS (OpenSSH)
   - `docs/security.md` — Note di sicurezza
-- Logging di sistema: `server/LOGGING.md`
+  - `docs/logging.md` — Logging di sistema
 
 ## SFTP OS‑level
 
