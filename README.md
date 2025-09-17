@@ -185,133 +185,16 @@ Il sistema gestisce automaticamente:
 - **Quilt**: Installazione automatica con latest loader
 - **Personalizzato**: JAR upload manuale
 
-## Sistema di Backup Automatici
+## Documentazione
 
-Il sistema offre backup automatici flessibili e configurabili per proteggere il tuo server senza intervento manuale.
+- Guide dettagliate in `docs/`:
+  - `docs/backups.md` — Backup e Restore (on‑demand, automatici, retention, esempi API)
+  - `docs/modpack.md` — Installazione Modpack (loader, versioni, JAR personalizzati)
+  - `docs/api.md` — Riferimento API (REST + WebSocket)
+  - `docs/sftp.md` — SFTP livello OS (OpenSSH)
+  - `docs/security.md` — Note di sicurezza
+- Logging di sistema: `server/LOGGING.md`
 
-### Configurazione via API
+## SFTP OS‑level
 
-**Usare un preset predefinito:**
-```bash
-# Backup giornaliero alle 3:00 (modalità world)
-curl -X PUT http://localhost:3000/api/backups/schedule \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"preset": "daily_3am"}'
-
-# Backup settimanale ogni lunedì alle 3:00 (modalità full)
-curl -X PUT http://localhost:3000/api/backups/schedule \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"preset": "weekly_monday"}'
-
-# Tre backup giornalieri: 8:00, 14:00, 20:00
-curl -X PUT http://localhost:3000/api/backups/schedule \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"preset": "triple_daily"}'
-```
-
-**Configurazione personalizzata:**
-```bash
-# Backup ogni 2 giorni alle 2:30
-curl -X PUT http://localhost:3000/api/backups/schedule \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "enabled": true,
-    "frequency": "custom",
-    "mode": "world",
-    "cronPattern": "30 2 */2 * *"
-  }'
-
-# Backup lunedì, mercoledì, venerdì alle 4:00
-curl -X PUT http://localhost:3000/api/backups/schedule \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "enabled": true,
-    "frequency": "custom", 
-    "mode": "full",
-    "cronPattern": "0 4 * * 1,3,5"
-  }'
-```
-
-**Visualizzare configurazione corrente:**
-```bash
-curl http://localhost:3000/api/backups/schedule \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-**Disabilitare backup automatici:**
-```bash
-curl -X PUT http://localhost:3000/api/backups/schedule \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"preset": "disabled"}'
-```
-
-### Configurazione via Variabili Ambiente
-
-Puoi anche configurare i backup automatici tramite variabili ambiente nel file `.env`:
-
-```env
-# Abilita backup automatici all'avvio
-AUTO_BACKUP_ENABLED=true
-
-# Pattern cron: backup ogni giorno alle 3:00
-AUTO_BACKUP_CRON=0 3 * * *
-
-# Modalità: 'world' per backup solo mondo, 'full' per backup completo
-AUTO_BACKUP_MODE=world
-```
-
-### Preset Disponibili
-
-| Preset | Descrizione | Frequenza | Modalità | Orario |
-|--------|-------------|-----------|----------|--------|
-| `disabled` | Backup disabilitati | - | - | - |
-| `daily_3am` | Backup giornaliero | Ogni giorno | world | 03:00 |
-| `daily_2am` | Backup giornaliero | Ogni giorno | world | 02:00 |
-| `every_2_days` | Ogni 2 giorni | Ogni 2 giorni | world | 03:00 |
-| `every_3_days` | Ogni 3 giorni | Ogni 3 giorni | world | 03:00 |
-| `weekly_monday` | Settimanale lunedì | Ogni lunedì | full | 03:00 |
-| `weekly_sunday` | Settimanale domenica | Ogni domenica | full | 03:00 |
-| `triple_daily` | Tre volte al giorno | Tutti i giorni | world | 08:00, 14:00, 20:00 |
-
-### Gestione Errori e Logging
-
-Il sistema di backup automatico include:
-- **Logging dettagliato**: Ogni operazione di backup viene loggata con timestamp e risultato
-- **Resilienza agli errori**: Gli errori non interrompono il servizio o future esecuzioni
-- **Cleanup automatico**: File parziali vengono rimossi in caso di errore
-- **Retention automatica**: Applica le policy di retention dopo ogni backup automatico
-- **Audit trail**: Tutte le modifiche alla configurazione vengono registrate
-
-## SFTP OS‑level (guida sintetica)
-
-Non integrare un server SFTP in Node. Usa OpenSSH di sistema con un utente dedicato chrootato nella cartella del server.
-
-Esempio Linux (Debian/Ubuntu):
-
-1) Installa server OpenSSH e crea gruppo/utente:
-	- sudo apt-get install openssh-server
-	- sudo groupadd mcserver
-	- sudo useradd -m -G mcserver -s /usr/sbin/nologin mc
-2) Imposta chroot su /opt/mc (o tua MC_DIR) e permessi:
-	- sudo mkdir -p /opt/mc
-	- sudo chown root:root /opt/mc
-	- sudo chmod 755 /opt/mc
-	- sudo mkdir -p /opt/mc/data
-	- sudo chown mc:mcserver /opt/mc/data
-3) Configura /etc/ssh/sshd_config (Match block):
-	- Subsystem sftp internal-sftp
-	- Match User mc
-	  ChrootDirectory /opt/mc
-	  ForceCommand internal-sftp
-	  AllowTCPForwarding no
-	  X11Forwarding no
-4) Riavvia sshd: sudo systemctl restart sshd
-5) Collega via SFTP con utente mc; la root visibile sarà / (chroot), scrivibile in /data.
-
-Su Windows, usa OpenSSH Server (Feature opzionale), crea un utente non amministratore e limita le cartelle con NTFS ACL.
+La guida completa è in `docs/sftp.md`.

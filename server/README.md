@@ -40,6 +40,14 @@ npm run dev:mock
 
 Il server sarà disponibile su `http://localhost:3000`
 
+## 📚 Documentazione
+
+- API e panoramica: `../docs/api.md`
+- Backup/Restore e scheduler: `../docs/backups.md`
+- Modpack (loader + versioni): `../docs/modpack.md`
+- Logging di sistema: `./LOGGING.md`
+- Sicurezza e SFTP OS: `../docs/security.md`, `../docs/sftp.md`
+
 ## Licenza e Contributi
 
 Questo pacchetto è parte del repository principale e ricade sotto la stessa licenza proprietaria. Consulta il file `../LICENSE` per i termini completi. Per contribuire, fai riferimento a `../CONTRIBUTING.md`.
