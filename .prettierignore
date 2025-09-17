@@ -10,3 +10,4 @@ coverage/
 
 # Do not format Minecraft server runtime files
 server/server/**
+.github/CODEOWNERS
