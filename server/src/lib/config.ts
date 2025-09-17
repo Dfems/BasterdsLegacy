@@ -12,7 +12,7 @@ const STATIC_CONFIG = {
 // Configurazioni che possono essere override dal database
 const DYNAMIC_CONFIG_DEFAULTS = {
   MC_DIR: path.resolve(env('MC_DIR', './runtime')),
-  BACKUP_DIR: path.resolve(env('BACKUP_DIR', './runtime/backups')),
+  BACKUP_DIR: path.resolve(env('BACKUP_DIR', './backups')),
   JAVA_BIN: env('JAVA_BIN', 'java'),
   RCON_ENABLED: env('RCON_ENABLED', 'false') === 'true',
   RCON_HOST: env('RCON_HOST', '127.0.0.1'),

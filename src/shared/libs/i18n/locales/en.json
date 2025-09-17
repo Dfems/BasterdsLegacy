@@ -376,7 +376,7 @@
       "backupDir": {
         "label": "BACKUP_DIR",
         "description": "Backup directory",
-        "placeholder": "./runtime/backups"
+        "placeholder": "./backups"
       },
       "rcon": {
         "title": "RCON Configuration",

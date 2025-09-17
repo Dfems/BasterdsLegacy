@@ -212,7 +212,7 @@ npm run dev:ts        # Avvio veloce per sviluppo
 PORT=3000                                    # Porta del server
 JWT_SECRET=change_me                         # Chiave JWT (CAMBIARE!)
 MC_DIR=./runtime                             # Directory server Minecraft (cambia in prod)
-BACKUP_DIR=./runtime/backups                 # Directory backup
+BACKUP_DIR=./backups                 # Directory backup
 Nota: durante l'installazione modpack vengono generati automaticamente in `MC_DIR` i file `eula.txt` (consenso EULA) e `user_jvm_args.txt` (argomenti JVM). Non è necessario mantenerli nel repository.
 DATABASE_URL="file:./prisma/dev.db"          # Database SQLite
 JAVA_BIN=java                                # Eseguibile Java
