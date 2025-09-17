@@ -33,9 +33,9 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
           ]
         : [
             { to: '/', label: common.appName, icon: '🏠', color: 'blue' },
-            { to: '/login', label: auth.loginTitle, icon: '🔐', color: 'green' },
+            // { to: '/login', label: auth.loginTitle, icon: '🔐', color: 'green' },
           ],
-    [isLoggedIn, navigation, common.appName, auth.loginTitle]
+    [isLoggedIn, navigation, common.appName]
   )
 
   return (
@@ -397,14 +397,14 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                     >
                       {item.icon}
                     </Box>
-                    <Text
+                    {/* <Text
                       fontSize="xs"
                       fontWeight={isActive ? 'bold' : 'medium'}
                       color={isActive ? 'brand.500' : 'gray.600'}
                       textAlign="center"
                     >
                       {item.label}
-                    </Text>
+                    </Text> */}
                     {isActive && (
                       <Badge
                         size="xs"

@@ -2,7 +2,7 @@
   "common": {
     "appName": "Minecraft",
     "login": "Login",
-    "logout": "Desconectar",
+    "logout": "Logout",
     "admin": "Admin",
     "username": "Usuario",
     "password": "Contraseña",
