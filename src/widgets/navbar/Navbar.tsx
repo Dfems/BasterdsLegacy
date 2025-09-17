@@ -18,7 +18,7 @@ interface NavbarProps {
 
 export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Element {
   useContext(AuthContext)
-  const { navigation, common, auth, language, setLanguage } = useLanguage()
+  const { navigation, common, auth, dashboard, language, setLanguage } = useLanguage()
   const location = useLocation()
 
   const mobileItems = useMemo(
@@ -308,7 +308,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
             {/* User status and logout */}
             {isLoggedIn ? (
               <HStack gap={3}>
-                <StatusIndicator status="online" label="Admin" size="sm" />
+                {/* <StatusIndicator status="online" label={common.admin} size="sm" /> */}
                 <GlassButton
                   size="sm"
                   onClick={onLogout}
@@ -446,7 +446,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                   🚪
                 </Text>
                 <Text fontSize="xs" fontWeight="medium" color="red.600" textAlign="center">
-                  Logout
+                  {common.logout}
                 </Text>
               </VStack>
             </Box>
@@ -469,7 +469,7 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                     🔐
                   </Text>
                   <Text fontSize="xs" fontWeight="medium" color="brand.600" textAlign="center">
-                    Login
+                    {auth.loginTitle}
                   </Text>
                 </VStack>
               </RouterLink>
@@ -497,7 +497,11 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
                   options={SUPPORTED_LANGUAGES}
                 />
               </HStack>
-              <StatusIndicator status="online" label="Admin Online" size="sm" />
+              <StatusIndicator
+                status="online"
+                label={`${common.admin} ${dashboard.online}`}
+                size="sm"
+              />
             </HStack>
           </Box>
         )}

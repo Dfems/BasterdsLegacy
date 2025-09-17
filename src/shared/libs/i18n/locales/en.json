@@ -3,6 +3,7 @@
     "appName": "Minecraft",
     "login": "Login",
     "logout": "Disconnect",
+    "admin": "Admin",
     "username": "Username",
     "password": "Password",
     "name": "Name",
@@ -53,6 +54,17 @@
     "launcherBtn": "CurseForge Launcher",
     "donateBtn": "☕ Support on Ko-fi",
     "footer": "© Francisco Esteban Mosquera Sancan 2025. All rights reserved.",
+    "guide": {
+      "title": "Quick guide to join",
+      "step1Title": "☕ Join the Guild",
+      "step1Text": "Make a small donation to be whitelisted and unlock access to the server.",
+      "step2Title": "📦 Choose your path",
+      "step2Text": "Using CurseForge? Download the dedicated ZIP. Otherwise grab the mod pack and install it on your client.",
+      "step3Title": "🗺️ Enter the Realm",
+      "step3Text": "Launch the client with the Modpack and connect to the server using the same link from this page.",
+      "step4Title": "🎉 Have fun!",
+      "step4Text": "Explore, build, survive — see you in-game!"
+    },
     "loggedIn": {
       "welcomeBack": "Welcome back, administrator!",
       "serverOverview": "Server Overview",
@@ -137,7 +149,7 @@
     "tps": "Server TPS",
     "tickTime": "Server Tick",
     "playersOnline": "Players Online",
-    "processMemory": "Process Memory",
+    "processMemory": "CPU",
     "used": "Used",
     "free": "Free",
     "total": "Total",
@@ -295,7 +307,9 @@
         "updateError": "Error updating configuration",
         "loadError": "Error loading configuration"
       }
-    }
+    },
+    "scheduleErrorLoad": "Error loading backup configuration",
+    "presetsErrorLoad": "Error loading presets"
   },
   "settings": {
     "title": "Settings",
@@ -544,6 +558,7 @@
     }
   },
   "modpack": {
+    "managementTitle": "Modpack Management",
     "title": "Modpack",
     "upload": "Upload Modpack",
     "install": "Install",
@@ -572,7 +587,9 @@
     "versionUnsupported": "⚠️ Version {version} not supported by {loader}",
     "versionInfo": "Version {loader}: {version}",
     "errorVersions": "Error loading versions: {error}",
-    "installPrompt": "Go to the Modpack page to install a server before starting it"
+    "installPrompt": "Go to the Modpack page to install a server before starting it",
+    "installSectionDescription": "Choose how to install the Modpack and start the process.",
+    "progressSectionDescription": "Monitor the installation progress in real time."
   },
   "whitelist": {
     "title": "Whitelist",

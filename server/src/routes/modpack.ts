@@ -118,8 +118,7 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         const loader = installationInfo.loader
         const loaderVersion = installationInfo.loaderVersion
         const mcVersion = installationInfo.mcVersion
-        const name =
-          loader === 'Vanilla' ? `Minecraft ${mcVersion ?? 'Vanilla'}` : `Minecraft ${loader}`
+        const name = loader === 'Vanilla' ? `${mcVersion ?? 'Vanilla'}` : `${loader}`
 
         return {
           name,

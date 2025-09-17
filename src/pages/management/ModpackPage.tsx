@@ -6,7 +6,6 @@ import { GlassButton } from '@/shared/components/GlassButton'
 import { ModernHeader } from '@/shared/components/ModernHeader'
 import { QuickActionCard } from '@/shared/components/QuickActionCard'
 import { SimpleSelect } from '@/shared/components/SimpleSelect'
-import { StatsCard } from '@/shared/components/StatsCard'
 import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useModpackInstallProgress } from '@/shared/hooks/useModpackInstallProgress'
@@ -17,7 +16,7 @@ type InstallMode = 'automatic' | 'manual'
 type LoaderType = 'Vanilla' | 'Fabric' | 'Forge' | 'Quilt' | 'NeoForge'
 
 export default function ModpackPage(): JSX.Element {
-  const { modpack, common } = useLanguage()
+  const { modpack, common, home } = useLanguage()
   const [installMode, setInstallMode] = useState<InstallMode>('automatic')
   const [loader, setLoader] = useState<LoaderType>('Vanilla')
   const [mcVersion, setMcVersion] = useState('1.21.1')
@@ -80,57 +79,23 @@ export default function ModpackPage(): JSX.Element {
     return !jarFileName.trim()
   }
 
-  // Calculate stats for the modern header
-  const totalVersions = versionData?.minecraft.length || 0
-  const supportedLoaders = versionData ? Object.keys(versionData.loaders).length : 0
-  const installStatus = jarStatus?.hasJar ? 'Installato' : 'Non installato'
-
   return (
     <Box>
       {/* Modern Header with stunning animations and gradients */}
       <ModernHeader
-        title="📦 Gestione Modpack"
-        description="Sistema avanzato per installazione e configurazione modpack server"
+        title={`📦 ${modpack.managementTitle ?? modpack.title}`}
+        description={modpack.metaConfigDescription}
         emoji="⚙️"
       />
 
       <Box p={{ base: 4, md: 6 }}>
         <VStack gap={6} align="stretch">
-          {/* Stats Cards Section */}
-          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
-            <StatsCard
-              title="Versioni Disponibili"
-              value={totalVersions}
-              icon="🎮"
-              badge={
-                totalVersions > 0
-                  ? { text: 'Disponibili', color: 'green' }
-                  : { text: 'Caricamento', color: 'blue' }
-              }
-            />
-            <StatsCard
-              title="Loader Supportati"
-              value={supportedLoaders}
-              icon="⚙️"
-              badge={{ text: 'Compatibili', color: 'blue' }}
-            />
-            <StatsCard
-              title="Status Modpack"
-              value={installStatus}
-              icon="📋"
-              badge={
-                jarStatus?.hasJar
-                  ? { text: 'Attivo', color: 'green' }
-                  : { text: 'Richiesto', color: 'orange' }
-              }
-            />
-          </Grid>
-
           {/* Current Modpack Status */}
           {jarStatus && (
             <QuickActionCard
-              title="📦 Status Modpack Corrente"
-              description="Informazioni sul modpack attualmente installato"
+              inset
+              title={`📦 ${home.loggedIn.currentModpack}`}
+              description={home.loggedIn.systemInfo}
               icon="ℹ️"
               gradient="linear(to-r, blue.400, cyan.500)"
             >
@@ -138,16 +103,22 @@ export default function ModpackPage(): JSX.Element {
                 <HStack gap={3} align="center" wrap="wrap">
                   <StatusIndicator
                     status={jarStatus.hasJar ? 'online' : 'offline'}
-                    label={jarStatus.hasJar ? 'Installato' : 'Non installato'}
+                    label={
+                      jarStatus.hasJar
+                        ? home.loggedIn.modpackInstalled
+                        : home.loggedIn.modpackNotFound
+                    }
                   />
                   <Badge colorPalette={jarStatus.hasJar ? 'green' : 'orange'} variant="solid">
-                    {jarStatus.hasJar ? 'Modpack Attivo' : 'Nessun Modpack'}
+                    {jarStatus?.hasJar
+                      ? home.loggedIn.modpackInstalled
+                      : home.loggedIn.modpackNotFound}
                   </Badge>
                 </HStack>
                 {jarStatus.hasJar && jarStatus.jarName && (
                   <VStack align="stretch" gap={2}>
                     <Text fontSize="sm" color="textMuted">
-                      File JAR
+                      {modpack.jarFileName}
                     </Text>
                     <Text fontSize="md" fontWeight="bold" color="brand.primary">
                       📄 {jarStatus.jarName}
@@ -166,24 +137,25 @@ export default function ModpackPage(): JSX.Element {
           {/* Error State */}
           {versionsError && (
             <QuickActionCard
-              title="⚠️ Errore di Caricamento"
-              description="Si è verificato un problema durante il caricamento delle versioni"
+              title={`⚠️ ${common.error}`}
+              description={modpack.errorVersions.replace(
+                '{error}',
+                (versionsError as Error).message
+              )}
               icon="❌"
               gradient="linear(to-r, red.400, orange.500)"
             >
               <VStack gap={3}>
-                <StatusIndicator status="error" label="Errore di connessione" />
-                <Text color="red.200" fontSize="sm">
-                  {modpack.errorVersions.replace('{error}', (versionsError as Error).message)}
-                </Text>
+                <StatusIndicator status="error" label={common.error} />
               </VStack>
             </QuickActionCard>
           )}
 
           {/* Installation Mode Selection */}
           <QuickActionCard
-            title="🛠️ Modalità di Installazione"
-            description="Scegli il metodo di installazione più adatto alle tue esigenze"
+            inset
+            title={`🛠️ ${modpack.mode}`}
+            description={modpack.installSectionDescription ?? modpack.installPrompt}
             icon="⚙️"
             gradient="linear(to-r, purple.400, pink.500)"
           >
@@ -209,13 +181,10 @@ export default function ModpackPage(): JSX.Element {
               {/* Configurazione per modalità automatica */}
               {installMode === 'automatic' && (
                 <VStack gap={3} align="stretch">
-                  <Text fontSize="sm" fontWeight="medium" color="textMuted">
-                    Configurazione automatica
-                  </Text>
                   <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={3}>
                     <Box>
                       <Text fontSize="sm" color="textMuted" mb={1}>
-                        Loader
+                        {common.loader}
                       </Text>
                       <SimpleSelect
                         value={loader}
@@ -231,7 +200,7 @@ export default function ModpackPage(): JSX.Element {
                     </Box>
                     <Box>
                       <Text fontSize="sm" color="textMuted" mb={1}>
-                        Versione Minecraft
+                        {modpack.mcVersion}
                       </Text>
                       <SimpleSelect
                         value={mcVersion}
@@ -271,12 +240,9 @@ export default function ModpackPage(): JSX.Element {
               {/* Configurazione per modalità manuale */}
               {installMode === 'manual' && (
                 <VStack gap={3} align="stretch">
-                  <Text fontSize="sm" fontWeight="medium" color="textMuted">
-                    Configurazione manuale
-                  </Text>
                   <Box>
                     <Text fontSize="sm" color="textMuted" mb={1}>
-                      Nome file JAR
+                      {modpack.jarFileName}
                     </Text>
                     <Input
                       value={jarFileName}
@@ -318,8 +284,9 @@ export default function ModpackPage(): JSX.Element {
 
           {/* Installation Progress */}
           <QuickActionCard
-            title="📋 Log di Installazione"
-            description="Progresso e output dell'installazione in tempo reale"
+            inset
+            title={`📋 ${common.status}`}
+            description={modpack.progressSectionDescription ?? modpack.installPrompt}
             icon="📝"
             gradient="linear(to-r, gray.600, gray.800)"
           >
@@ -328,23 +295,23 @@ export default function ModpackPage(): JSX.Element {
               <HStack gap={4} wrap="wrap">
                 {progress.installing && (
                   <HStack>
-                    <StatusIndicator status="loading" label="Installazione in corso" />
+                    <StatusIndicator status="loading" label={modpack.installing} />
                     <Text fontSize="sm" color="blue.400">
-                      ⏳ Installazione in corso...
+                      ⏳ {modpack.installing}
                     </Text>
                   </HStack>
                 )}
                 {progress.completed && (
                   <HStack>
-                    <StatusIndicator status="online" label="Completata" />
+                    <StatusIndicator status="online" label={common.success} />
                     <Text fontSize="sm" color="green.400">
-                      ✅ Installazione completata!
+                      ✅ {common.success}
                     </Text>
                   </HStack>
                 )}
                 {progress.error && (
                   <HStack>
-                    <StatusIndicator status="error" label="Errore" />
+                    <StatusIndicator status="error" label={common.error} />
                     <Text fontSize="sm" color="red.400">
                       ❌ {progress.error}
                     </Text>

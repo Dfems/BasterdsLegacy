@@ -57,7 +57,7 @@ export const BackupScheduler = (): JSX.Element => {
     queryKey: ['backup-schedule'],
     queryFn: async () => {
       const r = await fetch('/api/backups/schedule')
-      if (!r.ok) throw new Error('Errore nel caricamento della configurazione backup')
+      if (!r.ok) throw new Error(backups.schedule.messages.loadError)
       return (await r.json()) as ScheduleResponse
     },
     staleTime: 10_000,
@@ -68,7 +68,7 @@ export const BackupScheduler = (): JSX.Element => {
     queryKey: ['backup-presets'],
     queryFn: async () => {
       const r = await fetch('/api/backups/presets')
-      if (!r.ok) throw new Error('Errore nel caricamento dei preset')
+      if (!r.ok) throw new Error(backups.schedule.messages.loadError)
       return (await r.json()) as { presets: Preset[] }
     },
     staleTime: 60_000,
@@ -274,7 +274,7 @@ export const BackupScheduler = (): JSX.Element => {
             {/* Enable/Disable */}
             <Box>
               <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }} mb={2}>
-                Stato
+                {backups.schedule.status}
               </Text>
               <RadioGroup.Root
                 value={customConfig.enabled ? 'enabled' : 'disabled'}
@@ -406,7 +406,7 @@ export const BackupScheduler = (): JSX.Element => {
                 {customConfig.frequency === 'custom' && (
                   <Box>
                     <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }} mb={1}>
-                      Pattern Cron
+                      {backups.schedule.cronPatternLabel ?? 'Cron Pattern'}
                     </Text>
                     <Text fontSize="xs" color="textMuted" mb={2}>
                       {backups.schedule.help.custom}

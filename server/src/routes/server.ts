@@ -9,16 +9,10 @@ import { checkServerJarStatus } from '../minecraft/serverJar.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
   // Nuovo endpoint per verificare stato JAR del server
-  fastify.get(
-    '/api/server/jar-status',
-    {
-      preHandler: fastify.authorize('user'),
-    },
-    async () => {
-      const installationInfo = await loadInstallationInfo()
-      return await checkServerJarStatus(installationInfo || undefined)
-    }
-  )
+  fastify.get('/api/server/jar-status', {}, async () => {
+    const installationInfo = await loadInstallationInfo()
+    return await checkServerJarStatus(installationInfo || undefined)
+  })
 
   fastify.delete(
     '/api/server',

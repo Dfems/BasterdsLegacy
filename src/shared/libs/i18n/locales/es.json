@@ -3,6 +3,7 @@
     "appName": "Minecraft",
     "login": "Login",
     "logout": "Desconectar",
+    "admin": "Admin",
     "username": "Usuario",
     "password": "Contraseña",
     "name": "Nombre",
@@ -53,6 +54,17 @@
     "launcherBtn": "CurseForge Launcher",
     "donateBtn": "☕ Apoya en Ko-fi",
     "footer": "© Francisco Esteban Mosquera Sancan 2025. Todos los derechos reservados.",
+    "guide": {
+      "title": "Guía rápida para unirte",
+      "step1Title": "☕ Únete a la Gremio",
+      "step1Text": "Realiza una pequeña donación para ser añadido a la whitelist y desbloquear el acceso al servidor.",
+      "step2Title": "📦 Elige tu camino",
+      "step2Text": "¿Usas CurseForge? Descarga el ZIP dedicado. Si no, toma el paquete de mods e instálalo en tu cliente.",
+      "step3Title": "🗺️ Entra al Reino",
+      "step3Text": "Inicia el cliente con el Modpack e ingresa al servidor usando el mismo enlace de esta página.",
+      "step4Title": "🎉 ¡A divertirse!",
+      "step4Text": "Explora, construye y sobrevive: ¡nos vemos en el juego!"
+    },
     "loggedIn": {
       "welcomeBack": "¡Bienvenido de vuelta, administrador!",
       "serverOverview": "Resumen del Servidor",
@@ -137,7 +149,7 @@
     "tps": "TPS del Servidor",
     "tickTime": "Tick del Servidor",
     "playersOnline": "En Línea",
-    "processMemory": "Memoria del Proceso",
+    "processMemory": "CPU",
     "used": "Usado",
     "free": "Libre",
     "total": "Total",
@@ -181,7 +193,7 @@
     "modified": "Modificado",
     "actions": "Acciones",
     "upload": "Subir archivo",
-    "systemFiles": "Archivos del Sistema",
+    "systemFiles": "Archivos",
     "directories": "Directorios",
     "storage": "Almacenamiento",
     "many": "Numerosos",
@@ -295,7 +307,9 @@
         "updateError": "Error al actualizar configuración",
         "loadError": "Error al cargar configuración"
       }
-    }
+    },
+    "scheduleErrorLoad": "Error al cargar la configuración de copias",
+    "presetsErrorLoad": "Error al cargar los preajustes"
   },
   "settings": {
     "title": "Ajustes",
@@ -544,6 +558,7 @@
     }
   },
   "modpack": {
+    "managementTitle": "Gestión de Modpack",
     "title": "Modpack",
     "upload": "Subir Modpack",
     "install": "Instalar",
@@ -569,7 +584,9 @@
     "versionUnsupported": "⚠️ Versión {version} no compatible con {loader}",
     "versionInfo": "Versión {loader}: {version}",
     "errorVersions": "Error al cargar versiones: {error}",
-    "installPrompt": "Ve a la página de Modpack para instalar un servidor antes de iniciarlo"
+    "installPrompt": "Ve a la página de Modpack para instalar un servidor antes de iniciarlo",
+    "installSectionDescription": "Elige cómo instalar el Modpack e inicia el proceso.",
+    "progressSectionDescription": "Supervisa el progreso de la instalación en tiempo real."
   },
   "whitelist": {
     "title": "Lista Blanca",

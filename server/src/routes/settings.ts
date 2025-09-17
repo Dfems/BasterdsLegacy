@@ -401,6 +401,16 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     }
   })
 
+  // Public: minimal UI preferences (background only)
+  fastify.get('/api/settings/ui-public', async () => {
+    const backgroundImage = await db.setting.findUnique({
+      where: { key: 'ui.backgroundImage' },
+    })
+    return {
+      backgroundImage: backgroundImage?.value || null,
+    }
+  })
+
   // Public: Get button settings (for home page display)
   fastify.get('/api/settings/buttons', async () => {
     const config = await getConfig()

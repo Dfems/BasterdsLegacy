@@ -1,6 +1,7 @@
 import { useContext, type JSX } from 'react'
 
-import { Box, Link as ChakraLink, Grid, HStack, Text, VStack } from '@chakra-ui/react'
+import { Box, Link as ChakraLink, Grid, HStack, Text, VStack, Badge } from '@chakra-ui/react'
+import { useQuery } from '@tanstack/react-query'
 
 import AuthContext from '@/entities/user/AuthContext'
 import LoggedInHomePage from '@/pages/LoggedInHomePage'
@@ -8,130 +9,133 @@ import { GlassButton } from '@/shared/components/GlassButton'
 import { GlassCard } from '@/shared/components/GlassCard'
 import { ModernHeader } from '@/shared/components/ModernHeader'
 import { QuickActionCard } from '@/shared/components/QuickActionCard'
-import { StatsCard } from '@/shared/components/StatsCard'
-import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import { useButtonsSettings } from '@/shared/hooks/useButtonsSettings'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useModpackInfo } from '@/shared/hooks/useModpackInfo'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 const HomePage = (): JSX.Element => {
-  const { home } = useLanguage()
+  const { home, dashboard, common, modpack } = useLanguage()
   const { token } = useContext(AuthContext)
   const { data: buttonsSettings } = useButtonsSettings()
   const { data: modpackInfo } = useModpackInfo()
   const { data: jarStatus } = useServerJarStatus()
+
+  type Status = {
+    state: 'RUNNING' | 'STOPPED' | 'CRASHED'
+    running?: boolean
+  }
+
+  const { data: status } = useQuery({
+    queryKey: ['status-public'],
+    queryFn: async (): Promise<Status> => {
+      const r = await fetch('/api/status')
+      if (!r.ok) throw new Error('status error')
+      return (await r.json()) as Status
+    },
+    refetchInterval: 5000,
+    staleTime: 2000,
+  })
 
   // Se l'utente è loggato, mostra la versione completa
   if (token) {
     return <LoggedInHomePage />
   }
 
-  // Determina le informazioni del modpack da mostrare
-  // Priorità: informazioni reali del server > configurazioni admin > fallback
-  const displayName = modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy"
-  const displayVersion = modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '1.0.0'
-  const displayLoader = modpackInfo?.loader ?? jarStatus?.jarType ?? 'Vanilla'
+  // Stato reale JAR come fonte di verità per i guest
+  const hasJar = Boolean(jarStatus?.hasJar)
+  // Nome modpack: mostra solo se installato, altrimenti "Non trovato"/"Non disponibile"
+  const displayName = hasJar
+    ? (modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy")
+    : home.loggedIn.modpackNotFound
+  // Versione: solo se installato; altrimenti non disponibile
+  const displayVersion = hasJar
+    ? (modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '')
+    : dashboard.notAvailable
 
   // Calculate stats for the modern header
-  const serverStatus = 'Online' // Assuming online for public page
-  const isModpackInstalled = jarStatus?.hasJar || false
-  const availableDownloads =
-    (buttonsSettings?.config.visible ? 1 : 0) + (buttonsSettings?.launcher.visible ? 1 : 0) + 1 // Ko-fi always available
+  // Public overview values
+  const isServerRunning = status?.state === 'RUNNING' || status?.running === true
+
+  const toDownloadLink = (p?: string | null): string => {
+    if (!p) return '#'
+    if (/^https?:\/\//i.test(p)) return p
+    return `/api/files/download?path=${encodeURIComponent(p)}`
+  }
 
   // Versione per utenti non loggati (rivoluzionata)
   return (
     <Box>
-      {/* Modern Header with stunning animations and gradients */}
-      <ModernHeader
-        title="🎮 Basterd's Legacy"
-        description="Preparatevi a un'esperienza unica e imprevedibile: un immenso multiverso con qualche mod selezionata per rendere le cose ancora più... interessanti 😉"
-        emoji="✨"
-      />
+      <ModernHeader title={`🎮 ${home.title}`} description={home.welcomePart} emoji="✨" />
 
       <Box p={{ base: 4, md: 6 }}>
         <VStack gap={6} align="stretch" maxW="900px" mx="auto">
-          {/* Stats Cards Section */}
-          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
-            <StatsCard
-              title="Status Server"
-              value={serverStatus}
-              icon="🌐"
-              badge={{ text: 'Attivo', color: 'green' }}
-            />
-            <StatsCard
-              title="Modpack"
-              value={isModpackInstalled ? 'Installato' : 'Configurazione'}
-              icon="📦"
-              badge={
-                isModpackInstalled
-                  ? { text: 'Pronto', color: 'green' }
-                  : { text: 'Setup', color: 'blue' }
-              }
-            />
-            <StatsCard
-              title="Download"
-              value={availableDownloads}
-              icon="⬇️"
-              badge={{ text: 'Disponibili', color: 'purple' }}
-            />
-          </Grid>
-
           {/* Server Info Section */}
           <QuickActionCard
-            title="📋 Informazioni Server"
-            description="Dettagli del modpack e configurazione attuale"
+            inset
+            title={`📋 ${home.loggedIn.serverOverview}`}
+            description={home.loggedIn.systemInfo}
             icon="ℹ️"
             gradient="linear(to-r, blue.400, cyan.500)"
           >
             <VStack gap={4} align="stretch">
-              <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
+              <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
                 <Box>
-                  <Text fontSize="sm" color="textMuted" mb={1}>
-                    Nome Modpack
+                  <Text fontSize="sm" color="textMuted" mb={1} textAlign="center">
+                    {common.modpack}
                   </Text>
-                  <Text fontSize="lg" fontWeight="bold" color="brand.primary">
+                  <Text fontSize="lg" fontWeight="bold" color="brand.primary" textAlign="center">
                     🎮 {displayName}
                   </Text>
+                  <HStack gap={2} justify="center" wrap="wrap" mt={2}>
+                    <Badge colorPalette={hasJar ? 'green' : 'orange'} variant="solid">
+                      {hasJar ? home.loggedIn.modpackInstalled : home.loggedIn.modpackNotFound}
+                    </Badge>
+                  </HStack>
                 </Box>
                 <Box>
-                  <Text fontSize="sm" color="textMuted" mb={1}>
-                    Versione
+                  <Text fontSize="sm" color="textMuted" mb={1} textAlign="center">
+                    {modpack.version}
                   </Text>
-                  <Text fontSize="lg" fontWeight="bold" color="brand.primary">
+                  <Text fontSize="lg" fontWeight="bold" color="brand.primary" textAlign="center">
                     📋 {displayVersion}
+                  </Text>
+                  {!hasJar && (
+                    <HStack gap={2} justify="center" wrap="wrap" mt={2}>
+                      <Badge colorPalette="orange" variant="subtle">
+                        {dashboard.notAvailable}
+                      </Badge>
+                    </HStack>
+                  )}
+                </Box>
+                <Box>
+                  <Text fontSize="sm" color="textMuted" mb={1} textAlign="center">
+                    {common.status}
+                  </Text>
+                  <Text fontSize="lg" fontWeight="bold" color="brand.primary" textAlign="center">
+                    {isServerRunning ? '🟢 ' + dashboard.online : '🔴 ' + dashboard.offline}
                   </Text>
                 </Box>
               </Grid>
-              <HStack gap={3} align="center">
-                <Text fontSize="sm" color="textMuted">
-                  Loader:
-                </Text>
-                <StatusIndicator status="online" label={displayLoader} />
-                <Text fontSize="sm" fontWeight="medium" color="brand.primary">
-                  {displayLoader}
-                </Text>
-              </HStack>
             </VStack>
           </QuickActionCard>
 
           {/* Downloads Section */}
           <QuickActionCard
-            title="⬇️ Download e Risorse"
-            description="Scarica tutto il necessario per iniziare a giocare"
+            inset
+            title={`⬇️ ${home.loggedIn.downloadSection}`}
+            description={home.instructions}
             icon="📥"
             gradient="linear(to-r, green.400, teal.500)"
           >
             <VStack gap={4} align="stretch">
               <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={3}>
-                {/* Pulsante Config - mostra solo se visible è true */}
                 {buttonsSettings?.config.visible && (
                   <GlassButton
                     as={ChakraLink}
-                    href={buttonsSettings.config.path}
+                    href={toDownloadLink(buttonsSettings.config.path)}
                     download
                     size="md"
-                    minH="50px"
                     colorScheme="blue"
                     w="full"
                   >
@@ -139,15 +143,13 @@ const HomePage = (): JSX.Element => {
                   </GlassButton>
                 )}
 
-                {/* Pulsante Launcher - mostra solo se visible è true */}
                 {buttonsSettings?.launcher.visible && (
                   <GlassButton
                     as={ChakraLink}
-                    href={buttonsSettings.launcher.path}
-                    download
+                    href={toDownloadLink(buttonsSettings.launcher.path)}
+                    download={!/^https?:\/\//i.test(buttonsSettings.launcher.path ?? '')}
                     size="md"
-                    minH="50px"
-                    colorScheme="orange"
+                    colorScheme="green"
                     w="full"
                   >
                     🚀 {home.launcherBtn}
@@ -161,7 +163,6 @@ const HomePage = (): JSX.Element => {
                 target="_blank"
                 rel="noopener noreferrer"
                 size="md"
-                minH="50px"
                 colorScheme="purple"
                 w="full"
               >
@@ -172,8 +173,9 @@ const HomePage = (): JSX.Element => {
 
           {/* Instructions Section */}
           <QuickActionCard
-            title="📖 Come Iniziare"
-            description="Segui questi semplici passaggi per entrare nel server"
+            inset
+            title={`📖 ${home.guide?.title ?? home.instructions}`}
+            description={home.welcomePart}
             icon="🎯"
             gradient="linear(to-r, purple.400, pink.500)"
           >
@@ -182,10 +184,10 @@ const HomePage = (): JSX.Element => {
                 <Text fontSize="2xl">1️⃣</Text>
                 <VStack align="start" flex="1">
                   <Text fontWeight="bold" color="brand.primary">
-                    Scarica le mod necessarie
+                    {home.guide?.step1Title ?? home.configBtn}
                   </Text>
                   <Text fontSize="sm" color="textMuted">
-                    Utilizza il pulsante "Mods to install" per scaricare il pacchetto
+                    {home.guide?.step1Text ?? home.instructions}
                   </Text>
                 </VStack>
               </HStack>
@@ -194,10 +196,10 @@ const HomePage = (): JSX.Element => {
                 <Text fontSize="2xl">2️⃣</Text>
                 <VStack align="start" flex="1">
                   <Text fontWeight="bold" color="brand.primary">
-                    Configura il launcher
+                    {home.guide?.step2Title ?? home.launcherBtn}
                   </Text>
                   <Text fontSize="sm" color="textMuted">
-                    Scarica e configura CurseForge o il tuo launcher preferito
+                    {home.guide?.step2Text ?? home.instructions}
                   </Text>
                 </VStack>
               </HStack>
@@ -206,10 +208,22 @@ const HomePage = (): JSX.Element => {
                 <Text fontSize="2xl">3️⃣</Text>
                 <VStack align="start" flex="1">
                   <Text fontWeight="bold" color="brand.primary">
-                    Collegati al server
+                    {home.guide?.step3Title ?? home.title}
                   </Text>
                   <Text fontSize="sm" color="textMuted">
-                    Entra nel gioco e divertiti con la nostra community!
+                    {home.guide?.step3Text ?? home.welcomePart}
+                  </Text>
+                </VStack>
+              </HStack>
+
+              <HStack gap={3}>
+                <Text fontSize="2xl">4️⃣</Text>
+                <VStack align="start" flex="1">
+                  <Text fontWeight="bold" color="brand.primary">
+                    {home.guide?.step4Title ?? home.title}
+                  </Text>
+                  <Text fontSize="sm" color="textMuted">
+                    {home.guide?.step4Text ?? home.welcomePart}
                   </Text>
                 </VStack>
               </HStack>

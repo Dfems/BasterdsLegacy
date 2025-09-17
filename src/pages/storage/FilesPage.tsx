@@ -36,7 +36,7 @@ const human = (n: number) => {
 }
 
 export default function FilesPage(): JSX.Element {
-  const { files, common } = useLanguage()
+  const { files } = useLanguage()
   const qc = useQueryClient()
   const [path, setPath] = useState<string>('/')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -310,6 +310,18 @@ export default function FilesPage(): JSX.Element {
                             📂 {files.open}
                           </GlassButton>
                         )}
+                        {/* {entry.type === 'file' && (
+                          <GlassButton
+                            as={ChakraLink}
+                            href={`/api/files/download?path=${encodeURIComponent(joinPath(path, entry.name))}`}
+                            download
+                            colorScheme="green"
+                            size="sm"
+                            flex="1"
+                          >
+                            ⬇️
+                          </GlassButton>
+                        )} */}
                         <GlassButton
                           onClick={() => {
                             const from = joinPath(path, entry.name)
@@ -370,12 +382,12 @@ export default function FilesPage(): JSX.Element {
                           <Text>{files.modified}</Text>
                         </HStack>
                       </Table.ColumnHeader>
-                      <Table.ColumnHeader color="brand.primary">
+                      {/* <Table.ColumnHeader color="brand.primary">
                         <HStack>
                           <Text>⚡</Text>
                           <Text>{common.status}</Text>
                         </HStack>
-                      </Table.ColumnHeader>
+                      </Table.ColumnHeader> */}
                       <Table.ColumnHeader color="brand.primary">
                         <HStack>
                           <Text>🔧</Text>
@@ -426,7 +438,7 @@ export default function FilesPage(): JSX.Element {
                         <Table.Cell bg="transparent" boxShadow="none">
                           {new Date(entry.mtime).toLocaleString()}
                         </Table.Cell>
-                        <Table.Cell bg="transparent" boxShadow="none">
+                        {/* <Table.Cell bg="transparent" boxShadow="none">
                           <StatusIndicator
                             status="online"
                             label={
@@ -436,9 +448,20 @@ export default function FilesPage(): JSX.Element {
                             }
                             size="sm"
                           />
-                        </Table.Cell>
+                        </Table.Cell> */}
                         <Table.Cell bg="transparent" boxShadow="none">
-                          <HStack gap={1}>
+                          <HStack gap={1} alignContent={'center'} justifyContent={'center'}>
+                            {/* {entry.type === 'file' && (
+                              <GlassButton
+                                as={ChakraLink}
+                                href={`/api/files/download?path=${encodeURIComponent(joinPath(path, entry.name))}`}
+                                download
+                                size="xs"
+                                colorScheme="green"
+                              >
+                                ⬇️
+                              </GlassButton>
+                            )} */}
                             <GlassButton
                               size="xs"
                               onClick={() => {

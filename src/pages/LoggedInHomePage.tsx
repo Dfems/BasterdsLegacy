@@ -8,7 +8,6 @@ import { GlassCard } from '@/shared/components/GlassCard'
 import { ModernHeader } from '@/shared/components/ModernHeader'
 import { QuickActionCard } from '@/shared/components/QuickActionCard'
 import { StatsCard } from '@/shared/components/StatsCard'
-import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import { useButtonsSettings } from '@/shared/hooks/useButtonsSettings'
 import useLanguage from '@/shared/hooks/useLanguage'
 import { useModpackInfo } from '@/shared/hooks/useModpackInfo'
@@ -60,7 +59,15 @@ const LoggedInHomePage = (): JSX.Element => {
   })
 
   const isServerRunning = status?.state === 'RUNNING' || status?.running === true
-  const displayVersion = modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '1.0.0'
+  const toDownloadLink = (p?: string | null): string => {
+    if (!p) return '#'
+    if (/^https?:\/\//i.test(p)) return p
+    return `/api/files/download?path=${encodeURIComponent(p)}`
+  }
+  const hasJar = Boolean(jarStatus?.hasJar)
+  const displayVersion = hasJar
+    ? (modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '-')
+    : dashboard.notAvailable
 
   return (
     <Box p={{ base: 4, md: 6, lg: 8 }} maxW="7xl" mx="auto">
@@ -113,10 +120,14 @@ const LoggedInHomePage = (): JSX.Element => {
               text: jarStatus?.jarType?.toUpperCase() ?? dashboard.notAvailable,
               color: jarStatus?.hasJar ? 'blue' : 'orange',
             }}
-            subtitle={(home.loggedIn.currentVersion ?? 'Version: {version}').replace(
-              '{version}',
-              displayVersion
-            )}
+            subtitle={
+              hasJar
+                ? (home.loggedIn.currentVersion ?? 'Version: {version}').replace(
+                    '{version}',
+                    displayVersion
+                  )
+                : dashboard.notAvailable
+            }
           />
 
           <StatsCard
@@ -203,11 +214,21 @@ const LoggedInHomePage = (): JSX.Element => {
           size="sm"
         >
           <Stack gap={4}>
-            <StatusIndicator
-              status={isServerRunning ? 'online' : 'offline'}
-              label={navigation.server}
-              details={status?.state ?? dashboard.unknown}
-            />
+            <HStack justify="space-between">
+              <Text fontSize="sm" color="textMuted">
+                {navigation.server}:
+              </Text>
+              <HStack gap={2}>
+                <Text fontSize={'md'}>{isServerRunning ? '🟢' : '🔴'}</Text>
+                <Badge
+                  colorPalette={isServerRunning ? 'green' : 'red'}
+                  variant="solid"
+                  fontSize={'md'}
+                >
+                  {isServerRunning ? 'Online' : 'Offline'}
+                </Badge>
+              </HStack>
+            </HStack>
 
             {status?.players && (
               <HStack justify="space-between">
@@ -237,21 +258,31 @@ const LoggedInHomePage = (): JSX.Element => {
               </HStack>
             )}
 
-            {status?.tickTimeMs && status.rconAvailable && (
-              <HStack justify="space-between">
-                <Text fontSize="sm" color="textMuted">
-                  {dashboard.tickTime}:
-                </Text>
-                <Badge
-                  colorPalette={
-                    status.tickTimeMs <= 50 ? 'green' : status.tickTimeMs <= 55 ? 'yellow' : 'red'
-                  }
-                  variant="solid"
-                >
-                  {status.tickTimeMs.toFixed(1)}ms
-                </Badge>
-              </HStack>
-            )}
+            <HStack justify="space-between">
+              <Text fontSize="sm" color="textMuted">
+                {dashboard.tickTime}:
+              </Text>
+              <Badge
+                colorPalette={
+                  status?.state === 'RUNNING' &&
+                  status?.rconAvailable &&
+                  typeof status?.tickTimeMs === 'number'
+                    ? status.tickTimeMs <= 50
+                      ? 'green'
+                      : status.tickTimeMs <= 55
+                        ? 'yellow'
+                        : 'red'
+                    : 'gray'
+                }
+                variant="solid"
+              >
+                {status?.state === 'RUNNING' &&
+                status?.rconAvailable &&
+                typeof status?.tickTimeMs === 'number'
+                  ? `${status.tickTimeMs.toFixed(1)}ms`
+                  : dashboard.notAvailable}
+              </Badge>
+            </HStack>
 
             <GlassButton as={ChakraLink} href="/app/dashboard" size="sm" w="100%" variant="outline">
               {ui.viewDetails}
@@ -272,7 +303,7 @@ const LoggedInHomePage = (): JSX.Element => {
             {buttonsSettings?.config.visible && (
               <GlassButton
                 as={ChakraLink}
-                href={buttonsSettings.config.path}
+                href={toDownloadLink(buttonsSettings.config.path)}
                 download
                 size="md"
                 w="100%"
@@ -287,8 +318,8 @@ const LoggedInHomePage = (): JSX.Element => {
             {buttonsSettings?.launcher.visible && (
               <GlassButton
                 as={ChakraLink}
-                href={buttonsSettings.launcher.path}
-                download
+                href={toDownloadLink(buttonsSettings.launcher.path)}
+                download={!/^https?:\/\//i.test(buttonsSettings.launcher.path ?? '')}
                 size="md"
                 w="100%"
               >

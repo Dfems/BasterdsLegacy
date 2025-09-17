@@ -6,6 +6,7 @@ export type TranslationKey = {
     appName: string
     login: string
     logout: string
+    admin: string
     username: string
     password: string
     name: string
@@ -57,6 +58,17 @@ export type TranslationKey = {
     launcherBtn: string
     donateBtn: string
     footer: string
+    guide?: {
+      title: string
+      step1Title: string
+      step1Text: string
+      step2Title: string
+      step2Text: string
+      step3Title: string
+      step3Text: string
+      step4Title: string
+      step4Text: string
+    }
     loggedIn: {
       welcomeBack: string
       serverOverview: string
@@ -246,6 +258,8 @@ export type TranslationKey = {
       enable: string
       disable: string
       save: string
+      stateLabel?: string
+      cronPatternLabel?: string
       preset: {
         disabled: string
         daily_3am: string
@@ -508,6 +522,7 @@ export type TranslationKey = {
     }
   }
   modpack: {
+    managementTitle?: string
     title: string
     upload: string
     install: string
@@ -537,6 +552,8 @@ export type TranslationKey = {
     versionInfo: string
     errorVersions: string
     installPrompt: string
+    installSectionDescription?: string
+    progressSectionDescription?: string
   }
   whitelist: {
     title: string

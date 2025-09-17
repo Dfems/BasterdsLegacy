@@ -56,6 +56,7 @@ export default function WhitelistPage(): JSX.Element {
           {/* Stats Cards Section */}
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
             <StatsCard
+              inset
               title={whitelist.totalPlayers ?? 'Giocatori Totali'}
               value={totalPlayers}
               icon="👥"
@@ -67,6 +68,7 @@ export default function WhitelistPage(): JSX.Element {
               size="sm"
             />
             <StatsCard
+              inset
               title={whitelist.whitelistSystem ?? 'Sistema Whitelist'}
               value={whitelistStatus === 'active' ? dashboard.online : dashboard.offline}
               icon="🛡️"
@@ -78,6 +80,7 @@ export default function WhitelistPage(): JSX.Element {
               size="sm"
             />
             <StatsCard
+              inset
               title={whitelist.serverStatus ?? 'Status Server'}
               value={isLoading ? whitelist.loading : dashboard.online}
               icon="⚡"
@@ -92,6 +95,7 @@ export default function WhitelistPage(): JSX.Element {
 
           {/* Quick Actions Section */}
           <QuickActionCard
+            inset
             title={whitelist.addPlayerTitle ?? 'Aggiungi Nuovo Giocatore'}
             description={
               whitelist.addPlayerDescription ??
@@ -131,7 +135,7 @@ export default function WhitelistPage(): JSX.Element {
 
           {/* Error/Loading States */}
           {isLoading && (
-            <GlassCard p={6} textAlign="center">
+            <GlassCard inset p={6} textAlign="center">
               <VStack gap={3}>
                 <Text fontSize="lg" color="textMuted">
                   🔄 {whitelist.loading}
@@ -145,7 +149,7 @@ export default function WhitelistPage(): JSX.Element {
           )}
 
           {isError && (
-            <GlassCard p={6} textAlign="center" borderColor="red.200">
+            <GlassCard inset p={6} textAlign="center" borderColor="red.200">
               <VStack gap={3}>
                 <Text fontSize="lg" color="red.500">
                   ⚠️ {whitelist.error}
@@ -160,7 +164,7 @@ export default function WhitelistPage(): JSX.Element {
 
           {/* Empty State */}
           {!isLoading && !isError && players.length === 0 && (
-            <GlassCard p={6} textAlign="center">
+            <GlassCard inset p={6} textAlign="center">
               <VStack gap={3}>
                 <Text fontSize="lg" color="textMuted" mb={2}>
                   👤 {whitelist.noPlayers}
@@ -227,7 +231,7 @@ export default function WhitelistPage(): JSX.Element {
                 display={{ base: 'none', md: 'grid' }}
               >
                 {players.map((player) => (
-                  <GlassCard key={player} p={4}>
+                  <GlassCard inset key={player} p={4}>
                     <VStack align="stretch" gap={3}>
                       <HStack justify="space-between" align="center">
                         <Badge colorScheme="green" variant="subtle">

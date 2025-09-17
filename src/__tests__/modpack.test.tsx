@@ -12,6 +12,7 @@ import ModpackPage from '@/pages/management/ModpackPage'
 vi.mock('@/shared/hooks/useLanguage', () => ({
   default: () => ({
     modpack: {
+      managementTitle: 'Gestione Modpack',
       title: 'Modpack',
       mode: 'Modalità',
       automatic: 'Automatica',

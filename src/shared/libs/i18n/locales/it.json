@@ -3,6 +3,7 @@
     "appName": "Minecraft",
     "login": "Login",
     "logout": "Disconnect",
+    "admin": "Admin",
     "username": "Utente",
     "password": "Password",
     "name": "Nome",
@@ -53,6 +54,17 @@
     "launcherBtn": "CurseForge Launcher",
     "donateBtn": "☕ Supporta su Ko-fi",
     "footer": "© Francisco Esteban Mosquera Sancan 2025. Tutti i diritti riservati.",
+    "guide": {
+      "title": "Guida rapida per unirti",
+      "step1Title": "☕ Entra nella Gilda",
+      "step1Text": "Fai una piccola donazione per essere ammesso nella whitelist e sbloccare l'accesso al server.",
+      "step2Title": "📦 Scegli il tuo cammino",
+      "step2Text": "Usi CurseForge? Scarica lo ZIP dedicato. Altrimenti prendi il pacchetto di mod e installalo sul tuo client.",
+      "step3Title": "🗺️ Entra nel Regno",
+      "step3Text": "Avvia il client con il Modpack e collegati al server usando lo stesso link che trovi in questa pagina.",
+      "step4Title": "🎉 Divertiti!",
+      "step4Text": "Esplora, costruisci, sopravvivi: ci vediamo in gioco!"
+    },
     "loggedIn": {
       "welcomeBack": "Bentornato, amministratore!",
       "serverOverview": "Panoramica Server",
@@ -137,7 +149,7 @@
     "tps": "TPS del Server",
     "tickTime": "Tick del Server",
     "playersOnline": "Online",
-    "processMemory": "Memoria del Processo",
+    "processMemory": "CPU",
     "used": "Usata",
     "free": "Libera",
     "total": "Totale",
@@ -295,7 +307,9 @@
         "updateError": "Errore nell'aggiornamento della configurazione",
         "loadError": "Errore nel caricamento della configurazione"
       }
-    }
+    },
+    "scheduleErrorLoad": "Errore nel caricamento della configurazione backup",
+    "presetsErrorLoad": "Errore nel caricamento dei preset"
   },
   "settings": {
     "title": "Impostazioni",
@@ -544,6 +558,7 @@
     }
   },
   "modpack": {
+    "managementTitle": "Gestione Modpack",
     "title": "Modpack",
     "upload": "Carica Modpack",
     "install": "Installa",
@@ -572,7 +587,9 @@
     "versionUnsupported": "⚠️ Versione {version} non supportata da {loader}",
     "versionInfo": "Versione {loader}: {version}",
     "errorVersions": "Errore nel caricamento delle versioni: {error}",
-    "installPrompt": "Vai alla pagina Modpack per installare un server prima di avviarlo"
+    "installPrompt": "Vai alla pagina Modpack per installare un server prima di avviarlo",
+    "installSectionDescription": "Scegli come installare il Modpack e avvia l'installazione.",
+    "progressSectionDescription": "Monitora in tempo reale lo stato dell'installazione."
   },
   "whitelist": {
     "title": "Whitelist",
