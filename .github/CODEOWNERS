@@ -1,8 +1,11 @@
 # Tutti i file richiedono approvazione dei code owners
+
 # Sostituisci/aggiungi utenti o team GitHub necessari (es. @org/team)
-*	@Dfems
+
+* @Dfems
 
 # Esempi per cartelle specifiche (decommenta e adatta se serve):
-# /server/   @Dfems @org/backend-maintainers
-# /src/      @Dfems @org/frontend-maintainers
 
+# /server/ @Dfems @org/backend-maintainers
+
+# /src/ @Dfems @org/frontend-maintainers
