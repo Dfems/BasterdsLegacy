@@ -1,19 +1,18 @@
-## Descrizione
-Spiega brevemente cosa cambia e perché.
+## Description
+Briefly explain what's changing and why.
 
-## Tipo di cambiamento
+## Kind of change
 - [ ] Fix bug
-- [ ] Nuova feature
+- [ ] New feature
 - [ ] Refactor/chore
-- [ ] Documentazione
+- [ ] Docs
 
 ## Checklist
-- [ ] Ho letto `CONTRIBUTING.md`
-- [ ] Ho creato la branch da `main` e ho rebase/merge pulito
-- [ ] I test passano in locale (`npm run test` lato FE, `npm run test` lato server se presente)
-- [ ] Lint, type-check e format passano (`npm run format:check && npm run lint && npm run type-check`)
-- [ ] Ho aggiornato la documentazione se necessario
+- [ ] I read `CONTRIBUTING.md`
+- [ ] I created the branch from `main` and did a clean rebase/merge
+- [ ] Tests run locally (`npm run test` on the frontend side, `npm run test` on the backend side if present)
+- [ ] Lint, type-check and format pass (`npm run format:check && npm run lint && npm run type-check`)
+- [ ] I have updated the documentation as needed
 
 ## Note
-Eventuali informazioni aggiuntive, screenshot, issue collegate.
-
+Any additional information, screenshots, or related issues.
