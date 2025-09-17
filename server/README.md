@@ -97,13 +97,13 @@ Il sistema ora supporta **script di avvio personalizzati** con fallback automati
 #### 🔹 Linux/macOS
 ```bash
 # Posiziona script nella directory del server
-./server/runtime/run.sh
+./runtime/run.sh
 ```
 
 #### 🔹 Windows  
 ```batch
 REM Posiziona script nella directory del server
-./server/runtime/run.bat
+./runtime/run.bat
 ```
 
 ### 📋 Priorità di Avvio
@@ -167,7 +167,7 @@ java %JVM_ARGS% -jar "%SERVER_JAR%" nogui
 pause
 ```
 
-> **💡 Script di esempio** sono disponibili in `server/runtime/` come template
+> **💡 Script di esempio** possono essere posizionati in `MC_DIR` (default `./runtime`).
 
 ### 🚀 Sviluppo
 - `npm run dev` - **Avvio completo**: setup DB + compila + esegue
@@ -211,8 +211,9 @@ npm run dev:ts        # Avvio veloce per sviluppo
 ```env
 PORT=3000                                    # Porta del server
 JWT_SECRET=change_me                         # Chiave JWT (CAMBIARE!)
-MC_DIR=./server/runtime                      # Directory server Minecraft
-BACKUP_DIR=./server/runtime/backups          # Directory backup
+MC_DIR=./runtime                             # Directory server Minecraft (cambia in prod)
+BACKUP_DIR=./runtime/backups                 # Directory backup
+Nota: durante l'installazione modpack vengono generati automaticamente in `MC_DIR` i file `eula.txt` (consenso EULA) e `user_jvm_args.txt` (argomenti JVM). Non è necessario mantenerli nel repository.
 DATABASE_URL="file:./prisma/dev.db"          # Database SQLite
 JAVA_BIN=java                                # Eseguibile Java
 RCON_ENABLED=false                           # RCON abilitato
@@ -226,6 +227,7 @@ RETENTION_WEEKS=4                            # Settimane retention backup
 UI_BG_ROTATE_SECONDS=15                      # Intervallo rotazione sfondo (min 3)
 UI_BG_ROTATE_ENABLED=true                    # Abilita/disabilita rotazione sfondo
 ```
+
 
 ### Modalità Database
 

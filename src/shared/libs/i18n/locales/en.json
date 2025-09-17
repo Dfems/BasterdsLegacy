@@ -371,12 +371,12 @@
       "mcDir": {
         "label": "MC_DIR",
         "description": "Minecraft server directory",
-        "placeholder": "./server/runtime"
+        "placeholder": "./runtime"
       },
       "backupDir": {
         "label": "BACKUP_DIR",
         "description": "Backup directory",
-        "placeholder": "./server/runtime/backups"
+        "placeholder": "./runtime/backups"
       },
       "rcon": {
         "title": "RCON Configuration",
