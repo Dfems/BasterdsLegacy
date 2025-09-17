@@ -150,7 +150,7 @@ export default function BackupsPage(): JSX.Element {
               value={`${totalSizeMB.toFixed(1)} MB`}
               icon="💽"
               badge={
-                totalSizeMB > 1000
+                totalSizeMB > 10000
                   ? { text: common.error ?? 'Alto', color: 'orange' }
                   : { text: 'OK', color: 'green' }
               }
@@ -329,7 +329,7 @@ export default function BackupsPage(): JSX.Element {
                         </Table.Cell>
                         <Table.Cell>{new Date(b.createdAt).toLocaleString()}</Table.Cell>
                         <Table.Cell textAlign="end">
-                          <Badge colorScheme="green" variant="outline">
+                          <Badge colorScheme="green" variant="plain" color={'text'}>
                             {(b.size / (1024 * 1024)).toFixed(1)} MB
                           </Badge>
                         </Table.Cell>
