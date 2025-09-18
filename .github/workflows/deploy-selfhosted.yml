@@ -53,6 +53,7 @@ jobs:
         run: |
           sudo mkdir -p "$REMOTE_FE_DIR" "$REMOTE_BE_DIR" "$REMOTE_BASE"
           sudo chown -R dfems:www-data "$REMOTE_FE_DIR"
+          sudo chown -R dfems:dfems "$REMOTE_BE_DIR" "$REMOTE_BASE"
           sudo chmod -R 775 "$REMOTE_FE_DIR"
 
       - name: Deploy frontend assets
@@ -93,6 +94,19 @@ jobs:
           cd "$REMOTE_BE_DIR"
           npx prisma generate
           npx prisma db push
+
+      - name: Ensure owner exists (non-interactive)
+        env:
+          OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
+          OWNER_PASSWORD: ${{ secrets.OWNER_PASSWORD }}
+        run: |
+          if [ -n "$OWNER_EMAIL" ] && [ -n "$OWNER_PASSWORD" ]; then
+            echo "Ensuring owner user exists ($OWNER_EMAIL)"
+            cd "$REMOTE_BE_DIR"
+            npx tsx ./scripts/create-owner-ci.ts || true
+          else
+            echo "OWNER_EMAIL/OWNER_PASSWORD not set; skipping owner creation"
+          fi
 
       - name: Install/Update systemd unit
         run: |

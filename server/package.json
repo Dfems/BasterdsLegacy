@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "create:owner": "tsx scripts/create-owner.ts",
+    "create:owner:ci": "tsx scripts/create-owner-ci.ts",
     "create:user": "tsx scripts/create-user.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
