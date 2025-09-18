@@ -91,15 +91,37 @@ jobs:
 
           # Ensure DATABASE_URL is present (fallback to local SQLite if missing)
           if ! grep -qE '^\s*DATABASE_URL=' "$REMOTE_BE_DIR/.env"; then
-            echo 'DATABASE_URL="file:./prisma/dev.db"' >> "$REMOTE_BE_DIR/.env"
+            echo 'DATABASE_URL=file:./prisma/dev.db' >> "$REMOTE_BE_DIR/.env"
             echo "Appended default DATABASE_URL to .env (file:./prisma/dev.db)"
           fi
+
+          # Normalize line endings (remove CR if file came from Windows)
+          sed -i 's/\r$//' "$REMOTE_BE_DIR/.env"
 
       - name: Prisma generate and push
         run: |
           cd "$REMOTE_BE_DIR"
-          npx prisma generate
-          npx prisma db push
+          # Ensure .env is normalized (strip CR and BOM)
+          sed -i 's/\r$//' .env || true
+          if [ "$(head -c 3 .env | od -An -t x1 | tr -d ' \n')" = "efbbbf" ]; then
+            tail -c +4 .env > .env.nobom && mv .env.nobom .env
+          fi
+
+          # Extract DATABASE_URL (handle quotes); append fallback if missing
+          DB_URL=$(grep -E '^[[:space:]]*DATABASE_URL[[:space:]]*=' .env | sed -E 's/^[^=]+=//; s/^"//; s/"$//' )
+          if [ -z "$DB_URL" ]; then
+            DB_URL="file:./prisma/dev.db"
+            echo 'DATABASE_URL=file:./prisma/dev.db' >> .env
+            echo "DATABASE_URL not found in .env, using fallback: $DB_URL"
+          fi
+          export DATABASE_URL="$DB_URL"
+
+          # Also create prisma/.env next to schema to help Prisma locate it
+          mkdir -p ./prisma
+          printf 'DATABASE_URL=%s\n' "$DB_URL" > ./prisma/.env
+
+          npx prisma generate --schema ./prisma/schema.prisma
+          npx prisma db push --schema ./prisma/schema.prisma
 
       - name: Ensure owner exists (non-interactive)
         env:
