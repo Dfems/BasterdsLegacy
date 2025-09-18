@@ -1,0 +1,116 @@
+name: Deploy (Self-hosted Raspberry)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente di deploy (production)'
+        required: true
+        default: 'production'
+      configure_apache:
+        description: 'Aggiorna vhost Apache e ricarica (true/false)'
+        required: true
+        default: 'true'
+      use_env_secret:
+        description: 'Crea .env da secret ENV_PRODUCTION (true/false)'
+        required: true
+        default: 'false'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy (Local)
+    runs-on: [self-hosted, linux, raspberry]
+
+    env:
+      NODE_VERSION: '20'
+      TARGET_ENV: ${{ github.event.inputs.environment || 'production' }}
+      REMOTE_BASE: /home/dfems/apps/basterdslegacy
+      REMOTE_FE_DIR: /var/www/basterdslegacy
+      REMOTE_BE_DIR: /home/dfems/apps/basterdslegacy/server
+      CONFIGURE_APACHE: ${{ github.event.inputs.configure_apache || 'true' }}
+      USE_ENV_SECRET: ${{ github.event.inputs.use_env_secret || 'false' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies (root)
+        run: npm ci
+
+      - name: Build Frontend
+        run: npm run build
+
+      - name: Prepare directories
+        run: |
+          sudo mkdir -p "$REMOTE_FE_DIR" "$REMOTE_BE_DIR" "$REMOTE_BASE"
+          sudo chown -R dfems:www-data "$REMOTE_FE_DIR"
+          sudo chmod -R 775 "$REMOTE_FE_DIR"
+
+      - name: Deploy frontend assets
+        run: |
+          sudo rm -rf "$REMOTE_FE_DIR"/*
+          sudo cp -r dist/* "$REMOTE_FE_DIR"/
+          sudo chown -R www-data:www-data "$REMOTE_FE_DIR"
+
+      - name: Sync server folder
+        run: |
+          rsync -az --delete --exclude node_modules --exclude dist --exclude prisma/dev.db server/ "$REMOTE_BE_DIR"/
+
+      - name: Install server dependencies
+        run: |
+          cd "$REMOTE_BE_DIR"
+          npm ci
+          npm run build
+
+      - name: Place environment file (.env)
+        if: ${{ env.TARGET_ENV == 'production' }}
+        run: |
+          if [ -f "$REMOTE_BE_DIR/.env" ]; then
+            echo "Existing .env found at $REMOTE_BE_DIR/.env — keeping it";
+          elif [ "${USE_ENV_SECRET}" = "true" ] && [ -n "${{ secrets.ENV_PRODUCTION }}" ]; then
+            echo "Creating .env from ENV_PRODUCTION secret";
+            printf '%s' "${{ secrets.ENV_PRODUCTION }}" > "$REMOTE_BE_DIR/.env";
+            sudo chown dfems:dfems "$REMOTE_BE_DIR/.env" && sudo chmod 600 "$REMOTE_BE_DIR/.env";
+          elif [ -f "server/.env.production" ]; then
+            echo "Copying server/.env.production to $REMOTE_BE_DIR/.env";
+            cp server/.env.production "$REMOTE_BE_DIR/.env" && sudo chown dfems:dfems "$REMOTE_BE_DIR/.env" && sudo chmod 600 "$REMOTE_BE_DIR/.env";
+          else
+            echo "ERROR: No .env present. Provide ENV_PRODUCTION secret (and set use_env_secret=true) or create $REMOTE_BE_DIR/.env manually.";
+            exit 1;
+          fi
+
+      - name: Prisma generate and push
+        run: |
+          cd "$REMOTE_BE_DIR"
+          npx prisma generate
+          npx prisma db push
+
+      - name: Install/Update systemd unit
+        run: |
+          sudo install -m 0644 server/deploy/basterds-server.service /etc/systemd/system/basterds-server.service
+          sudo systemctl daemon-reload
+          sudo systemctl enable basterds-server || true
+
+      - name: Restart backend service
+        run: sudo systemctl restart basterds-server || sudo systemctl start basterds-server
+
+      - name: Deploy Apache vhost and reload
+        if: ${{ env.CONFIGURE_APACHE == 'true' }}
+        run: |
+          sudo install -m 0644 server/deploy/apache-basterdslegacy.conf /etc/apache2/sites-available/basterdslegacy.conf
+          sudo a2enmod ssl rewrite proxy proxy_http proxy_wstunnel headers
+          sudo a2dissite basterdlegacy || true
+          sudo a2ensite basterdslegacy || true
+          sudo systemctl reload apache2
+
+      - name: Post-deploy check
+        run: curl -fsS http://localhost:3000/api/status

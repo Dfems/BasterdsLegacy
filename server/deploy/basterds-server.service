@@ -1,0 +1,28 @@
+[Unit]
+Description=BasterdsLegacy Fastify API
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dfems
+Group=dfems
+WorkingDirectory=/home/dfems/apps/basterdslegacy/server
+Environment=NODE_ENV=production
+EnvironmentFile=/home/dfems/apps/basterdslegacy/server/.env
+ExecStart=/usr/bin/node /home/dfems/apps/basterdslegacy/server/dist/app.js
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+# Nota: se abilitato ProtectHome=true può impedire l'accesso a /home.
+# Lascialo disabilitato oppure gestisci eccezioni con BindPaths.
+ProtectHome=false
+ReadWritePaths=/home/dfems/Minecraft /home/dfems/apps/basterdslegacy
+
+[Install]
+WantedBy=multi-user.target

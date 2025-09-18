@@ -1,0 +1,127 @@
+name: Deploy to Raspberry Pi
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente di deploy (production)'
+        required: true
+        default: 'production'
+      host:
+        description: 'Hostname o IP del Raspberry'
+        required: true
+        default: 'basterdslegacy.ddns.net'
+      user:
+        description: 'Utente SSH sul Raspberry'
+        required: true
+        default: 'dfems'
+      port:
+        description: 'Porta SSH del Raspberry'
+        required: true
+        default: '22'
+      configure_apache:
+        description: 'Aggiorna vhost Apache e ricarica (true/false)'
+        required: true
+        default: 'true'
+      use_env_secret:
+        description: 'Crea .env da secret ENV_PRODUCTION (true/false)'
+        required: true
+        default: 'true'
+  # Rimosso trigger su push: deploy solo manuale
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_VERSION: '20'
+      TARGET_HOST: ${{ github.event.inputs.host || 'basterdslegacy.ddns.net' }}
+      TARGET_USER: ${{ github.event.inputs.user || 'dfems' }}
+      TARGET_PORT: ${{ github.event.inputs.port || '22' }}
+      TARGET_ENV: ${{ github.event.inputs.environment || 'production' }}
+      CONFIGURE_APACHE: ${{ github.event.inputs.configure_apache || 'true' }}
+      USE_ENV_SECRET: ${{ github.event.inputs.use_env_secret || 'true' }}
+      # Percorsi remoti
+      REMOTE_BASE: /home/dfems/apps/basterdslegacy
+      REMOTE_FE_DIR: /var/www/basterdslegacy
+      REMOTE_BE_DIR: /home/dfems/apps/basterdslegacy/server
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies (root)
+        run: npm ci
+
+      - name: Build Frontend
+        run: npm run build
+
+      - name: Archive frontend dist
+        run: |
+          tar -czf dist.tar.gz -C dist .
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "$TARGET_PORT" -H "$TARGET_HOST" >> ~/.ssh/known_hosts
+
+      - name: Create remote directories
+        run: |
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "sudo mkdir -p $REMOTE_FE_DIR $REMOTE_BE_DIR && mkdir -p $REMOTE_BASE && sudo chown -R $TARGET_USER:www-data $REMOTE_FE_DIR && sudo chmod -R 775 $REMOTE_FE_DIR"
+
+      - name: Upload frontend assets
+        run: |
+          scp -P "$TARGET_PORT" dist.tar.gz "$TARGET_USER@$TARGET_HOST:$REMOTE_BASE/dist.tar.gz"
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "sudo rm -rf $REMOTE_FE_DIR/*; sudo mkdir -p $REMOTE_FE_DIR && sudo tar -xzf $REMOTE_BASE/dist.tar.gz -C $REMOTE_FE_DIR && sudo chown -R www-data:www-data $REMOTE_FE_DIR"
+
+      - name: Upload server folder
+        run: |
+          rsync -az -e "ssh -p $TARGET_PORT" --delete --exclude node_modules --exclude dist --exclude prisma/dev.db server/ "$TARGET_USER@$TARGET_HOST:$REMOTE_BE_DIR/"
+
+      - name: Install server dependencies on target
+        run: |
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "cd $REMOTE_BE_DIR && npm ci && npm run build"
+
+      - name: Place environment file on target (from secret)
+        if: ${{ env.TARGET_ENV == 'production' && env.USE_ENV_SECRET == 'true' }}
+        run: |
+          printf '%s' "${{ secrets.ENV_PRODUCTION }}" | ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "cat > $REMOTE_BE_DIR/.env"
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "chmod 600 $REMOTE_BE_DIR/.env && chown $TARGET_USER:$TARGET_USER $REMOTE_BE_DIR/.env"
+
+      - name: Run Prisma generate and push
+        run: |
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "cd $REMOTE_BE_DIR && npx prisma generate && npx prisma db push"
+
+      - name: Install/Update systemd unit
+        run: |
+          scp -P "$TARGET_PORT" server/deploy/basterds-server.service "$TARGET_USER@$TARGET_HOST:$REMOTE_BASE/basterds-server.service"
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "sudo install -m 0644 $REMOTE_BASE/basterds-server.service /etc/systemd/system/basterds-server.service && sudo systemctl daemon-reload && sudo systemctl enable basterds-server || true"
+
+      - name: Restart backend service
+        run: |
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "sudo systemctl restart basterds-server || sudo systemctl start basterds-server"
+
+      - name: Deploy Apache vhost and reload
+        if: ${{ env.CONFIGURE_APACHE == 'true' }}
+        run: |
+          scp -P "$TARGET_PORT" server/deploy/apache-basterdslegacy.conf "$TARGET_USER@$TARGET_HOST:$REMOTE_BASE/apache-basterdslegacy.conf"
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "sudo install -m 0644 $REMOTE_BASE/apache-basterdslegacy.conf /etc/apache2/sites-available/basterdslegacy.conf && sudo a2enmod ssl rewrite proxy proxy_http proxy_wstunnel headers && sudo a2dissite basterdlegacy || true && sudo a2ensite basterdslegacy || true && sudo systemctl reload apache2"
+
+      - name: Post-deploy check
+        run: |
+          ssh -p "$TARGET_PORT" "$TARGET_USER@$TARGET_HOST" "curl -fsS http://localhost:3000/api/status || (journalctl -u basterds-server -n 100 --no-pager; exit 1)"
