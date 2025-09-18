@@ -98,6 +98,11 @@ jobs:
           # Normalize line endings (remove CR if file came from Windows)
           sed -i 's/\r$//' "$REMOTE_BE_DIR/.env"
 
+          # Normalize DATABASE_URL format (strip quotes if any)
+          if grep -qE '^\s*DATABASE_URL="' "$REMOTE_BE_DIR/.env"; then
+            sed -i -E 's/^\s*DATABASE_URL\s*=\s*"([^"]+)"\s*$/DATABASE_URL=\1/' "$REMOTE_BE_DIR/.env"
+          fi
+
       - name: Prisma generate and push
         run: |
           cd "$REMOTE_BE_DIR"
@@ -114,11 +119,9 @@ jobs:
             echo 'DATABASE_URL=file:./prisma/dev.db' >> .env
             echo "DATABASE_URL not found in .env, using fallback: $DB_URL"
           fi
-          export DATABASE_URL="$DB_URL"
 
-          # Also create prisma/.env next to schema to help Prisma locate it
-          mkdir -p ./prisma
-          printf 'DATABASE_URL=%s\n' "$DB_URL" > ./prisma/.env
+          # Ensure there is no prisma/.env to avoid conflicts
+          rm -f ./prisma/.env
 
           npx prisma generate --schema ./prisma/schema.prisma
           npx prisma db push --schema ./prisma/schema.prisma
