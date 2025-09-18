@@ -17,21 +17,31 @@ export const initUiRotationDefaults = async (): Promise<void> => {
 
     // seconds
     if (secondsVal !== undefined) {
-      const existing = await db.setting.findUnique({ where: { key: 'ui.bgRotateSeconds' } })
-      if (!existing) {
+      try {
         await db.setting.create({ data: { key: 'ui.bgRotateSeconds', value: String(secondsVal) } })
         console.info(`[ui-rotation] Seeded seconds=${secondsVal} from UI_BG_ROTATE_SECONDS`)
+      } catch (e) {
+        if ((e as { code?: string } | null)?.code === 'P2002') {
+          // Già presente: nessuna azione, nessun override
+        } else {
+          throw e
+        }
       }
     }
 
     // enabled
     if (enabledVal !== undefined) {
-      const existing = await db.setting.findUnique({ where: { key: 'ui.bgRotateEnabled' } })
-      if (!existing) {
-        await db.setting.create({ data: { key: 'ui.bgRotateEnabled', value: enabledVal ? 'true' : 'false' } })
-        console.info(
-          `[ui-rotation] Seeded enabled=${enabledVal} from UI_BG_ROTATE_ENABLED`,
-        )
+      try {
+        await db.setting.create({
+          data: { key: 'ui.bgRotateEnabled', value: enabledVal ? 'true' : 'false' },
+        })
+        console.info(`[ui-rotation] Seeded enabled=${enabledVal} from UI_BG_ROTATE_ENABLED`)
+      } catch (e) {
+        if ((e as { code?: string } | null)?.code === 'P2002') {
+          // Già presente: nessuna azione, nessun override
+        } else {
+          throw e
+        }
       }
     }
   } catch (error) {
