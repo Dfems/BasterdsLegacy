@@ -154,8 +154,29 @@ jobs:
           sudo install -m 0644 server/deploy/apache-basterdslegacy.conf /etc/apache2/sites-available/basterdslegacy.conf
           sudo a2enmod ssl rewrite proxy proxy_http proxy_wstunnel headers
           sudo a2dissite basterdlegacy || true
+          sudo a2dissite basterdslegacy-le-ssl || true
+          sudo a2dissite 000-default default-ssl || true
           sudo a2ensite basterdslegacy || true
           sudo systemctl reload apache2
+
+      - name: Issue/renew certificate (Certbot webroot)
+        if: ${{ env.CONFIGURE_APACHE == 'true' }}
+        env:
+          CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
+        run: |
+          DOMAIN=basterdslegacy.ddns.net
+          sudo mkdir -p /var/www/basterdslegacy/.well-known/acme-challenge
+          if [ -z "$CERTBOT_EMAIL" ]; then
+            echo "CERTBOT_EMAIL non impostato; salto emissione certificato"
+            exit 0
+          fi
+          # Richiede certbot installato sul runner; se non presente, saltare
+          if command -v certbot >/dev/null 2>&1; then
+            sudo certbot certonly --webroot -w /var/www/basterdslegacy -d "$DOMAIN" --agree-tos -m "$CERTBOT_EMAIL" --non-interactive --keep-until-expiring || true
+            sudo systemctl reload apache2 || true
+          else
+            echo "certbot non installato; salto emissione certificato"
+          fi
 
       - name: Post-deploy check
         run: |
