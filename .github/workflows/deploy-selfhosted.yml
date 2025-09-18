@@ -89,6 +89,12 @@ jobs:
             exit 1;
           fi
 
+          # Ensure DATABASE_URL is present (fallback to local SQLite if missing)
+          if ! grep -qE '^\s*DATABASE_URL=' "$REMOTE_BE_DIR/.env"; then
+            echo 'DATABASE_URL="file:./prisma/dev.db"' >> "$REMOTE_BE_DIR/.env"
+            echo "Appended default DATABASE_URL to .env (file:./prisma/dev.db)"
+          fi
+
       - name: Prisma generate and push
         run: |
           cd "$REMOTE_BE_DIR"
