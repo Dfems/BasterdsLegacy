@@ -158,4 +158,23 @@ jobs:
           sudo systemctl reload apache2
 
       - name: Post-deploy check
-        run: curl -fsS http://localhost:3000/api/status
+        run: |
+          set -e
+          for i in $(seq 1 15); do
+            if curl -fsS http://localhost:3000/api/status > /dev/null; then
+              echo "Health check OK"
+              exit 0
+            fi
+            echo "Waiting for service (attempt $i)..."
+            sleep 2
+          done
+          echo "Health check failed"
+          exit 1
+
+      - name: Diagnostics (systemd + logs)
+        if: failure()
+        run: |
+          echo '--- systemctl status basterds-server ---'
+          sudo systemctl status basterds-server --no-pager || true
+          echo '--- journalctl -u basterds-server (last 200) ---'
+          sudo journalctl -u basterds-server -n 200 --no-pager || true
