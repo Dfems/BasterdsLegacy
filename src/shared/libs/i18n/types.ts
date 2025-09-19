@@ -217,6 +217,14 @@ export type TranslationKey = {
     tagDirectory: string
     tagFile: string
     emptyLabel: string
+    edit: string
+    editFile: string
+    saveFile: string
+    cancelEdit: string
+    noChanges: string
+    fileContent: string
+    editingFile: string
+    unsavedChanges: string
   }
   backups: {
     title: string

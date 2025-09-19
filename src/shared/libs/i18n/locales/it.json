@@ -211,7 +211,15 @@
     "readable": "Leggibile",
     "tagDirectory": "DIRECTORY",
     "tagFile": "FILE",
-    "emptyLabel": "Directory vuota"
+    "emptyLabel": "Directory vuota",
+    "edit": "Modifica",
+    "editFile": "Modifica File",
+    "saveFile": "Salva",
+    "cancelEdit": "Annulla",
+    "noChanges": "Nessuna modifica rilevata",
+    "fileContent": "Contenuto File",
+    "editingFile": "Modificando il file: {filename}",
+    "unsavedChanges": "Hai modifiche non salvate. Sei sicuro di volerle scartare?"
   },
   "backups": {
     "title": "Backup",

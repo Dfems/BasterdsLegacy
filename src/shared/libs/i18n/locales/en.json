@@ -211,7 +211,15 @@
     "readable": "Readable",
     "tagDirectory": "DIRECTORY",
     "tagFile": "FILE",
-    "emptyLabel": "Empty directory"
+    "emptyLabel": "Empty directory",
+    "edit": "Edit",
+    "editFile": "Edit File",
+    "saveFile": "Save",
+    "cancelEdit": "Cancel",
+    "noChanges": "No changes detected",
+    "fileContent": "File Content",
+    "editingFile": "Editing file: {filename}",
+    "unsavedChanges": "You have unsaved changes. Are you sure you want to discard them?"
   },
   "backups": {
     "title": "Backups",
