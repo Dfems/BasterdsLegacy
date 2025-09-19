@@ -11,6 +11,8 @@ import {
   unzipFile,
   zipPaths,
   resolveSafe,
+  readTextFile,
+  writeTextFile,
 } from '../filemgr/fs.js'
 import { auditLog } from '../lib/audit.js'
 import { getConfig } from '../lib/config.js'
@@ -114,6 +116,57 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
         userId: req.user?.sub,
       })
       return { dir }
+    }
+  )
+
+  // Read file content endpoint
+  fastify.get(
+    '/api/files/content',
+    {
+      preHandler: fastify.authorize('viewer'),
+      config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
+    },
+    async (req, reply) => {
+      try {
+        const { path: p } = req.query as { path?: string }
+        if (!p) return reply.status(400).send({ error: 'Missing path' })
+
+        const content = await readTextFile(p)
+        await auditLog({ type: 'file', op: 'read', path: p, userId: req.user?.sub })
+        return { content }
+      } catch (err) {
+        req.log.error({ err }, 'read content error')
+        return reply.status(500).send({ error: 'Failed to read file content' })
+      }
+    }
+  )
+
+  // Write file content endpoint
+  fastify.put(
+    '/api/files/content',
+    {
+      preHandler: fastify.authorize('user'),
+      config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
+    },
+    async (req, reply) => {
+      try {
+        const body = (await req.body) as { path?: string; content?: string }
+        if (!body?.path || body?.content === undefined) {
+          return reply.status(400).send({ error: 'Missing path or content' })
+        }
+
+        await writeTextFile(body.path, body.content)
+        await auditLog({
+          type: 'file',
+          op: 'edit',
+          path: body.path,
+          userId: req.user?.sub,
+        })
+        return { ok: true }
+      } catch (err) {
+        req.log.error({ err }, 'write content error')
+        return reply.status(500).send({ error: 'Failed to write file content' })
+      }
     }
   )
 

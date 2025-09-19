@@ -95,3 +95,16 @@ export const saveStream = async (
   await pipeline(stream, out)
   return dest
 }
+
+export const readTextFile = async (p: string): Promise<string> => {
+  const abs = resolveSafe(p)
+  const stat = await fsp.stat(abs)
+  if (!stat.isFile()) throw new Error('Path is not a file')
+  return await fsp.readFile(abs, 'utf-8')
+}
+
+export const writeTextFile = async (p: string, content: string): Promise<void> => {
+  const abs = resolveSafe(p)
+  await fsp.mkdir(path.dirname(abs), { recursive: true })
+  await fsp.writeFile(abs, content, 'utf-8')
+}

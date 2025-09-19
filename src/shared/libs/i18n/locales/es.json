@@ -211,7 +211,15 @@
     "readable": "Legible",
     "tagDirectory": "DIRECTORIO",
     "tagFile": "ARCHIVO",
-    "emptyLabel": "Directorio vacío"
+    "emptyLabel": "Directorio vacío",
+    "edit": "Editar",
+    "editFile": "Editar Archivo",
+    "saveFile": "Guardar",
+    "cancelEdit": "Cancelar",
+    "noChanges": "No se detectaron cambios",
+    "fileContent": "Contenido del Archivo",
+    "editingFile": "Editando archivo: {filename}",
+    "unsavedChanges": "Tienes cambios sin guardar. ¿Estás seguro de que quieres descartarlos?"
   },
   "backups": {
     "title": "Copias de Seguridad",

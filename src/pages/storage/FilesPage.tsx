@@ -1,6 +1,17 @@
 import { useCallback, useMemo, useRef, useState, type ChangeEvent, type JSX } from 'react'
 
-import { Badge, Box, Grid, Heading, HStack, Input, Table, Text, VStack } from '@chakra-ui/react'
+import {
+  Badge,
+  Box,
+  Grid,
+  Heading,
+  HStack,
+  Input,
+  Table,
+  Text,
+  VStack,
+  Textarea,
+} from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { GlassButton } from '@/shared/components/GlassButton'
@@ -41,6 +52,12 @@ export default function FilesPage(): JSX.Element {
   const [path, setPath] = useState<string>('/')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Edit file states
+  const [editingFile, setEditingFile] = useState<string | null>(null)
+  const [fileContent, setFileContent] = useState<string>('')
+  const [originalContent, setOriginalContent] = useState<string>('')
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
+
   const { data, isLoading, isError, refetch } = useQuery<{ entries: Entry[] }>({
     queryKey: ['files', path],
     queryFn: async () => {
@@ -77,6 +94,38 @@ export default function FilesPage(): JSX.Element {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['files'] }),
   })
 
+  const readFile = useMutation({
+    mutationFn: async (filePath: string) => {
+      const r = await fetch(`/api/files/content?path=${encodeURIComponent(filePath)}`)
+      if (!r.ok) throw new Error('Failed to read file')
+      const data = (await r.json()) as { content: string }
+      return data.content
+    },
+    onSuccess: (content, filePath) => {
+      setFileContent(content)
+      setOriginalContent(content)
+      setEditingFile(filePath)
+      setIsEditModalOpen(true)
+    },
+  })
+
+  const saveFile = useMutation({
+    mutationFn: async ({ filePath, content }: { filePath: string; content: string }) => {
+      const r = await fetch('/api/files/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: filePath, content }),
+      })
+      if (!r.ok) throw new Error('Failed to save file')
+    },
+    onSuccess: () => {
+      setOriginalContent(fileContent)
+      setIsEditModalOpen(false)
+      setEditingFile(null)
+      qc.invalidateQueries({ queryKey: ['files'] })
+    },
+  })
+
   const onUploadChange = useCallback(
     async (e: ChangeEvent<HTMLInputElement>) => {
       const f = e.target.files?.[0]
@@ -98,6 +147,44 @@ export default function FilesPage(): JSX.Element {
     },
     [path, refetch]
   )
+
+  const handleEditFile = useCallback(
+    (entry: Entry) => {
+      const filePath = joinPath(path, entry.name)
+      readFile.mutate(filePath)
+    },
+    [path, readFile]
+  )
+
+  const handleSaveFile = useCallback(() => {
+    if (!editingFile) return
+
+    // Check if content has changed
+    if (fileContent === originalContent) {
+      // No changes, just close modal
+      setIsEditModalOpen(false)
+      setEditingFile(null)
+      return
+    }
+
+    saveFile.mutate({ filePath: editingFile, content: fileContent })
+  }, [editingFile, fileContent, originalContent, saveFile])
+
+  const handleCancelEdit = useCallback(() => {
+    const hasChanges = fileContent !== originalContent
+
+    if (hasChanges) {
+      if (!confirm(files.unsavedChanges)) {
+        return // User wants to keep editing
+      }
+    }
+
+    // Reset state and close modal
+    setIsEditModalOpen(false)
+    setEditingFile(null)
+    setFileContent('')
+    setOriginalContent('')
+  }, [fileContent, originalContent, files])
 
   const rows = useMemo(() => data?.entries ?? [], [data])
 
@@ -462,6 +549,16 @@ export default function FilesPage(): JSX.Element {
                                 ⬇️
                               </GlassButton>
                             )} */}
+                            {entry.type === 'file' && (
+                              <GlassButton
+                                size="xs"
+                                onClick={() => handleEditFile(entry)}
+                                colorScheme="blue"
+                                loading={readFile.isPending}
+                              >
+                                📝
+                              </GlassButton>
+                            )}
                             <GlassButton
                               size="xs"
                               onClick={() => {
@@ -497,6 +594,75 @@ export default function FilesPage(): JSX.Element {
           )}
         </VStack>
       </Box>
+
+      {/* Edit File Modal */}
+      {isEditModalOpen && (
+        <Box
+          position="fixed"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg="blackAlpha.600"
+          zIndex="modal"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleCancelEdit()
+            }
+          }}
+        >
+          <GlassCard
+            maxW="4xl"
+            maxH="90vh"
+            w="90vw"
+            h="80vh"
+            p={6}
+            display="flex"
+            flexDirection="column"
+          >
+            <VStack gap={4} align="stretch" flex="1" overflow="hidden">
+              <Heading size="lg">
+                {files.editingFile.replace('{filename}', editingFile?.split('/').pop() ?? '')}
+              </Heading>
+
+              <Text fontSize="sm" color="textMuted">
+                {files.fileContent}
+              </Text>
+
+              <Textarea
+                value={fileContent}
+                onChange={(e) => setFileContent(e.target.value)}
+                placeholder="File content..."
+                resize="none"
+                flex="1"
+                fontFamily="monospace"
+                fontSize="sm"
+                bg="bg.subtle"
+                border="1px solid"
+                borderColor="border.subtle"
+                minH="200px"
+              />
+
+              <HStack gap={3} justifyContent="flex-end">
+                <GlassButton onClick={handleCancelEdit} colorScheme="gray">
+                  {files.cancelEdit}
+                </GlassButton>
+                <GlassButton
+                  onClick={handleSaveFile}
+                  colorScheme="green"
+                  loading={saveFile.isPending}
+                  disabled={fileContent === originalContent}
+                >
+                  {fileContent === originalContent ? files.noChanges : files.saveFile}
+                </GlassButton>
+              </HStack>
+            </VStack>
+          </GlassCard>
+        </Box>
+      )}
     </Box>
   )
 }
