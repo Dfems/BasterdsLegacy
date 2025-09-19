@@ -370,7 +370,7 @@ const getLatestForgeVersion = async (mcVersion: string): Promise<string | null> 
 const getLatestNeoForgeVersion = async (mcVersion: string): Promise<string | null> => {
   // Per ora utilizziamo versioni statiche, in futuro si può implementare l'API di NeoForge
   const staticVersions: Record<string, string> = {
-    '1.21.1': '21.1.95',
+    '1.21.1': '21.1.200',
     '1.21': '21.0.207',
     '1.20.1': '20.1.241',
   }
