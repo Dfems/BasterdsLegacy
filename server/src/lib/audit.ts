@@ -1,4 +1,6 @@
 import { db } from './db.js'
+import pino from 'pino'
+import { loggerOptions } from './logger.js'
 
 export type AuditEvent =
   | {
@@ -10,7 +12,7 @@ export type AuditEvent =
     }
   | { type: 'login'; userId: string }
   | { type: 'logout'; userId?: string | undefined }
-  | { type: 'file'; op: 'rename' | 'delete' | 'upload' | 'zip' | 'unzip' | 'download'; path: string; userId?: string | undefined }
+  | { type: 'file'; op: 'rename' | 'delete' | 'upload' | 'zip' | 'unzip' | 'download' | 'read' | 'edit'; path: string; userId?: string | undefined }
   | { type: 'power'; op: 'start' | 'stop' | 'restart'; userId?: string | undefined }
   | { type: 'backup'; op: 'create' | 'restore' | 'schedule_update' | 'schedule_save' | 'schedule_save_error' | 'schedule_load'; id?: string | undefined; userId?: string | undefined; details?: Record<string, unknown> | undefined }
   | { type: 'job'; name: string; op: 'start' | 'end' | 'error'; durationMs?: number | undefined; details?: Record<string, unknown> | undefined }
@@ -19,22 +21,30 @@ export type AuditEvent =
   | { type: 'whitelist'; op: 'add' | 'remove'; playerName: string; userId?: string | undefined; details?: Record<string, unknown> | undefined }
 
 // Logger centralizzato per log strutturati - sarà importato dinamicamente per evitare dipendenze circolari
-let appLogger: {
-  info: (obj: unknown, msg?: string) => void;
-  error: (obj: unknown, msg?: string) => void;
-  warn: (obj: unknown, msg?: string) => void;
-} | null = null
+type AppLogger = {
+  info: (obj: unknown, msg?: string) => void
+  warn: (obj: unknown, msg?: string) => void
+  error: (obj: unknown, msg?: string) => void
+}
 
-const getLogger = async () => {
+let appLogger: AppLogger | null = null
+
+const getLogger = async (): Promise<AppLogger> => {
   if (!appLogger) {
     try {
-      // Import dinamico per evitare dipendenze circolari
-      const { buildApp } = await import('../app.js')
-      const tempApp = buildApp()
-      appLogger = tempApp.log
+      const p = pino(loggerOptions as pino.LoggerOptions)
+      appLogger = {
+        info: (obj, msg) => p.info(obj as Record<string, unknown>, msg),
+        warn: (obj, msg) => p.warn(obj as Record<string, unknown>, msg),
+        error: (obj, msg) => p.error(obj as Record<string, unknown>, msg),
+      }
     } catch (error) {
-      console.warn('Failed to get app logger, using console:', error)
-      return console
+      console.warn('Failed to init audit logger, using console:', error)
+      appLogger = {
+        info: (obj, msg) => console.log(msg ?? '', obj),
+        warn: (obj, msg) => console.warn(msg ?? '', obj),
+        error: (obj, msg) => console.error(msg ?? '', obj),
+      }
     }
   }
   return appLogger
@@ -56,6 +66,8 @@ const getHumanMessage = (evt: AuditEvent): string => {
       case 'zip': return `Files compressed: ${evt.path}`
       case 'unzip': return `Archive extracted: ${evt.path}`
       case 'download': return `File downloaded: ${evt.path}`
+      case 'read': return `File read: ${evt.path}`
+      case 'edit': return `File edited: ${evt.path}`
     }
   } else if (evt.type === 'power') {
     switch (evt.op) {

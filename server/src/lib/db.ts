@@ -70,6 +70,8 @@ try {
   // Fallback a mock per sviluppo quando Prisma non è disponibile
   console.log('⚠️  Modalità fallback: usando mock database')
   
+  const settingsStore: Record<string, string> = {}
+
   const mockDb = {
     user: {
       findUnique: async (options: FindUniqueOptions) => {
@@ -135,8 +137,23 @@ try {
     setting: {
       findUnique: async (options: SettingFindUniqueOptions) => {
         console.log('Mock DB: setting.findUnique', options)
-        // Simula che non ci sia background impostato inizialmente
+        const key = options.where.key
+        if (key in settingsStore) return { key, value: settingsStore[key] }
         return null
+      },
+      findMany: async (options?: { where?: { key?: { in?: string[] } } }) => {
+        console.log('Mock DB: setting.findMany', options)
+        const keys = options?.where?.key?.in
+        const result: Array<{ key: string; value: string }> = []
+        if (Array.isArray(keys) && keys.length > 0) {
+          for (const k of keys) {
+            const val = settingsStore[k]
+            if (typeof val === 'string') result.push({ key: k, value: val })
+          }
+        } else {
+          for (const [k, v] of Object.entries(settingsStore)) result.push({ key: k, value: v })
+        }
+        return result
       },
       upsert: async (data: SettingUpsertOptions) => {
         console.log('Mock DB: setting.upsert', data)
@@ -144,11 +161,25 @@ try {
           key: data.where.key,
           value: data.update?.value ?? data.create.value,
         }
+        settingsStore[resolved.key] = resolved.value
         return resolved
+      },
+      create: async (data: { data: { key: string; value: string } }) => {
+        console.log('Mock DB: setting.create', data)
+        const { key, value } = data.data
+        settingsStore[key] = value
+        return { key, value }
       },
   deleteMany: async (options: { where?: { key?: string } }) => {
         console.log('Mock DB: setting.deleteMany', options)
-        return { count: 1 }
+        if (options.where?.key) {
+          const existed = options.where.key in settingsStore
+          delete settingsStore[options.where.key]
+          return { count: existed ? 1 : 0 }
+        }
+        const count = Object.keys(settingsStore).length
+        for (const k of Object.keys(settingsStore)) delete settingsStore[k]
+        return { count }
       }
     }
   }
