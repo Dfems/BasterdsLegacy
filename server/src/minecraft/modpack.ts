@@ -436,7 +436,7 @@ export const getSupportedVersions = async (): Promise<{
     NeoForge: {
       label: 'NeoForge',
       versions: {
-        '1.21.1': '21.1.95',
+        '1.21.1': '21.1.200',
         '1.21': '21.0.207',
         '1.20.1': '20.1.241',
       },
