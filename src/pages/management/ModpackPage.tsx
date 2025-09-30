@@ -20,6 +20,7 @@ export default function ModpackPage(): JSX.Element {
   const [installMode, setInstallMode] = useState<InstallMode>('automatic')
   const [loader, setLoader] = useState<LoaderType>('Vanilla')
   const [mcVersion, setMcVersion] = useState('1.21.1')
+  const [loaderVersion, setLoaderVersion] = useState<string>('')
   const [jarFileName, setJarFileName] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -39,12 +40,43 @@ export default function ModpackPage(): JSX.Element {
     return versionData.minecraft.map((v) => ({ value: v, label: v }))
   }, [versionData])
 
+  // Opzioni dinamiche per le versioni del loader
+  const loaderVersionOptions = useMemo(() => {
+    if (!versionData) return []
+    const loaderInfo = versionData.loaders[loader]
+    const supported = loaderInfo && mcVersion in loaderInfo.versions
+    if (!supported) return []
+    const versions = loaderInfo.versions[mcVersion] || []
+
+    return versions.map((v) => {
+      let label = v.version
+      const badges = []
+      if (v.recommended) badges.push('★')
+      if (v.latest) badges.push('Latest')
+      if (!v.stable) badges.push('Beta')
+      if (badges.length > 0) {
+        label = `${v.version} ${badges.map((b) => `[${b}]`).join(' ')}`
+      }
+      return { value: v.version, label }
+    })
+  }, [versionData, loader, mcVersion])
+
   // Verifica se la versione selezionata è supportata dal loader corrente
   const isVersionSupported = useMemo(() => {
     if (!versionData) return true
     const loaderInfo = versionData.loaders[loader]
     return loaderInfo && mcVersion in loaderInfo.versions
   }, [versionData, loader, mcVersion])
+
+  // Reset della versione del loader quando cambia loader o MC version
+  useMemo(() => {
+    if (loaderVersionOptions.length > 0) {
+      // Seleziona la prima versione (generalmente latest/recommended)
+      setLoaderVersion(loaderVersionOptions[0]?.value || '')
+    } else {
+      setLoaderVersion('')
+    }
+  }, [loaderVersionOptions])
 
   const runInstall = async () => {
     setBusy(true)
@@ -53,7 +85,7 @@ export default function ModpackPage(): JSX.Element {
     try {
       const payload =
         installMode === 'automatic'
-          ? { loader, mcVersion, mode: 'automatic' }
+          ? { loader, mcVersion, loaderVersion: loaderVersion || undefined, mode: 'automatic' }
           : { jarFileName, mode: 'manual' }
 
       // Connetti al WebSocket per il progresso real-time
@@ -210,6 +242,20 @@ export default function ModpackPage(): JSX.Element {
                     </Box>
                   </Grid>
 
+                  {/* Loader Version Selector - only show if there are multiple versions */}
+                  {isVersionSupported && loaderVersionOptions.length > 0 && (
+                    <Box>
+                      <Text fontSize="sm" color="textMuted" mb={1}>
+                        {modpack.loaderVersion || `${loader} Version`}
+                      </Text>
+                      <SimpleSelect
+                        value={loaderVersion}
+                        onChange={(v) => setLoaderVersion(v)}
+                        options={loaderVersionOptions}
+                      />
+                    </Box>
+                  )}
+
                   {!isVersionSupported && (
                     <HStack gap={2}>
                       <StatusIndicator status="warning" label="Versione non supportata" />
@@ -221,18 +267,16 @@ export default function ModpackPage(): JSX.Element {
                     </HStack>
                   )}
 
-                  {versionData && isVersionSupported && (
-                    <HStack gap={2}>
-                      <StatusIndicator status="online" label="Versione supportata" />
-                      <Text fontSize="sm" color="green.400">
-                        {modpack.versionInfo
-                          .replace('{loader}', loader)
-                          .replace(
-                            '{version}',
-                            versionData.loaders[loader]?.versions[mcVersion] || ''
-                          )}
-                      </Text>
-                    </HStack>
+                  {versionData && isVersionSupported && loaderVersionOptions.length > 0 && (
+                    <VStack align="stretch" gap={2}>
+                      <HStack gap={2}>
+                        <StatusIndicator status="online" label="Versione supportata" />
+                        <Text fontSize="sm" color="green.400">
+                          {loaderVersionOptions.find((v) => v.value === loaderVersion)?.label ||
+                            loaderVersion}
+                        </Text>
+                      </HStack>
+                    </VStack>
                   )}
                 </VStack>
               )}

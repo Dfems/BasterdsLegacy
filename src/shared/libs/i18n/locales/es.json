@@ -594,7 +594,8 @@
     "errorVersions": "Error al cargar versiones: {error}",
     "installPrompt": "Ve a la página de Modpack para instalar un servidor antes de iniciarlo",
     "installSectionDescription": "Elige cómo instalar el Modpack e inicia el proceso.",
-    "progressSectionDescription": "Supervisa el progreso de la instalación en tiempo real."
+    "progressSectionDescription": "Supervisa el progreso de la instalación en tiempo real.",
+    "loaderVersion": "Versión del Loader"
   },
   "whitelist": {
     "title": "Lista Blanca",

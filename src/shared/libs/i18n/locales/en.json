@@ -597,7 +597,8 @@
     "errorVersions": "Error loading versions: {error}",
     "installPrompt": "Go to the Modpack page to install a server before starting it",
     "installSectionDescription": "Choose how to install the Modpack and start the process.",
-    "progressSectionDescription": "Monitor the installation progress in real time."
+    "progressSectionDescription": "Monitor the installation progress in real time.",
+    "loaderVersion": "Loader Version"
   },
   "whitelist": {
     "title": "Whitelist",

@@ -18,6 +18,7 @@ export type InstallRequest = {
   mode: 'automatic' | 'manual'
   loader?: 'Vanilla' | 'Forge' | 'Fabric' | 'Quilt' | 'NeoForge'
   mcVersion?: string
+  loaderVersion?: string // Versione specifica del loader (opzionale, default: latest/recommended)
   jarFileName?: string
   manifest?: unknown
 }
@@ -235,17 +236,25 @@ const installVanilla = async (mcVersion: string, notes: string[]): Promise<void>
     throw e
   }
 }
-const installFabric = async (mcVersion: string, notes: string[]): Promise<void> => {
+// Installazione di Fabric
+const installFabric = async (
+  mcVersion: string,
+  loaderVersion: string | undefined,
+  notes: string[]
+): Promise<void> => {
   const installerJar = path.join(CONFIG.MC_DIR, 'fabric-installer.jar')
   const url = 'https://maven.fabricmc.net/net/fabricmc/fabric-installer/latest/fabric-installer.jar'
   try {
     await downloadToFile(url, installerJar)
     notes.push('Scaricato fabric-installer.jar')
-    await runJavaJar(
-      installerJar,
-      ['server', '-mcversion', mcVersion, '-downloadMinecraft'],
-      CONFIG.MC_DIR
-    )
+
+    const args = ['server', '-mcversion', mcVersion]
+    if (loaderVersion && loaderVersion !== 'latest') {
+      args.push('-loader', loaderVersion)
+    }
+    args.push('-downloadMinecraft')
+
+    await runJavaJar(installerJar, args, CONFIG.MC_DIR)
     notes.push('Fabric server installato')
   } catch (e) {
     notes.push(`Errore installazione Fabric: ${(e as Error).message}`)
@@ -254,13 +263,12 @@ const installFabric = async (mcVersion: string, notes: string[]): Promise<void> 
 }
 
 // Installazione di Forge
-const installForge = async (mcVersion: string, notes: string[]): Promise<void> => {
+const installForge = async (
+  mcVersion: string,
+  forgeVersion: string,
+  notes: string[]
+): Promise<void> => {
   try {
-    // URL del forge installer (esempio per versione 1.21.1)
-    const forgeVersion = await getLatestForgeVersion(mcVersion)
-    if (!forgeVersion) {
-      throw new Error(`Versione Forge non trovata per MC ${mcVersion}`)
-    }
     const fileName = `forge-${mcVersion}-${forgeVersion}-installer.jar`
     const installerJar = path.join(CONFIG.MC_DIR, fileName)
     const url = `https://maven.minecraftforge.net/net/minecraftforge/forge/${mcVersion}-${forgeVersion}/forge-${mcVersion}-${forgeVersion}-installer.jar`
@@ -277,12 +285,8 @@ const installForge = async (mcVersion: string, notes: string[]): Promise<void> =
 }
 
 // Installazione di NeoForge
-const installNeoForge = async (mcVersion: string, notes: string[]): Promise<void> => {
+const installNeoForge = async (neoForgeVersion: string, notes: string[]): Promise<void> => {
   try {
-    const neoForgeVersion = await getLatestNeoForgeVersion(mcVersion)
-    if (!neoForgeVersion) {
-      throw new Error(`Versione NeoForge non trovata per MC ${mcVersion}`)
-    }
     const fileName = `neoforge-${neoForgeVersion}-installer.jar`
     const installerJar = path.join(CONFIG.MC_DIR, fileName)
     const url = `https://maven.neoforged.net/net/neoforged/neoforge/${neoForgeVersion}/neoforge-${neoForgeVersion}-installer.jar`
@@ -299,7 +303,11 @@ const installNeoForge = async (mcVersion: string, notes: string[]): Promise<void
 }
 
 // Installazione di Quilt
-const installQuilt = async (mcVersion: string, notes: string[]): Promise<void> => {
+const installQuilt = async (
+  mcVersion: string,
+  loaderVersion: string | undefined,
+  notes: string[]
+): Promise<void> => {
   try {
     const installerJar = path.join(CONFIG.MC_DIR, 'quilt-installer.jar')
     const url =
@@ -308,11 +316,13 @@ const installQuilt = async (mcVersion: string, notes: string[]): Promise<void> =
     await downloadToFile(url, installerJar)
     notes.push('Scaricato quilt-installer.jar')
 
-    await runJavaJar(
-      installerJar,
-      ['install', 'server', mcVersion, '--download-server'],
-      CONFIG.MC_DIR
-    )
+    const args = ['install', 'server', mcVersion]
+    if (loaderVersion && loaderVersion !== 'latest') {
+      args.push('--install-version', loaderVersion)
+    }
+    args.push('--download-server')
+
+    await runJavaJar(installerJar, args, CONFIG.MC_DIR)
     notes.push('Quilt server installato')
   } catch (e) {
     notes.push(`Errore installazione Quilt: ${(e as Error).message}`)
@@ -357,30 +367,54 @@ const installFromCustomJar = async (jarFileName: string, notes: string[]): Promi
 
 // Funzioni helper per ottenere le versioni più recenti
 const getLatestForgeVersion = async (mcVersion: string): Promise<string | null> => {
-  // Per ora utilizziamo versioni statiche, in futuro si può implementare l'API di Forge
-  const staticVersions: Record<string, string> = {
-    '1.21.1': '52.0.31',
-    '1.21': '51.0.33',
-    '1.20.1': '47.3.12',
-    '1.19.2': '43.4.4',
+  const { fetchForgeVersions } = await import('./loader-apis.js')
+  try {
+    const { versions } = await fetchForgeVersions(mcVersion)
+    // Prendi la versione latest o recommended
+    const latest = versions.find((v) => v.latest || v.recommended)
+    return latest?.version || versions[0]?.version || null
+  } catch {
+    // Fallback to static versions
+    const staticVersions: Record<string, string> = {
+      '1.21.1': '52.0.31',
+      '1.21': '51.0.33',
+      '1.20.1': '47.3.12',
+      '1.19.2': '43.4.4',
+    }
+    return staticVersions[mcVersion] || null
   }
-  return staticVersions[mcVersion] || null
 }
 
 const getLatestNeoForgeVersion = async (mcVersion: string): Promise<string | null> => {
-  // Per ora utilizziamo versioni statiche, in futuro si può implementare l'API di NeoForge
-  const staticVersions: Record<string, string> = {
-    '1.21.1': '21.1.200',
-    '1.21': '21.0.207',
-    '1.20.1': '20.1.241',
+  const { fetchNeoForgeVersions } = await import('./loader-apis.js')
+  try {
+    const { versions } = await fetchNeoForgeVersions(mcVersion)
+    // Prendi la versione latest o recommended
+    const latest = versions.find((v) => v.latest || v.recommended)
+    return latest?.version || versions[0]?.version || null
+  } catch {
+    // Fallback to static versions
+    const staticVersions: Record<string, string> = {
+      '1.21.1': '21.1.200',
+      '1.21': '21.0.207',
+      '1.20.1': '20.1.241',
+    }
+    return staticVersions[mcVersion] || null
   }
-  return staticVersions[mcVersion] || null
+}
+
+// Tipo per le informazioni di versione
+export type VersionInfo = {
+  version: string
+  stable: boolean
+  recommended?: boolean
+  latest?: boolean
 }
 
 // Funzione per ottenere tutte le versioni supportate
 export const getSupportedVersions = async (): Promise<{
   minecraft: string[]
-  loaders: Record<string, { label: string; versions: Record<string, string> }>
+  loaders: Record<string, { label: string; versions: Record<string, VersionInfo[]> }>
 }> => {
   const minecraftVersions = [
     '1.21.1',
@@ -395,62 +429,97 @@ export const getSupportedVersions = async (): Promise<{
     '1.16.5',
   ]
 
-  const loaders = {
+  const {
+    getVanillaVersions,
+    fetchFabricVersions,
+    fetchForgeVersions,
+    fetchNeoForgeVersions,
+    fetchQuiltVersions,
+  } = await import('./loader-apis.js')
+
+  // Costruisce le versioni per ogni loader
+  const loaders: Record<string, { label: string; versions: Record<string, VersionInfo[]> }> = {
     Vanilla: {
       label: 'Vanilla',
-      versions: {
-        '1.21.1': '1.21.1',
-        '1.21': '1.21',
-        '1.20.6': '1.20.6',
-        '1.20.4': '1.20.4',
-        '1.20.1': '1.20.1',
-        '1.19.4': '1.19.4',
-        '1.19.2': '1.19.2',
-        '1.18.2': '1.18.2',
-        '1.17.1': '1.17.1',
-        '1.16.5': '1.16.5',
-      },
+      versions: {},
     },
     Fabric: {
       label: 'Fabric',
-      versions: {
-        '1.21.1': 'latest',
-        '1.21': 'latest',
-        '1.20.6': 'latest',
-        '1.20.4': 'latest',
-        '1.20.1': 'latest',
-        '1.19.4': 'latest',
-        '1.19.2': 'latest',
-        '1.18.2': 'latest',
-      },
+      versions: {},
     },
     Forge: {
       label: 'Forge',
-      versions: {
-        '1.21.1': '52.0.31',
-        '1.21': '51.0.33',
-        '1.20.1': '47.3.12',
-        '1.19.2': '43.4.4',
-      },
+      versions: {},
     },
     NeoForge: {
       label: 'NeoForge',
-      versions: {
-        '1.21.1': '21.1.200',
-        '1.21': '21.0.207',
-        '1.20.1': '20.1.241',
-      },
+      versions: {},
     },
     Quilt: {
       label: 'Quilt',
-      versions: {
-        '1.21.1': 'latest',
-        '1.21': 'latest',
-        '1.20.6': 'latest',
-        '1.20.4': 'latest',
-        '1.20.1': 'latest',
-      },
+      versions: {},
     },
+  }
+
+  // Popola le versioni per ogni MC version
+  for (const mcVersion of minecraftVersions) {
+    // Vanilla - sempre disponibile
+    loaders.Vanilla.versions[mcVersion] = getVanillaVersions(mcVersion).versions
+
+    // Fabric - disponibile per versioni recenti
+    if (
+      ['1.21.1', '1.21', '1.20.6', '1.20.4', '1.20.1', '1.19.4', '1.19.2', '1.18.2'].includes(
+        mcVersion
+      )
+    ) {
+      try {
+        loaders.Fabric.versions[mcVersion] = (await fetchFabricVersions(mcVersion)).versions
+      } catch {
+        loaders.Fabric.versions[mcVersion] = [{ version: 'latest', stable: true, latest: true }]
+      }
+    }
+
+    // Forge - solo per versioni con supporto
+    if (['1.21.1', '1.21', '1.20.1', '1.19.2'].includes(mcVersion)) {
+      try {
+        loaders.Forge.versions[mcVersion] = (await fetchForgeVersions(mcVersion)).versions
+      } catch {
+        const fallback: Record<string, string> = {
+          '1.21.1': '52.0.31',
+          '1.21': '51.0.33',
+          '1.20.1': '47.3.12',
+          '1.19.2': '43.4.4',
+        }
+        loaders.Forge.versions[mcVersion] = [
+          { version: fallback[mcVersion]!, stable: true, latest: true },
+        ]
+      }
+    }
+
+    // NeoForge - solo per versioni supportate
+    if (['1.21.1', '1.21', '1.20.1'].includes(mcVersion)) {
+      try {
+        loaders.NeoForge.versions[mcVersion] = (await fetchNeoForgeVersions(mcVersion)).versions
+      } catch {
+        const fallback: Record<string, string> = {
+          '1.21.1': '21.1.200',
+          '1.21': '21.0.207',
+          '1.20.1': '20.1.241',
+        }
+        loaders.NeoForge.versions[mcVersion] = [
+          { version: fallback[mcVersion]!, stable: true, latest: true },
+        ]
+      }
+    }
+
+    // Quilt - disponibile per versioni recenti
+    if (['1.21.1', '1.21', '1.20.6', '1.20.4', '1.20.1'].includes(mcVersion)) {
+      try {
+        loaders.Quilt.versions[mcVersion] = (await fetchQuiltVersions(mcVersion)).versions
+      } catch {
+        loaders.Quilt.versions[mcVersion] = [{ version: 'latest', stable: true, latest: true }]
+      }
+    }
   }
 
   return { minecraft: minecraftVersions, loaders }
@@ -461,7 +530,7 @@ export const installModpack = async (
 ): Promise<{ ok: true; notes: string[] }> => {
   const notes: string[] = []
   // Conserva la versione del loader rilevata per salvarla a fine installazione
-  let loaderVersion: string | undefined
+  let loaderVersion: string | undefined = req.loaderVersion
 
   if (req.mode === 'automatic') {
     if (!req.loader || !req.mcVersion) {
@@ -478,17 +547,27 @@ export const installModpack = async (
       await installVanilla(req.mcVersion, notes)
       loaderVersion = req.mcVersion
     } else if (req.loader === 'Fabric') {
-      await installFabric(req.mcVersion, notes)
-      loaderVersion = 'latest'
+      await installFabric(req.mcVersion, loaderVersion, notes)
+      loaderVersion = loaderVersion || 'latest'
     } else if (req.loader === 'Forge') {
-      loaderVersion = (await getLatestForgeVersion(req.mcVersion)) || undefined
-      await installForge(req.mcVersion, notes)
+      if (!loaderVersion) {
+        loaderVersion = (await getLatestForgeVersion(req.mcVersion)) || undefined
+      }
+      if (!loaderVersion) {
+        throw new Error(`Versione Forge non trovata per MC ${req.mcVersion}`)
+      }
+      await installForge(req.mcVersion, loaderVersion, notes)
     } else if (req.loader === 'NeoForge') {
-      loaderVersion = (await getLatestNeoForgeVersion(req.mcVersion)) || undefined
-      await installNeoForge(req.mcVersion, notes)
+      if (!loaderVersion) {
+        loaderVersion = (await getLatestNeoForgeVersion(req.mcVersion)) || undefined
+      }
+      if (!loaderVersion) {
+        throw new Error(`Versione NeoForge non trovata per MC ${req.mcVersion}`)
+      }
+      await installNeoForge(loaderVersion, notes)
     } else if (req.loader === 'Quilt') {
-      await installQuilt(req.mcVersion, notes)
-      loaderVersion = 'latest'
+      await installQuilt(req.mcVersion, loaderVersion, notes)
+      loaderVersion = loaderVersion || 'latest'
     }
   } else if (req.mode === 'manual') {
     if (!req.jarFileName) {
@@ -553,7 +632,7 @@ export const installModpackWithProgress = async (
 
   try {
     // Conserva la versione del loader rilevata per salvarla a fine installazione
-    let loaderVersion: string | undefined
+    let loaderVersion: string | undefined = req.loaderVersion
 
     if (req.mode === 'automatic') {
       if (!req.loader || !req.mcVersion) {
@@ -572,17 +651,29 @@ export const installModpackWithProgress = async (
         await installVanillaWithProgress(req.mcVersion, sendProgress)
         loaderVersion = req.mcVersion
       } else if (req.loader === 'Fabric') {
-        await installFabricWithProgress(req.mcVersion, sendProgress)
-        loaderVersion = 'latest'
+        await installFabricWithProgress(req.mcVersion, loaderVersion, sendProgress)
+        loaderVersion = loaderVersion || 'latest'
       } else if (req.loader === 'Forge') {
-        loaderVersion = (await getLatestForgeVersion(req.mcVersion)) || undefined
-        await installForgeWithProgress(req.mcVersion, sendProgress)
+        if (!loaderVersion) {
+          sendProgress('Ricerca versione Forge...')
+          loaderVersion = (await getLatestForgeVersion(req.mcVersion)) || undefined
+        }
+        if (!loaderVersion) {
+          throw new Error(`Versione Forge non trovata per MC ${req.mcVersion}`)
+        }
+        await installForgeWithProgress(req.mcVersion, loaderVersion, sendProgress)
       } else if (req.loader === 'NeoForge') {
-        loaderVersion = (await getLatestNeoForgeVersion(req.mcVersion)) || undefined
-        await installNeoForgeWithProgress(req.mcVersion, sendProgress)
+        if (!loaderVersion) {
+          sendProgress('Ricerca versione NeoForge...')
+          loaderVersion = (await getLatestNeoForgeVersion(req.mcVersion)) || undefined
+        }
+        if (!loaderVersion) {
+          throw new Error(`Versione NeoForge non trovata per MC ${req.mcVersion}`)
+        }
+        await installNeoForgeWithProgress(loaderVersion, sendProgress)
       } else if (req.loader === 'Quilt') {
-        await installQuiltWithProgress(req.mcVersion, sendProgress)
-        loaderVersion = 'latest'
+        await installQuiltWithProgress(req.mcVersion, loaderVersion, sendProgress)
+        loaderVersion = loaderVersion || 'latest'
       }
     } else if (req.mode === 'manual') {
       if (!req.jarFileName) {
@@ -655,6 +746,7 @@ const installVanillaWithProgress = async (
 
 const installFabricWithProgress = async (
   mcVersion: string,
+  loaderVersion: string | undefined,
   sendProgress: (msg: string) => void
 ): Promise<void> => {
   const installerJar = path.join(CONFIG.MC_DIR, 'fabric-installer.jar')
@@ -665,11 +757,13 @@ const installFabricWithProgress = async (
     sendProgress('Scaricato fabric-installer.jar')
 
     sendProgress('Installazione Fabric server...')
-    await runJavaJar(
-      installerJar,
-      ['server', '-mcversion', mcVersion, '-downloadMinecraft'],
-      CONFIG.MC_DIR
-    )
+    const args = ['server', '-mcversion', mcVersion]
+    if (loaderVersion && loaderVersion !== 'latest') {
+      args.push('-loader', loaderVersion)
+    }
+    args.push('-downloadMinecraft')
+
+    await runJavaJar(installerJar, args, CONFIG.MC_DIR)
     sendProgress('Fabric server installato')
   } catch (e) {
     sendProgress(`Errore installazione Fabric: ${(e as Error).message}`)
@@ -679,14 +773,10 @@ const installFabricWithProgress = async (
 
 const installForgeWithProgress = async (
   mcVersion: string,
+  forgeVersion: string,
   sendProgress: (msg: string) => void
 ): Promise<void> => {
   try {
-    sendProgress('Ricerca versione Forge...')
-    const forgeVersion = await getLatestForgeVersion(mcVersion)
-    if (!forgeVersion) {
-      throw new Error(`Versione Forge non trovata per MC ${mcVersion}`)
-    }
     const fileName = `forge-${mcVersion}-${forgeVersion}-installer.jar`
     const installerJar = path.join(CONFIG.MC_DIR, fileName)
     const url = `https://maven.minecraftforge.net/net/minecraftforge/forge/${mcVersion}-${forgeVersion}/forge-${mcVersion}-${forgeVersion}-installer.jar`
@@ -705,15 +795,10 @@ const installForgeWithProgress = async (
 }
 
 const installNeoForgeWithProgress = async (
-  mcVersion: string,
+  neoForgeVersion: string,
   sendProgress: (msg: string) => void
 ): Promise<void> => {
   try {
-    sendProgress('Ricerca versione NeoForge...')
-    const neoForgeVersion = await getLatestNeoForgeVersion(mcVersion)
-    if (!neoForgeVersion) {
-      throw new Error(`Versione NeoForge non trovata per MC ${mcVersion}`)
-    }
     const fileName = `neoforge-${neoForgeVersion}-installer.jar`
     const installerJar = path.join(CONFIG.MC_DIR, fileName)
     const url = `https://maven.neoforged.net/net/neoforged/neoforge/${neoForgeVersion}/neoforge-${neoForgeVersion}-installer.jar`
@@ -733,6 +818,7 @@ const installNeoForgeWithProgress = async (
 
 const installQuiltWithProgress = async (
   mcVersion: string,
+  loaderVersion: string | undefined,
   sendProgress: (msg: string) => void
 ): Promise<void> => {
   try {
@@ -745,11 +831,13 @@ const installQuiltWithProgress = async (
     sendProgress('Scaricato quilt-installer.jar')
 
     sendProgress('Installazione Quilt server...')
-    await runJavaJar(
-      installerJar,
-      ['install', 'server', mcVersion, '--download-server'],
-      CONFIG.MC_DIR
-    )
+    const args = ['install', 'server', mcVersion]
+    if (loaderVersion && loaderVersion !== 'latest') {
+      args.push('--install-version', loaderVersion)
+    }
+    args.push('--download-server')
+
+    await runJavaJar(installerJar, args, CONFIG.MC_DIR)
     sendProgress('Quilt server installato')
   } catch (e) {
     sendProgress(`Errore installazione Quilt: ${(e as Error).message}`)
