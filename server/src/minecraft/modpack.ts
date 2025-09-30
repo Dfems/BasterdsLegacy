@@ -464,7 +464,7 @@ export const getSupportedVersions = async (): Promise<{
   // Popola le versioni per ogni MC version
   for (const mcVersion of minecraftVersions) {
     // Vanilla - sempre disponibile
-    loaders.Vanilla.versions[mcVersion] = getVanillaVersions(mcVersion).versions
+    loaders.Vanilla!.versions[mcVersion] = getVanillaVersions(mcVersion).versions
 
     // Fabric - disponibile per versioni recenti
     if (
@@ -473,16 +473,16 @@ export const getSupportedVersions = async (): Promise<{
       )
     ) {
       try {
-        loaders.Fabric.versions[mcVersion] = (await fetchFabricVersions(mcVersion)).versions
+        loaders.Fabric!.versions[mcVersion] = (await fetchFabricVersions(mcVersion)).versions
       } catch {
-        loaders.Fabric.versions[mcVersion] = [{ version: 'latest', stable: true, latest: true }]
+        loaders.Fabric!.versions[mcVersion] = [{ version: 'latest', stable: true, latest: true }]
       }
     }
 
     // Forge - solo per versioni con supporto
     if (['1.21.1', '1.21', '1.20.1', '1.19.2'].includes(mcVersion)) {
       try {
-        loaders.Forge.versions[mcVersion] = (await fetchForgeVersions(mcVersion)).versions
+        loaders.Forge!.versions[mcVersion] = (await fetchForgeVersions(mcVersion)).versions
       } catch {
         const fallback: Record<string, string> = {
           '1.21.1': '52.0.31',
@@ -490,7 +490,7 @@ export const getSupportedVersions = async (): Promise<{
           '1.20.1': '47.3.12',
           '1.19.2': '43.4.4',
         }
-        loaders.Forge.versions[mcVersion] = [
+        loaders.Forge!.versions[mcVersion] = [
           { version: fallback[mcVersion]!, stable: true, latest: true },
         ]
       }
@@ -499,14 +499,14 @@ export const getSupportedVersions = async (): Promise<{
     // NeoForge - solo per versioni supportate
     if (['1.21.1', '1.21', '1.20.1'].includes(mcVersion)) {
       try {
-        loaders.NeoForge.versions[mcVersion] = (await fetchNeoForgeVersions(mcVersion)).versions
+        loaders.NeoForge!.versions[mcVersion] = (await fetchNeoForgeVersions(mcVersion)).versions
       } catch {
         const fallback: Record<string, string> = {
           '1.21.1': '21.1.200',
           '1.21': '21.0.207',
           '1.20.1': '20.1.241',
         }
-        loaders.NeoForge.versions[mcVersion] = [
+        loaders.NeoForge!.versions[mcVersion] = [
           { version: fallback[mcVersion]!, stable: true, latest: true },
         ]
       }
@@ -515,9 +515,9 @@ export const getSupportedVersions = async (): Promise<{
     // Quilt - disponibile per versioni recenti
     if (['1.21.1', '1.21', '1.20.6', '1.20.4', '1.20.1'].includes(mcVersion)) {
       try {
-        loaders.Quilt.versions[mcVersion] = (await fetchQuiltVersions(mcVersion)).versions
+        loaders.Quilt!.versions[mcVersion] = (await fetchQuiltVersions(mcVersion)).versions
       } catch {
-        loaders.Quilt.versions[mcVersion] = [{ version: 'latest', stable: true, latest: true }]
+        loaders.Quilt!.versions[mcVersion] = [{ version: 'latest', stable: true, latest: true }]
       }
     }
   }
