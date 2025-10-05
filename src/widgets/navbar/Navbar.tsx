@@ -477,34 +477,31 @@ export default function Navbar({ isLoggedIn, onLogout }: NavbarProps): JSX.Eleme
           )}
         </HStack>
 
-        {/* Mobile language and status bar */}
-        {isLoggedIn && (
-          <Box
-            px={4}
-            pb={2}
-            display="flex"
-            justifyContent="center"
-            borderTopWidth="1px"
-            borderColor="gray.200"
-            _dark={{ borderColor: 'gray.700' }}
-          >
-            <HStack gap={4} fontSize="xs">
-              <HStack gap={1}>
-                <Text>🌐</Text>
-                <SimpleSelect
-                  value={language}
-                  onChange={(v) => setLanguage(v as SupportedLanguage)}
-                  options={SUPPORTED_LANGUAGES}
-                />
-              </HStack>
-              <StatusIndicator
-                status="online"
-                label={`${common.admin} ${dashboard.online}`}
-                size="sm"
+        {/* Mobile language selector (sempre visibile) + stato opzionale se loggato */}
+        <Box
+          px={4}
+          pb={2}
+          display="flex"
+          justifyContent="center"
+          borderTopWidth="1px"
+          borderColor="gray.200"
+          _dark={{ borderColor: 'gray.700' }}
+        >
+          <HStack gap={4} fontSize="xs" wrap="wrap" justify="center">
+            <HStack gap={1}>
+              <Text>🌐</Text>
+              <SimpleSelect
+                value={language}
+                onChange={(v) => setLanguage(v as SupportedLanguage)}
+                options={SUPPORTED_LANGUAGES}
+                size="xs"
               />
             </HStack>
-          </Box>
-        )}
+            {isLoggedIn && (
+              <StatusIndicator status="online" label={`${dashboard.online}`} size="sm" />
+            )}
+          </HStack>
+        </Box>
       </Box>
     </>
   )
