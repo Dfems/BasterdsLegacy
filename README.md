@@ -166,8 +166,8 @@ Il sistema gestisce automaticamente:
 - `GET /api/status`: Stato server
 - `POST /api/power`: Controlli server (start/stop/restart)
 - `GET /api/server/jar-status`: Stato JAR/modpack
-- `GET /api/modpack/versions`: Versioni supportate
-- `POST /api/modpack/install`: Installazione modpack
+- `GET /api/modpack/versions`: Versioni supportate con dettagli (stable, recommended, latest)
+- `POST /api/modpack/install`: Installazione modpack (supporta `loaderVersion` opzionale)
 
 **Backup:**
 - `GET /api/backups`: Lista backup esistenti
@@ -179,11 +179,20 @@ Il sistema gestisce automaticamente:
 
 ## Tipi di Modpack Supportati
 
-- **Fabric**: Installazione automatica con latest loader
-- **Forge**: Versioni statiche per MC 1.16.5-1.21.1
-- **NeoForge**: Versioni per MC 1.20.1-1.21.1  
-- **Quilt**: Installazione automatica con latest loader
+- **Vanilla**: Server vanilla ufficiale per tutte le versioni supportate
+- **Fabric**: Installazione automatica con versioni dinamiche da API Fabric
+- **Forge**: Versioni recuperate dinamicamente da API Maven (fallback a versioni statiche)
+- **NeoForge**: Versioni recuperate da API Maven NeoForge (fallback a versioni statiche)
+- **Quilt**: Installazione automatica con versioni dinamiche da API Quilt
 - **Personalizzato**: JAR upload manuale
+
+### Selezione Versione Loader
+
+Il sistema ora supporta la selezione di versioni specifiche per ogni loader:
+- **Automatico**: Recupera tutte le versioni disponibili dalle API ufficiali
+- **Indicatori**: Le versioni sono contrassegnate con ★ (recommended), [Latest], [Beta]
+- **Fallback**: Se le API non sono disponibili, usa versioni statiche predefinite
+- **Parametro opzionale**: `loaderVersion` nell'installazione (se omesso, usa latest/recommended)
 
 ## Documentazione
 

@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 export type ModpackInfo = {
-  name: string
-  version: string
-  loader?: string
-  mode?: string
+  loader: string | null
+  mcVersion: string | null
+  loaderVersion: string | null
+  mode: string | null
 }
 
 export const useModpackInfo = () => {

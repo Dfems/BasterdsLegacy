@@ -1,8 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 
+export type VersionInfo = {
+  version: string
+  stable: boolean
+  recommended?: boolean
+  latest?: boolean
+}
+
 export type SupportedVersions = {
   minecraft: string[]
-  loaders: Record<string, { label: string; versions: Record<string, string> }>
+  loaders: Record<string, { label: string; versions: Record<string, VersionInfo[]> }>
 }
 
 export const useModpackVersions = () => {

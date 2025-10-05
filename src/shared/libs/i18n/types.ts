@@ -543,6 +543,7 @@ export type TranslationKey = {
     manual: string
     loader: string
     mcVersion: string
+    loaderVersion?: string
     loaderVersionPlaceholder: string
     mcVersionPlaceholder: string
     metaConfigTitle: string

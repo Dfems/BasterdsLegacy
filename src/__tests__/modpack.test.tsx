@@ -61,15 +61,41 @@ const mockVersionsResponse = {
     loaders: {
       Vanilla: {
         label: 'Vanilla',
-        versions: { '1.21.1': '1.21.1', '1.21': '1.21', '1.20.1': '1.20.1' },
+        versions: {
+          '1.21.1': [{ version: '1.21.1', stable: true, recommended: true, latest: true }],
+          '1.21': [{ version: '1.21', stable: true, recommended: true, latest: true }],
+          '1.20.1': [{ version: '1.20.1', stable: true, recommended: true, latest: true }],
+        },
       },
       Fabric: {
         label: 'Fabric',
-        versions: { '1.21.1': 'latest', '1.21': 'latest', '1.20.1': 'latest' },
+        versions: {
+          '1.21.1': [{ version: 'latest', stable: true, recommended: true, latest: true }],
+          '1.21': [{ version: 'latest', stable: true, recommended: true, latest: true }],
+          '1.20.1': [{ version: 'latest', stable: true, recommended: true, latest: true }],
+        },
       },
-      Forge: { label: 'Forge', versions: { '1.21.1': '52.0.31', '1.20.1': '47.3.12' } },
-      Quilt: { label: 'Quilt', versions: { '1.21.1': 'latest', '1.20.1': 'latest' } },
-      NeoForge: { label: 'NeoForge', versions: { '1.21.1': 'latest', '1.20.1': 'latest' } },
+      Forge: {
+        label: 'Forge',
+        versions: {
+          '1.21.1': [{ version: '52.0.31', stable: true, recommended: true, latest: true }],
+          '1.20.1': [{ version: '47.3.12', stable: true, recommended: true, latest: true }],
+        },
+      },
+      Quilt: {
+        label: 'Quilt',
+        versions: {
+          '1.21.1': [{ version: 'latest', stable: true, recommended: true, latest: true }],
+          '1.20.1': [{ version: 'latest', stable: true, recommended: true, latest: true }],
+        },
+      },
+      NeoForge: {
+        label: 'NeoForge',
+        versions: {
+          '1.21.1': [{ version: 'latest', stable: true, recommended: true, latest: true }],
+          '1.20.1': [{ version: 'latest', stable: true, recommended: true, latest: true }],
+        },
+      },
     },
   },
 }

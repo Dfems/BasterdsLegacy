@@ -1,6 +1,6 @@
 import { useContext, type JSX } from 'react'
 
-import { Box, Link as ChakraLink, Grid, HStack, Text, VStack, Badge } from '@chakra-ui/react'
+import { Box, Link as ChakraLink, Grid, HStack, Text, VStack, Badge, Stack } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 
 import AuthContext from '@/entities/user/AuthContext'
@@ -15,7 +15,7 @@ import { useModpackInfo } from '@/shared/hooks/useModpackInfo'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 const HomePage = (): JSX.Element => {
-  const { home, dashboard, common, modpack } = useLanguage()
+  const { home, dashboard, common } = useLanguage()
   const { token } = useContext(AuthContext)
   const { data: buttonsSettings } = useButtonsSettings()
   const { data: modpackInfo } = useModpackInfo()
@@ -45,13 +45,9 @@ const HomePage = (): JSX.Element => {
   // Stato reale JAR come fonte di verità per i guest
   const hasJar = Boolean(jarStatus?.hasJar)
   // Nome modpack: mostra solo se installato, altrimenti "Non trovato"/"Non disponibile"
-  const displayName = hasJar
-    ? (modpackInfo?.name ?? buttonsSettings?.modpack.name ?? "Basterd's Legacy")
-    : home.loggedIn.modpackNotFound
-  // Versione: solo se installato; altrimenti non disponibile
-  const displayVersion = hasJar
-    ? (modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '')
-    : dashboard.notAvailable
+  const loader = hasJar ? (modpackInfo?.loader ?? '-') : dashboard.notAvailable
+  const mcVersion = hasJar ? (modpackInfo?.mcVersion ?? '-') : dashboard.notAvailable
+  const loaderVersion = hasJar ? (modpackInfo?.loaderVersion ?? '-') : dashboard.notAvailable
 
   // Calculate stats for the modern header
   // Public overview values
@@ -79,34 +75,35 @@ const HomePage = (): JSX.Element => {
             gradient="linear(to-r, blue.400, cyan.500)"
           >
             <VStack gap={4} align="stretch">
-              <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
+              <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={4}>
                 <Box>
                   <Text fontSize="sm" color="textMuted" mb={1} textAlign="center">
-                    {common.modpack}
+                    Loader
                   </Text>
-                  <Text fontSize="lg" fontWeight="bold" color="brand.primary" textAlign="center">
-                    🎮 {displayName}
-                  </Text>
-                  <HStack gap={2} justify="center" wrap="wrap" mt={2}>
+                  <Stack gap={1} align="center">
+                    <Text fontSize="lg" fontWeight="bold" color="brand.primary" textAlign="center">
+                      ⚙️ {loader}
+                    </Text>
                     <Badge colorPalette={hasJar ? 'green' : 'orange'} variant="solid">
                       {hasJar ? home.loggedIn.modpackInstalled : home.loggedIn.modpackNotFound}
                     </Badge>
-                  </HStack>
+                  </Stack>
                 </Box>
                 <Box>
                   <Text fontSize="sm" color="textMuted" mb={1} textAlign="center">
-                    {modpack.version}
+                    Minecraft
                   </Text>
                   <Text fontSize="lg" fontWeight="bold" color="brand.primary" textAlign="center">
-                    📋 {displayVersion}
+                    🧱 {mcVersion}
                   </Text>
-                  {!hasJar && (
-                    <HStack gap={2} justify="center" wrap="wrap" mt={2}>
-                      <Badge colorPalette="orange" variant="subtle">
-                        {dashboard.notAvailable}
-                      </Badge>
-                    </HStack>
-                  )}
+                </Box>
+                <Box>
+                  <Text fontSize="sm" color="textMuted" mb={1} textAlign="center">
+                    Loader Ver.
+                  </Text>
+                  <Text fontSize="lg" fontWeight="bold" color="brand.primary" textAlign="center">
+                    📋 {loaderVersion}
+                  </Text>
                 </Box>
                 <Box>
                   <Text fontSize="sm" color="textMuted" mb={1} textAlign="center">

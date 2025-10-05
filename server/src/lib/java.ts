@@ -10,6 +10,24 @@ export const checkJavaBin = (app: FastifyInstance) => {
     const errChunks: Array<Buffer> = []
     child.stdout.on('data', (c) => chunks.push(Buffer.from(c)))
     child.stderr.on('data', (c) => errChunks.push(Buffer.from(c)))
+    // Se il binario non esiste (ENOENT) o ci sono altri problemi di spawn,
+    // catturiamo l'evento 'error' per evitare che il processo principale crashi.
+    child.on('error', (err: unknown) => {
+      const code = (err as NodeJS.ErrnoException).code
+      if (code === 'ENOENT') {
+        app.log.warn(
+          { bin: CONFIG.JAVA_BIN },
+          'JAVA_BIN non trovato nel PATH o percorso non valido; alcune feature Minecraft potrebbero non funzionare',
+        )
+      } else {
+        app.log.warn({ err }, 'Errore durante l\'esecuzione del controllo JAVA_BIN')
+      }
+      try {
+        child.kill('SIGKILL')
+      } catch {
+        // ignore
+      }
+    })
     const timer = setTimeout(() => {
       try {
         child.kill('SIGKILL')

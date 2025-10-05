@@ -7,6 +7,7 @@ import {
   installModpack,
   installModpackWithProgress,
   loadLastInstalledFromDb,
+  getResolvedInstallationInfo,
   type InstallRequest,
 } from '../minecraft/modpack.js'
 
@@ -111,29 +112,26 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
   // Endpoint per ottenere informazioni sul modpack corrente
   fastify.get('/api/modpack/info', async (_req, reply) => {
     try {
-      const installationInfo = await loadLastInstalledFromDb()
+      // Carica prima i dati dal DB (persistiti), poi arricchisci con detection dal filesystem
+      const dbInfo = await loadLastInstalledFromDb()
+      const resolvedFs = await getResolvedInstallationInfo()
+      const info = { ...dbInfo, ...resolvedFs }
 
-      if (installationInfo && installationInfo.loader) {
-        // Se abbiamo informazioni sull'installazione, usiamo quelle
-        const loader = installationInfo.loader
-        const loaderVersion = installationInfo.loaderVersion
-        const mcVersion = installationInfo.mcVersion
-        const name = loader === 'Vanilla' ? `${mcVersion ?? 'Vanilla'}` : `${loader}`
+      if (info.loader) {
+        return {
+          loader: info.loader ?? null, // Forge / NeoForge / Vanilla / Fabric / Quilt
+          mcVersion: info.mcVersion ?? null,
+          loaderVersion: info.loaderVersion ?? null,
+          mode: info.mode ?? null,
+        }
+      }
 
-        return {
-          name,
-          version: loader === 'Vanilla' ? (mcVersion ?? '') : (loaderVersion ?? ''),
-          loader,
-          mode: installationInfo.mode,
-        }
-      } else {
-        // Fallback alle configurazioni generiche se non abbiamo informazioni specifiche
-        return {
-          name: "Basterd's Legacy",
-          version: '1.0.0',
-          loader: null,
-          mode: null,
-        }
+      // Nessuna installazione rilevata
+      return {
+        loader: null,
+        mcVersion: null,
+        loaderVersion: null,
+        mode: null,
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
