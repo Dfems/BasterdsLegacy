@@ -126,7 +126,10 @@ export default function ModpackPage(): JSX.Element {
           {jarStatus && (
             <QuickActionCard
               inset
-              title={`📦 ${home.loggedIn.currentModpack}`}
+              title={`📦 ${home.loggedIn.currentModpack?.replace(
+                '{name}',
+                jarStatus?.hasJar ? (jarStatus.jarName ?? '-') : home.loggedIn.modpackNotFound
+              )}`}
               description={home.loggedIn.systemInfo}
               icon="ℹ️"
               gradient="linear(to-r, blue.400, cyan.500)"
@@ -277,6 +280,15 @@ export default function ModpackPage(): JSX.Element {
                         </Text>
                       </HStack>
                     </VStack>
+                  )}
+
+                  {/* Version info summary (used also by tests) */}
+                  {versionData && isVersionSupported && (
+                    <Text fontSize="sm" color="textMuted" data-testid="version-info-text">
+                      {modpack.versionInfo
+                        .replace('{loader}', loader)
+                        .replace('{version}', mcVersion)}
+                    </Text>
                   )}
                 </VStack>
               )}

@@ -10,3 +10,5 @@ coverage/
 
 # Do not format Minecraft server runtime files
 server/server/**
+server/runtime/**
+server/logs/**

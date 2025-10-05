@@ -65,9 +65,9 @@ const LoggedInHomePage = (): JSX.Element => {
     return `/api/files/download?path=${encodeURIComponent(p)}`
   }
   const hasJar = Boolean(jarStatus?.hasJar)
-  const displayVersion = hasJar
-    ? (modpackInfo?.version ?? buttonsSettings?.modpack.version ?? '-')
-    : dashboard.notAvailable
+  const mcVersion = hasJar ? (modpackInfo?.mcVersion ?? '-') : dashboard.notAvailable
+  const loaderVersion = hasJar ? (modpackInfo?.loaderVersion ?? '-') : dashboard.notAvailable
+  const loader = hasJar ? (modpackInfo?.loader ?? '-') : dashboard.notAvailable
 
   return (
     <Box p={{ base: 4, md: 6, lg: 8 }} maxW="7xl" mx="auto">
@@ -110,9 +110,7 @@ const LoggedInHomePage = (): JSX.Element => {
           <StatsCard
             inset
             title={common.modpack}
-            value={
-              jarStatus?.hasJar ? home.loggedIn.modpackInstalled : home.loggedIn.modpackNotFound
-            }
+            value={loader}
             icon="📦"
             color={jarStatus?.hasJar ? 'blue.400' : 'orange.400'}
             size="sm"
@@ -121,12 +119,7 @@ const LoggedInHomePage = (): JSX.Element => {
               color: jarStatus?.hasJar ? 'blue' : 'orange',
             }}
             subtitle={
-              hasJar
-                ? (home.loggedIn.currentVersion ?? 'Version: {version}').replace(
-                    '{version}',
-                    displayVersion
-                  )
-                : dashboard.notAvailable
+              hasJar ? `MC: ${mcVersion} | Loader: ${loaderVersion}` : dashboard.notAvailable
             }
           />
 
