@@ -8,8 +8,9 @@ import { QuickActionCard } from '@/shared/components/QuickActionCard'
 import { SimpleSelect } from '@/shared/components/SimpleSelect'
 import { StatusIndicator } from '@/shared/components/StatusIndicator'
 import useLanguage from '@/shared/hooks/useLanguage'
+import { useLoaderVersions, type VersionInfo } from '@/shared/hooks/useLoaderVersions'
+import { useMinecraftVersions } from '@/shared/hooks/useMinecraftVersions'
 import { useModpackInstallProgress } from '@/shared/hooks/useModpackInstallProgress'
-import { useModpackVersions } from '@/shared/hooks/useModpackVersions'
 import { useServerJarStatus } from '@/shared/hooks/useServerJarStatus'
 
 type InstallMode = 'automatic' | 'manual'
@@ -24,11 +25,15 @@ export default function ModpackPage(): JSX.Element {
   const [jarFileName, setJarFileName] = useState('')
   const [busy, setBusy] = useState(false)
 
+  // Carica lista versioni MC (chunk iniziale)
+  const { data: mcVersions, isLoading: mcLoading, error: mcError } = useMinecraftVersions()
+
+  // Carica versioni del loader per la coppia selezionata
   const {
-    data: versionData,
-    isLoading: versionsLoading,
-    error: versionsError,
-  } = useModpackVersions()
+    data: loaderVersions,
+    isLoading: loaderLoading,
+    error: loaderError,
+  } = useLoaderVersions(loader, mcVersion)
 
   const { data: jarStatus } = useServerJarStatus()
   const { progress, connectWebSocket, sendInstallMessage, resetProgress } =
@@ -36,37 +41,31 @@ export default function ModpackPage(): JSX.Element {
 
   // Opzioni dinamiche per le versioni Minecraft
   const mcVersionOptions = useMemo(() => {
-    if (!versionData) return [{ value: '1.21.1', label: '1.21.1' }]
-    return versionData.minecraft.map((v) => ({ value: v, label: v }))
-  }, [versionData])
+    const list = mcVersions ?? ['1.21.1']
+    return list.map((v) => ({ value: v, label: v }))
+  }, [mcVersions])
 
   // Opzioni dinamiche per le versioni del loader
   const loaderVersionOptions = useMemo(() => {
-    if (!versionData) return []
-    const loaderInfo = versionData.loaders[loader]
-    const supported = loaderInfo && mcVersion in loaderInfo.versions
-    if (!supported) return []
-    const versions = loaderInfo.versions[mcVersion] || []
-
+    const versions: VersionInfo[] = loaderVersions ?? []
     return versions.map((v) => {
       let label = v.version
-      const badges = []
+      const badges: string[] = []
       if (v.recommended) badges.push('★')
       if (v.latest) badges.push('Latest')
       if (!v.stable) badges.push('Beta')
-      if (badges.length > 0) {
-        label = `${v.version} ${badges.map((b) => `[${b}]`).join(' ')}`
-      }
+      if (badges.length > 0) label = `${v.version} ${badges.map((b) => `[${b}]`).join(' ')}`
       return { value: v.version, label }
     })
-  }, [versionData, loader, mcVersion])
+  }, [loaderVersions])
 
   // Verifica se la versione selezionata è supportata dal loader corrente
   const isVersionSupported = useMemo(() => {
-    if (!versionData) return true
-    const loaderInfo = versionData.loaders[loader]
-    return loaderInfo && mcVersion in loaderInfo.versions
-  }, [versionData, loader, mcVersion])
+    // Se ho dati loaderVersions e array vuoto => non supportata
+    if (loaderVersions && loaderVersions.length === 0) return false
+    // Se ancora caricando considero provvisoriamente supportata per evitare falso warning
+    return true
+  }, [loaderVersions])
 
   // Reset della versione del loader quando cambia loader o MC version
   useMemo(() => {
@@ -104,7 +103,7 @@ export default function ModpackPage(): JSX.Element {
   }
 
   const isInstallDisabled = () => {
-    if (busy || versionsLoading) return true
+    if (busy || mcLoading || loaderLoading) return true
     if (installMode === 'automatic') {
       return !loader || !mcVersion || !isVersionSupported
     }
@@ -170,12 +169,12 @@ export default function ModpackPage(): JSX.Element {
           )}
 
           {/* Error State */}
-          {versionsError && (
+          {(mcError || loaderError) && (
             <QuickActionCard
               title={`⚠️ ${common.error}`}
               description={modpack.errorVersions.replace(
                 '{error}',
-                (versionsError as Error).message
+                (mcError || (loaderError as Error | undefined))?.message || 'Errore sconosciuto'
               )}
               icon="❌"
               gradient="linear(to-r, red.400, orange.500)"
@@ -270,7 +269,7 @@ export default function ModpackPage(): JSX.Element {
                     </HStack>
                   )}
 
-                  {versionData && isVersionSupported && loaderVersionOptions.length > 0 && (
+                  {isVersionSupported && loaderVersionOptions.length > 0 && (
                     <VStack align="stretch" gap={2}>
                       <HStack gap={2}>
                         <StatusIndicator status="online" label="Versione supportata" />
@@ -283,7 +282,7 @@ export default function ModpackPage(): JSX.Element {
                   )}
 
                   {/* Version info summary (used also by tests) */}
-                  {versionData && isVersionSupported && (
+                  {isVersionSupported && (
                     <Text fontSize="sm" color="textMuted" data-testid="version-info-text">
                       {modpack.versionInfo
                         .replace('{loader}', loader)
@@ -320,14 +319,18 @@ export default function ModpackPage(): JSX.Element {
                 <GlassButton
                   onClick={runInstall}
                   disabled={isInstallDisabled()}
-                  loading={busy || versionsLoading}
+                  loading={busy || mcLoading || loaderLoading}
                   size="md"
                   colorScheme="green"
                   minH="44px"
                 >
-                  {busy ? modpack.installing : versionsLoading ? common.loading : modpack.install}
+                  {busy
+                    ? modpack.installing
+                    : mcLoading || loaderLoading
+                      ? common.loading
+                      : modpack.install}
                 </GlassButton>
-                {installMode === 'automatic' && !versionsLoading && (
+                {installMode === 'automatic' && !(mcLoading || loaderLoading) && (
                   <Text fontSize="sm" color="gray.500">
                     {modpack.installAuto
                       .replace('{loader}', loader)
