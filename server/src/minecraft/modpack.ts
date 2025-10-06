@@ -26,6 +26,8 @@ export type InstallRequest = {
 const EULA = 'eula.txt'
 const JVM_ARGS = 'user_jvm_args.txt'
 const INSTALLATION_INFO = '.installation_info.json'
+const RUN_BAT = 'run.bat'
+const RUN_SH = 'run.sh'
 
 // Funzioni per gestire le informazioni sull'installazione
 const saveInstallationInfo = async (info: {
@@ -204,6 +206,152 @@ const runJavaJar = async (jarPath: string, args: string[], cwd: string): Promise
       else reject(new Error(`Installer exited with code ${code}`))
     })
   })
+}
+
+// ---------------------------------------------------------------------------
+// Rilevazione jar server finale & generazione script di avvio
+// Alcuni installer (Forge / NeoForge / Fabric / Quilt) generano un jar "launch"
+// diverso dal file *-installer.jar. Automatizziamo la creazione di run.sh / run.bat
+// per evitare passaggi manuali.
+// ---------------------------------------------------------------------------
+
+const detectServerLaunchJar = async (): Promise<string | null> => {
+  try {
+    const entries = await fsp.readdir(CONFIG.MC_DIR)
+    const jarFiles = entries.filter((f) => f.toLowerCase().endsWith('.jar'))
+    const candidates: string[] = []
+    for (const file of jarFiles) {
+      if (/installer\.jar$/i.test(file)) continue
+      if (
+        /^(?:fabric|quilt)-server-launch\.jar$/i.test(file) ||
+        /^server\.jar$/i.test(file) ||
+        /^minecraft_server\.\d+\.\d+(?:\.\d+)?\.jar$/i.test(file) ||
+        /^forge-\d+\.\d+(?:\.\d+)?-.*\.jar$/i.test(file) ||
+        /^neoforge-[^-]+\.jar$/i.test(file)
+      ) {
+        candidates.push(file)
+      }
+    }
+    if (!candidates.length) return null
+    if (candidates.length === 1) return candidates[0]!
+    const priority = [
+      /fabric-server-launch\.jar$/i,
+      /quilt-server-launch\.jar$/i,
+      /^neoforge-/i,
+      /^forge-/i,
+      /^minecraft_server\./i,
+      /^server\.jar$/i,
+    ]
+    for (const p of priority) {
+      const found = candidates.find((c) => p.test(c))
+      if (found) return found
+    }
+    return candidates[0]!
+  } catch {
+    return null
+  }
+}
+
+const buildRunScripts = (serverJar: string): { bat: string; sh: string } => {
+  const bat = `@echo off\nSETLOCAL ENABLEDELAYEDEXPANSION\nIF EXIST user_jvm_args.txt (\n  set JVM_ARGS=\n  for /f "usebackq delims=" %%a in ("user_jvm_args.txt") do set JVM_ARGS=!JVM_ARGS! %%a\n)\njava !JVM_ARGS! -jar "%~dp0${serverJar}" nogui\n`
+  const sh = `#!/usr/bin/env bash\nset -euo pipefail\ncd "$(dirname "$0")"\nJAVA_ARGS=""\nif [[ -f user_jvm_args.txt ]]; then\n  JAVA_ARGS=$(tr '\n' ' ' < user_jvm_args.txt)\nfi\nexec java $JAVA_ARGS -jar "./${serverJar}" nogui\n`
+  return { bat, sh }
+}
+
+const ensureRunScripts = async (
+  serverJar: string
+): Promise<{ created: boolean; updated: boolean }> => {
+  let created = false
+  let updated = false
+  const { bat, sh } = buildRunScripts(serverJar)
+  const batPath = path.join(CONFIG.MC_DIR, RUN_BAT)
+  const shPath = path.join(CONFIG.MC_DIR, RUN_SH)
+
+  const needsWrite = async (
+    file: string,
+    expected: string
+  ): Promise<'create' | 'update' | 'skip'> => {
+    try {
+      const current = await fsp.readFile(file, 'utf8')
+      if (current === expected) return 'skip'
+      if (current.includes(serverJar)) return 'skip'
+      return 'update'
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === 'ENOENT') return 'create'
+      return 'update'
+    }
+  }
+
+  const batDecision = await needsWrite(batPath, bat)
+  if (batDecision !== 'skip') {
+    await fsp.writeFile(batPath, bat, 'utf8')
+    if (batDecision === 'create') created = true
+    else updated = true
+  }
+  const shDecision = await needsWrite(shPath, sh)
+  if (shDecision !== 'skip') {
+    await fsp.writeFile(shPath, sh, 'utf8')
+    try {
+      await fsp.chmod(shPath, 0o755)
+    } catch {
+      /* ignore on non-posix */
+    }
+    if (shDecision === 'create') created = true
+    else updated = true
+  }
+  return { created, updated }
+}
+
+// Utility: parse versione Java corrente (java -version) e restituisce il major (8, 11, 17, 21, ...)
+const getJavaMajor = async (): Promise<number | null> => {
+  return new Promise((resolve) => {
+    try {
+      const ps = spawn(CONFIG.JAVA_BIN, ['-version'], { stdio: ['ignore', 'pipe', 'pipe'] })
+      const chunks: Array<Buffer> = []
+      const err: Array<Buffer> = []
+      ps.stdout.on('data', (c) => chunks.push(Buffer.from(c)))
+      ps.stderr.on('data', (c) => err.push(Buffer.from(c)))
+      ps.on('error', () => resolve(null))
+      ps.on('close', () => {
+        const out = Buffer.concat(chunks).toString('utf8') + Buffer.concat(err).toString('utf8')
+        const line = out.split('\n').find((l) => l.toLowerCase().includes('version'))
+        if (!line) return resolve(null)
+        const m = line.match(/version\s+"([^"]+)"/i)
+        if (!m) return resolve(null)
+        const raw = m[1]!
+        // Formati possibili: 1.8.0_372 / 17.0.11 / 21 / 21.0.1 / 25-ea
+        let major: number | null = null
+        if (raw.startsWith('1.')) {
+          const p = raw.split('.')
+          ;(major as number | null) = p.length > 1 ? Number(p[1]) : null // 1.8 -> 8
+        } else {
+          const num = raw.match(/^(\d+)/)
+          major = num ? Number(num[1]) : null
+        }
+        if (!major || Number.isNaN(major)) return resolve(null)
+        resolve(major)
+      })
+    } catch {
+      resolve(null)
+    }
+  })
+}
+
+const isLegacyMcVersion = (mcVersion: string | undefined): boolean => {
+  if (!mcVersion) return false
+  const m = mcVersion.match(/^1\.(\d+)/)
+  if (!m) return false
+  const minor = Number(m[1])
+  return !Number.isNaN(minor) && minor < 17 // tutto <1.17 considerato legacy per le restrizioni java moderne
+}
+
+const buildJavaVersionWarning = (javaMajor: number, mcVersion: string, loader?: string): string => {
+  const base = `Attenzione: stai usando Java ${javaMajor} per Minecraft ${mcVersion}${loader ? ' (' + loader + ')' : ''}.`
+  // Raccomandazioni specifiche per Forge 1.16.x
+  if (/^1\.16(\.|$)/.test(mcVersion) && loader === 'Forge') {
+    return `${base} Forge 1.16.x è più stabile con Java 8 o 11 (accettabile fino a 17). Imposta una versione JAVA_BIN <= 17 (es: Java 17 LTS) o preferibilmente Java 8/11 per evitare IllegalAccessError.`
+  }
+  return `${base} Le versioni di Minecraft precedenti alla 1.17 possono avere incompatibilità con Java troppo recente. Usa Java 17 (LTS) oppure una versione precedente (8/11) per maggiore compatibilità.`
 }
 
 // Installazione di Vanilla Minecraft
@@ -737,6 +885,29 @@ export const installModpack = async (
     await saveLastInstalledToDb(info)
   }
 
+  // Genera/aggiorna script di avvio
+  try {
+    const detected = await detectServerLaunchJar()
+    if (detected) {
+      const { created, updated } = await ensureRunScripts(detected)
+      if (created) notes.push(`Creati script di avvio per ${detected}`)
+      else if (updated) notes.push(`Aggiornati script di avvio per ${detected}`)
+      else notes.push(`Script di avvio già presenti per ${detected}`)
+    } else {
+      notes.push('Impossibile rilevare il JAR server finale per creare run.sh/run.bat')
+    }
+  } catch (e) {
+    notes.push(`Errore generazione script di avvio: ${(e as Error).message}`)
+  }
+
+  // Warning su versione Java troppo nuova per versioni legacy
+  if (req.mcVersion && isLegacyMcVersion(req.mcVersion)) {
+    const javaMajor = await getJavaMajor()
+    if (javaMajor && javaMajor > 17) {
+      notes.push(buildJavaVersionWarning(javaMajor, req.mcVersion, req.loader))
+    }
+  }
+
   return { ok: true, notes }
 }
 
@@ -843,6 +1014,29 @@ export const installModpackWithProgress = async (
       if (req.mcVersion) info.mcVersion = req.mcVersion
       await saveInstallationInfo(info)
       await saveLastInstalledToDb(info)
+    }
+
+    // Rileva jar e genera script (versione con progress)
+    try {
+      sendProgress('Rilevazione JAR server finale...')
+      const detected = await detectServerLaunchJar()
+      if (detected) {
+        const { created, updated } = await ensureRunScripts(detected)
+        if (created) sendProgress(`Creati script di avvio per ${detected}`)
+        else if (updated) sendProgress(`Aggiornati script di avvio per ${detected}`)
+        else sendProgress(`Script di avvio già presenti per ${detected}`)
+      } else {
+        sendProgress('⚠️ Impossibile rilevare il JAR server finale per generare gli script')
+      }
+    } catch (e) {
+      sendProgress(`Errore generazione script di avvio: ${(e as Error).message}`)
+    }
+
+    if (req.mcVersion && isLegacyMcVersion(req.mcVersion)) {
+      const javaMajor = await getJavaMajor()
+      if (javaMajor && javaMajor > 17) {
+        sendProgress(buildJavaVersionWarning(javaMajor, req.mcVersion, req.loader))
+      }
     }
 
     sendComplete('✅ Installazione modpack completata con successo!')
