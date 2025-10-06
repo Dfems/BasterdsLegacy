@@ -4,6 +4,8 @@ import type { RawData, WebSocket } from 'ws'
 import type { JwtPayload } from '../lib/auth.js'
 import {
   getSupportedVersions,
+  getMinecraftVersions,
+  getLoaderVersions,
   installModpack,
   installModpackWithProgress,
   loadLastInstalledFromDb,
@@ -61,6 +63,36 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
     async (_req, _reply) => {
       const versions = await getSupportedVersions()
       return { ok: true, versions }
+    }
+  )
+
+  // Endpoint solo lista versioni MC (chunk iniziale)
+  fastify.get('/api/modpack/mc-versions', { preHandler: fastify.authorize('user') }, async () => {
+    const mc = await getMinecraftVersions()
+    return { ok: true, minecraft: mc }
+  })
+
+  // Endpoint per ottenere le versioni di un loader per una specifica MC version
+  fastify.get(
+    '/api/modpack/loader-versions',
+    { preHandler: fastify.authorize('user') },
+    async (req, reply) => {
+      const query = req.query as Record<string, string | undefined>
+      const loader = query.loader as
+        | 'Vanilla'
+        | 'Fabric'
+        | 'Forge'
+        | 'NeoForge'
+        | 'Quilt'
+        | undefined
+      const mcVersion = query.mcVersion
+      if (!loader || !mcVersion) {
+        return reply
+          .status(400)
+          .send({ ok: false, error: 'Parametri loader e mcVersion richiesti' })
+      }
+      const versions = await getLoaderVersions(loader, mcVersion)
+      return { ok: true, loader, mcVersion, versions }
     }
   )
 
