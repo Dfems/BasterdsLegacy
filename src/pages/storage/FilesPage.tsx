@@ -11,6 +11,7 @@ import {
   Text,
   VStack,
   Textarea,
+  Checkbox,
 } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -46,6 +47,37 @@ const human = (n: number) => {
   return `${v.toFixed(1)} ${units[i]}`
 }
 
+// Determine if a file is editable based on its extension
+const isEditableFile = (filename: string): boolean => {
+  const editableExtensions = [
+    '.txt',
+    '.json',
+    '.xml',
+    '.log',
+    '.yml',
+    '.yaml',
+    '.properties',
+    '.cfg',
+    '.conf',
+    '.md',
+    '.toml',
+    '.ini',
+    '.sh',
+    '.bat',
+    '.cmd',
+    '.js',
+    '.ts',
+    '.tsx',
+    '.jsx',
+    '.css',
+    '.scss',
+    '.html',
+    '.htm',
+  ]
+  const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'))
+  return editableExtensions.includes(ext)
+}
+
 export default function FilesPage(): JSX.Element {
   const { files } = useLanguage()
   const qc = useQueryClient()
@@ -57,6 +89,9 @@ export default function FilesPage(): JSX.Element {
   const [fileContent, setFileContent] = useState<string>('')
   const [originalContent, setOriginalContent] = useState<string>('')
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
+
+  // Multi-select states
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set())
 
   const { data, isLoading, isError, refetch } = useQuery<{ entries: Entry[] }>({
     queryKey: ['files', path],
@@ -80,6 +115,21 @@ export default function FilesPage(): JSX.Element {
       if (!r.ok) throw new Error('Delete failed')
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['files'] }),
+  })
+
+  const bulkRemove = useMutation({
+    mutationFn: async (paths: string[]) => {
+      const r = await fetch('/api/files', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paths }),
+      })
+      if (!r.ok) throw new Error('Bulk delete failed')
+    },
+    onSuccess: () => {
+      setSelectedFiles(new Set())
+      qc.invalidateQueries({ queryKey: ['files'] })
+    },
   })
 
   const rename = useMutation({
@@ -128,15 +178,22 @@ export default function FilesPage(): JSX.Element {
 
   const onUploadChange = useCallback(
     async (e: ChangeEvent<HTMLInputElement>) => {
-      const f = e.target.files?.[0]
-      if (!f) return
+      const fileList = e.target.files
+      if (!fileList || fileList.length === 0) return
+
       const form = new FormData()
-      form.set('file', f)
-      const to = joinPath(path, f.name)
-      const r = await fetch(`/api/files/upload?to=${encodeURIComponent(to)}`, {
+      for (let i = 0; i < fileList.length; i++) {
+        const f = fileList[i]
+        if (f) {
+          form.append('file', f)
+        }
+      }
+
+      const r = await fetch(`/api/files/upload?to=${encodeURIComponent(path)}`, {
         method: 'POST',
         body: form,
       })
+
       if (!r.ok) {
         // reset selection
         if (fileInputRef.current) fileInputRef.current.value = ''
@@ -185,6 +242,52 @@ export default function FilesPage(): JSX.Element {
     setFileContent('')
     setOriginalContent('')
   }, [fileContent, originalContent, files])
+
+  const handleToggleSelect = useCallback((entryName: string) => {
+    setSelectedFiles((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(entryName)) {
+        newSet.delete(entryName)
+      } else {
+        newSet.add(entryName)
+      }
+      return newSet
+    })
+  }, [])
+
+  const handleSelectAll = useCallback(() => {
+    if (!data?.entries) return
+    const allNames = data.entries.map((e) => e.name)
+    setSelectedFiles(new Set(allNames))
+  }, [data])
+
+  const handleDeselectAll = useCallback(() => {
+    setSelectedFiles(new Set())
+  }, [])
+
+  const handleDeleteSelected = useCallback(() => {
+    if (selectedFiles.size === 0) return
+    const paths = Array.from(selectedFiles).map((name) => joinPath(path, name))
+    const filesAny = files as Record<string, string>
+    const msg =
+      filesAny.confirmDeleteMultiple?.replace('{count}', String(selectedFiles.size)) ??
+      `Eliminare ${selectedFiles.size} elementi?`
+    if (confirm(msg)) {
+      bulkRemove.mutate(paths)
+    }
+  }, [selectedFiles, path, files, bulkRemove])
+
+  const handleDeleteAll = useCallback(() => {
+    if (!data?.entries || data.entries.length === 0) return
+    const paths = data.entries.map((e) => joinPath(path, e.name))
+    const filesAny = files as Record<string, string>
+    const msg =
+      filesAny.confirmDeleteAll?.replace('{count}', String(data.entries.length)) ??
+      `Eliminare tutti i ${data.entries.length} elementi?`
+    if (confirm(msg)) {
+      bulkRemove.mutate(paths)
+    }
+  }, [data, path, files, bulkRemove])
 
   const rows = useMemo(() => data?.entries ?? [], [data])
 
@@ -297,6 +400,7 @@ export default function FilesPage(): JSX.Element {
                 minH="44px"
                 fontSize="sm"
                 w="full"
+                multiple
               />
             </QuickActionCard>
           </Grid>
@@ -342,9 +446,43 @@ export default function FilesPage(): JSX.Element {
           {/* Files and Folders List */}
           {!isLoading && !isError && rows.length > 0 && (
             <VStack gap={4} align="stretch">
-              <Heading size="md" color="brand.primary">
-                📂 {files.contentsTitle} ({rows.length})
-              </Heading>
+              <HStack justify="space-between" align="center" wrap="wrap">
+                <Heading size="md" color="brand.primary">
+                  📂 {files.contentsTitle} ({rows.length})
+                </Heading>
+                <HStack gap={2} wrap="wrap">
+                  {selectedFiles.size > 0 ? (
+                    <>
+                      <GlassButton onClick={handleDeselectAll} size="sm" colorScheme="gray">
+                        {(files as Record<string, string>).deselectAll ?? 'Deseleziona tutti'} (
+                        {selectedFiles.size})
+                      </GlassButton>
+                      <GlassButton
+                        onClick={handleDeleteSelected}
+                        size="sm"
+                        colorScheme="red"
+                        loading={bulkRemove.isPending}
+                      >
+                        🗑️{' '}
+                        {(files as Record<string, string>).deleteSelected ?? 'Elimina selezionati'}{' '}
+                        ({selectedFiles.size})
+                      </GlassButton>
+                    </>
+                  ) : (
+                    <GlassButton onClick={handleSelectAll} size="sm" colorScheme="blue">
+                      {(files as Record<string, string>).selectAll ?? 'Seleziona tutti'}
+                    </GlassButton>
+                  )}
+                  <GlassButton
+                    onClick={handleDeleteAll}
+                    size="sm"
+                    colorScheme="red"
+                    loading={bulkRemove.isPending}
+                  >
+                    🗑️ {(files as Record<string, string>).deleteAll ?? 'Elimina tutti'}
+                  </GlassButton>
+                </HStack>
+              </HStack>
 
               {/* Mobile: Card layout */}
               <Box display={{ base: 'block', md: 'none' }}>
@@ -352,12 +490,19 @@ export default function FilesPage(): JSX.Element {
                   <GlassCard inset key={entry.name} mb={3} p={4}>
                     <VStack align="stretch" gap={3}>
                       <HStack justify="space-between" align="center">
-                        <Badge
-                          colorScheme={entry.type === 'dir' ? 'blue' : 'green'}
-                          variant="subtle"
-                        >
-                          {entry.type === 'dir' ? files.tagDirectory : files.tagFile}
-                        </Badge>
+                        <HStack>
+                          <Checkbox.Root
+                            checked={selectedFiles.has(entry.name)}
+                            onCheckedChange={() => handleToggleSelect(entry.name)}
+                            colorPalette="blue"
+                          />
+                          <Badge
+                            colorScheme={entry.type === 'dir' ? 'blue' : 'green'}
+                            variant="subtle"
+                          >
+                            {entry.type === 'dir' ? files.tagDirectory : files.tagFile}
+                          </Badge>
+                        </HStack>
                         <StatusIndicator
                           status="online"
                           label={entry.type === 'dir' ? files.accessible : files.readable}
@@ -395,6 +540,17 @@ export default function FilesPage(): JSX.Element {
                             flex="1"
                           >
                             📂 {files.open}
+                          </GlassButton>
+                        )}
+                        {entry.type === 'file' && isEditableFile(entry.name) && (
+                          <GlassButton
+                            onClick={() => handleEditFile(entry)}
+                            colorScheme="blue"
+                            size="sm"
+                            flex="1"
+                            loading={readFile.isPending}
+                          >
+                            📝
                           </GlassButton>
                         )}
                         {/* {entry.type === 'file' && (
@@ -445,6 +601,15 @@ export default function FilesPage(): JSX.Element {
                 <Table.Root data-variant="glass">
                   <Table.Header>
                     <Table.Row>
+                      <Table.ColumnHeader color="brand.primary" w="40px">
+                        <Checkbox.Root
+                          checked={selectedFiles.size === rows.length && rows.length > 0}
+                          onCheckedChange={
+                            selectedFiles.size === rows.length ? handleDeselectAll : handleSelectAll
+                          }
+                          colorPalette="blue"
+                        />
+                      </Table.ColumnHeader>
                       <Table.ColumnHeader color="brand.primary">
                         <HStack>
                           <Text>📂</Text>
@@ -486,6 +651,13 @@ export default function FilesPage(): JSX.Element {
                   <Table.Body>
                     {rows.map((entry) => (
                       <Table.Row key={entry.name}>
+                        <Table.Cell bg="transparent" boxShadow="none">
+                          <Checkbox.Root
+                            checked={selectedFiles.has(entry.name)}
+                            onCheckedChange={() => handleToggleSelect(entry.name)}
+                            colorPalette="blue"
+                          />
+                        </Table.Cell>
                         <Table.Cell bg="transparent" boxShadow="none">
                           <HStack>
                             {entry.type === 'dir' ? (
@@ -549,7 +721,7 @@ export default function FilesPage(): JSX.Element {
                                 ⬇️
                               </GlassButton>
                             )} */}
-                            {entry.type === 'file' && (
+                            {entry.type === 'file' && isEditableFile(entry.name) && (
                               <GlassButton
                                 size="xs"
                                 onClick={() => handleEditFile(entry)}
