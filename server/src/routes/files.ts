@@ -59,11 +59,29 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
     },
     async (req, reply) => {
-      const body = (await req.body) as { path?: string }
-      if (!body?.path) return reply.status(400).send({ error: 'Invalid body' })
-      await remove(body.path)
-      await auditLog({ type: 'file', op: 'delete', path: body.path, userId: req.user?.sub })
-      return { ok: true }
+      const body = (await req.body) as { path?: string; paths?: string[] }
+
+      // Support both single path and multiple paths
+      if (body?.paths && Array.isArray(body.paths) && body.paths.length > 0) {
+        // Bulk delete
+        for (const p of body.paths) {
+          await remove(p)
+        }
+        await auditLog({
+          type: 'file',
+          op: 'delete',
+          path: `bulk: ${body.paths.join(', ')}`,
+          userId: req.user?.sub,
+        })
+        return { ok: true, deleted: body.paths.length }
+      } else if (body?.path) {
+        // Single delete
+        await remove(body.path)
+        await auditLog({ type: 'file', op: 'delete', path: body.path, userId: req.user?.sub })
+        return { ok: true }
+      }
+
+      return reply.status(400).send({ error: 'Invalid body' })
     }
   )
 
@@ -74,12 +92,21 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
     },
     async (req, reply) => {
-      const mp = await req.file()
-      if (!mp) return reply.status(400).send({ error: 'No file' })
-      const dest = (req.query as { to?: string })?.to ?? `/${mp.filename}`
-      await saveStream(dest, mp.file)
-      await auditLog({ type: 'file', op: 'upload', path: dest, userId: req.user?.sub })
-      return { ok: true }
+      const files = await req.files()
+      const uploadedPaths: string[] = []
+
+      for await (const mp of files) {
+        const dest = (req.query as { to?: string })?.to ?? `/${mp.filename}`
+        await saveStream(dest, mp.file)
+        uploadedPaths.push(dest)
+        await auditLog({ type: 'file', op: 'upload', path: dest, userId: req.user?.sub })
+      }
+
+      if (uploadedPaths.length === 0) {
+        return reply.status(400).send({ error: 'No files' })
+      }
+
+      return { ok: true, uploaded: uploadedPaths.length }
     }
   )
 
