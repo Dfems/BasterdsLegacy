@@ -1,4 +1,3 @@
-import multipart from '@fastify/multipart'
 import staticPlugin from '@fastify/static'
 import type { FastifyInstance, FastifyPluginCallback } from 'fastify'
 import fs, { createWriteStream } from 'node:fs'
@@ -86,8 +85,6 @@ const writeServerProperties = (properties: Record<string, string>): void => {
 }
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
-  fastify.register(multipart)
-
   // Register static files for background images
   fastify.register(staticPlugin, {
     root: path.join(CONFIG.MC_DIR, 'uploads', 'backgrounds'),

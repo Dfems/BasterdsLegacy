@@ -1,6 +1,7 @@
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import jwt from '@fastify/jwt'
+import multipart from '@fastify/multipart'
 import rateLimit from '@fastify/rate-limit'
 import websocket from '@fastify/websocket'
 import dotenv from 'dotenv'
@@ -36,6 +37,12 @@ export const buildApp = () => {
   app.register(cors)
   app.register(helmet)
   app.register(websocket)
+  app.register(multipart, {
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100MB max file size
+      files: 10, // max 10 files per request
+    },
+  })
   app.register(rateLimit, { max: 100, timeWindow: '1 minute' })
   app.register(jwt, { secret: CONFIG.JWT_SECRET, sign: { expiresIn: CONFIG.JWT_EXPIRES } })
   app.register(authPlugin)

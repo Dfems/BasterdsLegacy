@@ -1,4 +1,3 @@
-import multipart from '@fastify/multipart'
 import type { FastifyInstance, FastifyPluginCallback } from 'fastify'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -18,8 +17,6 @@ import { auditLog } from '../lib/audit.js'
 import { getConfig } from '../lib/config.js'
 
 const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) => {
-  fastify.register(multipart)
-
   fastify.get(
     '/api/files',
     {
@@ -96,7 +93,12 @@ const plugin: FastifyPluginCallback = (fastify: FastifyInstance, _opts, done) =>
       const uploadedPaths: string[] = []
 
       for await (const mp of files) {
-        const dest = (req.query as { to?: string })?.to ?? `/${mp.filename}`
+        const toPath = (req.query as { to?: string })?.to ?? '/'
+        // Ensure we have a proper file path, not just a directory
+        const dest =
+          toPath === '/' ? `/${mp.filename}` : `${toPath.replace(/\/$/, '')}/${mp.filename}`
+
+        console.log(`Upload Debug: toPath="${toPath}", filename="${mp.filename}", dest="${dest}"`)
         await saveStream(dest, mp.file)
         uploadedPaths.push(dest)
         await auditLog({ type: 'file', op: 'upload', path: dest, userId: req.user?.sub })

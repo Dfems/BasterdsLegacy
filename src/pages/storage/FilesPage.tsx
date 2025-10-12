@@ -93,7 +93,7 @@ export default function FilesPage(): JSX.Element {
   // Multi-select states
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set())
 
-  const { data, isLoading, isError, refetch } = useQuery<{ entries: Entry[] }>({
+  const { data, isLoading, isError } = useQuery<{ entries: Entry[] }>({
     queryKey: ['files', path],
     queryFn: async () => {
       const r = await fetch(`/api/files?path=${encodeURIComponent(path)}`)
@@ -176,11 +176,8 @@ export default function FilesPage(): JSX.Element {
     },
   })
 
-  const onUploadChange = useCallback(
-    async (e: ChangeEvent<HTMLInputElement>) => {
-      const fileList = e.target.files
-      if (!fileList || fileList.length === 0) return
-
+  const uploadFiles = useMutation({
+    mutationFn: async (fileList: FileList) => {
       const form = new FormData()
       for (let i = 0; i < fileList.length; i++) {
         const f = fileList[i]
@@ -195,14 +192,34 @@ export default function FilesPage(): JSX.Element {
       })
 
       if (!r.ok) {
-        // reset selection
-        if (fileInputRef.current) fileInputRef.current.value = ''
-        throw new Error('Upload failed')
+        const errorText = await r.text()
+        throw new Error(`Upload failed: ${errorText}`)
       }
-      if (fileInputRef.current) fileInputRef.current.value = ''
-      await refetch()
+
+      return r.json()
     },
-    [path, refetch]
+    onSuccess: () => {
+      // Reset file input
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      // Refresh file list
+      qc.invalidateQueries({ queryKey: ['files'] })
+    },
+    onError: (error) => {
+      // Reset file input on error
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      console.error('Upload error:', error)
+      alert(`Errore durante l'upload: ${error.message}`)
+    },
+  })
+
+  const onUploadChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const fileList = e.target.files
+      if (!fileList || fileList.length === 0) return
+
+      uploadFiles.mutate(fileList)
+    },
+    [uploadFiles]
   )
 
   const handleEditFile = useCallback(
@@ -392,16 +409,29 @@ export default function FilesPage(): JSX.Element {
               gradient="linear(to-r, green.400, teal.500)"
               size="sm"
             >
-              <Input
-                type="file"
-                ref={fileInputRef}
-                onChange={onUploadChange}
-                data-variant="glass"
-                minH="44px"
-                fontSize="sm"
-                w="full"
-                multiple
-              />
+              <VStack gap={3} w="full">
+                <Input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={onUploadChange}
+                  data-variant="glass"
+                  minH="44px"
+                  fontSize="sm"
+                  w="full"
+                  multiple
+                  disabled={uploadFiles.isPending}
+                />
+                {uploadFiles.isPending && (
+                  <Text fontSize="sm" color="blue.500">
+                    📤 {files.loading} file...
+                  </Text>
+                )}
+                {uploadFiles.isError && (
+                  <Text fontSize="sm" color="red.500">
+                    ❌ {files.loadError}
+                  </Text>
+                )}
+              </VStack>
             </QuickActionCard>
           </Grid>
 
