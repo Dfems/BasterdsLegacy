@@ -495,7 +495,13 @@ export default function FilesPage(): JSX.Element {
                             checked={selectedFiles.has(entry.name)}
                             onCheckedChange={() => handleToggleSelect(entry.name)}
                             colorPalette="blue"
-                          />
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label />
+                          </Checkbox.Root>
                           <Badge
                             colorScheme={entry.type === 'dir' ? 'blue' : 'green'}
                             variant="subtle"
@@ -608,7 +614,13 @@ export default function FilesPage(): JSX.Element {
                             selectedFiles.size === rows.length ? handleDeselectAll : handleSelectAll
                           }
                           colorPalette="blue"
-                        />
+                        >
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control>
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
+                          <Checkbox.Label />
+                        </Checkbox.Root>
                       </Table.ColumnHeader>
                       <Table.ColumnHeader color="brand.primary">
                         <HStack>
@@ -656,7 +668,13 @@ export default function FilesPage(): JSX.Element {
                             checked={selectedFiles.has(entry.name)}
                             onCheckedChange={() => handleToggleSelect(entry.name)}
                             colorPalette="blue"
-                          />
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label />
+                          </Checkbox.Root>
                         </Table.Cell>
                         <Table.Cell bg="transparent" boxShadow="none">
                           <HStack>
